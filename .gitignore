@@ -3,6 +3,9 @@
 /public/build
 /public/hot
 /public/storage
+/playwright-report
+/test-results
+/database/*.sqlite
 /storage/*.key
 /vendor
 .env

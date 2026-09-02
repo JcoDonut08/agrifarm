@@ -19,43 +19,46 @@ Browser
 
 React owns display and interface state. Laravel owns validation, authorization, business rules, and database access.
 
-## Current foundation
+## Current authentication foundation
 
 ```text
 app/
+  Enums/UserRole.php
   Http/
-    Controllers/
+    Controllers/Auth/
+    Controllers/{Customer,Seller,Admin}/
+    Requests/Auth/
+    Middleware/EnsureUserHasRole.php
     Middleware/HandleInertiaRequests.php
-  Models/User.php
+  Models/{User,LoginOtp}.php
+  Services/Auth/LoginOtpService.php
   Providers/
 database/
+  migrations/
   factories/
   seeders/
 resources/
   css/app.css
   js/
-    Layouts/GuestLayout.jsx
-    Pages/Welcome.jsx
+    Components/
+    Layouts/
+    Pages/{Auth,Legal,Customer,Seller,Admin}/
     app.jsx
   views/app.blade.php
 routes/
+  auth.php
   console.php
   web.php
 tests/
-  Feature/FoundationTest.php
+  Feature/Auth/
+  e2e/
 ```
 
-The default Laravel domain migrations were removed. PostgreSQL is configured as the default database, but no application tables have been defined or migrated.
+PostgreSQL is the application database. The approved authentication schema contains users, password-reset tokens, and hashed login OTP records. Server-side role middleware protects the three initial role landing routes, and authentication is not finalized until the OTP service succeeds.
 
-## Add only when needed
+## Add only when needed next
 
-- `app/Enums`: first approved role or status enum
-- `app/Http/Requests/<Feature>`: first non-trivial validated request for that feature
 - `app/Policies`: first resource ownership or authorization policy
-- `app/Services`: workflows involving reusable rules, multiple models, or database transactions
-- `resources/js/Components`: first genuinely reusable interface component
-- Customer, Seller, and Admin controller/page/layout folders: first page for each role
-- `routes/auth.php`: official authentication implementation
 - `forecasting`: independent SARIMA development phase
 
 Do not create placeholder directories. Git does not track empty folders, and speculative structure makes the codebase harder to navigate.
@@ -66,11 +69,11 @@ A service is not required merely because a model exists. Simple Eloquent CRUD ca
 
 No repository layer is planned. Eloquent is the project's data-access layer.
 
-## Database design gate
+## Remaining database design gate
 
 Before migrations are created, review and approve:
 
-- user roles and profile ownership
+- profile ownership beyond the current user role
 - product-to-inventory cardinality
 - order and payment status transitions
 - order-item price snapshots

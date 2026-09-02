@@ -3,10 +3,12 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test:e2e": "playwright test"
     },
     "devDependencies": {
         "@inertiajs/vite": "^3.7.0",
+        "@playwright/test": "^1.62.1",
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-react": "^6.1.1",
         "laravel-vite-plugin": "^3.2.0",

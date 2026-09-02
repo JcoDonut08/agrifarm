@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmailContract
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, MustVerifyEmail, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +25,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'terms_accepted_at',
+        'privacy_accepted_at',
     ];
 
     /**
@@ -35,6 +40,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * @return HasMany<LoginOtp, $this>
+     */
+    public function loginOtps(): HasMany
+    {
+        return $this->hasMany(LoginOtp::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -43,6 +56,9 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'role' => UserRole::class,
+            'terms_accepted_at' => 'immutable_datetime',
+            'privacy_accepted_at' => 'immutable_datetime',
             'password' => 'hashed',
         ];
     }
