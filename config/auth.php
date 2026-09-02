@@ -121,4 +121,11 @@ return [
         'resend_max_per_hour' => (int) env('AUTH_OTP_RESEND_MAX_PER_HOUR', 5),
     ],
 
+    'account_otp' => [
+        'expires_minutes' => (int) env('ACCOUNT_OTP_EXPIRES_MINUTES', 10),
+        'max_attempts' => (int) env('ACCOUNT_OTP_MAX_ATTEMPTS', 5),
+        'resend_cooldown_seconds' => (int) env('ACCOUNT_OTP_RESEND_COOLDOWN_SECONDS', 60),
+        'resend_max_per_hour' => (int) env('ACCOUNT_OTP_RESEND_MAX_PER_HOUR', 5),
+    ],
+
 ];

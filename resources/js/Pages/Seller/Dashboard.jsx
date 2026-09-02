@@ -5,12 +5,14 @@ import RoleWelcome from '../../Components/RoleWelcome';
 export default function Dashboard() {
     return (
         <>
-            <Head title="Seller dashboard" />
+            <Head title="Seller workspace" />
             <RoleWelcome
-                title="Seller dashboard"
-                introduction="Your pre-created seller account is signed in and protected by email code verification."
-                label="Seller access confirmed"
-                detail="Store setup, product listings, inventory, and seller profile management are intentionally deferred. Public registration cannot create seller accounts."
+                title="Seller workspace"
+                introduction="Your assigned seller account gives you protected access to the AgriFarm workspace."
+                label="Your seller workspace is ready"
+                detail="Store setup, product listings, inventory, and seller account tools will be introduced with the marketplace phase. Public registration cannot create seller access."
+                role="seller"
+                availableNow={['Assigned seller access', 'Email code protection', 'Secure sign out']}
             />
         </>
     );

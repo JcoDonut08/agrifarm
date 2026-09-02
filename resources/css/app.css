@@ -9,15 +9,50 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-forest-50: #effbef;
+    --color-forest-100: #d9f5dc;
+    --color-forest-200: #b7e9bd;
+    --color-forest-300: #83d78f;
+    --color-forest-400: #48bf68;
+    --color-forest-500: #20a34f;
+    --color-forest-600: #12863f;
+    --color-forest-700: #0d6b35;
+    --color-forest-800: #0c542d;
+    --color-forest-900: #0a4226;
+    --color-forest-950: #052c19;
+    --color-cream-50: #fffdf5;
+    --color-cream-100: #fff7df;
+    --color-cream-200: #f7e8bd;
+    --color-harvest-400: #ffd05b;
+    --color-harvest-500: #ffba2f;
+    --color-harvest-600: #eb9220;
+    --color-tomato-400: #f47b58;
+    --color-tomato-500: #e85d3f;
+    --color-aubergine-500: #7752a8;
 }
 
 @layer base {
+    html {
+        @apply bg-cream-50;
+    }
+
     body {
-        @apply bg-stone-50 text-stone-900;
+        @apply min-w-80 bg-cream-50 text-stone-900 antialiased;
     }
 
     button,
     a {
-        @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700;
+        @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-600;
+    }
+
+    ::selection {
+        @apply bg-harvest-400 text-forest-950;
+    }
+}
+
+@layer components {
+    .auth-title {
+        font-family: Georgia, 'Times New Roman', serif;
     }
 }

@@ -3,29 +3,28 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\PendingRegistration;
+use App\Services\Auth\PendingRegistrationService;
 use App\Support\Auth\RoleRedirector;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class EmailVerificationNotificationController extends Controller
 {
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(Request $request, PendingRegistrationService $pendingRegistrationService): RedirectResponse
     {
-        $user = $request->user() ?? User::query()->find($request->session()->get('verification.user_id'));
+        if ($request->user()) {
+            return redirect()->to(RoleRedirector::path($request->user()));
+        }
 
-        if (! $user) {
+        $pending = PendingRegistration::query()->find($request->session()->get('registration.pending_id'));
+
+        if (! $pending) {
             return redirect()->route('register');
         }
 
-        if ($user->hasVerifiedEmail()) {
-            return $request->user()
-                ? redirect()->to(RoleRedirector::path($user))
-                : redirect()->route('login');
-        }
+        $pendingRegistrationService->resend($pending, $request);
 
-        $user->sendEmailVerificationNotification();
-
-        return back()->with('status', 'A new verification link was sent to your email.');
+        return back()->with('status', 'A new verification code was sent. The previous code is no longer valid.');
     }
 }

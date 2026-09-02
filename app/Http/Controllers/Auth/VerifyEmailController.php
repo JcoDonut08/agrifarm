@@ -3,30 +3,31 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Support\Auth\RoleRedirector;
+use App\Http\Requests\Auth\OtpCodeRequest;
+use App\Models\PendingRegistration;
+use App\Services\Auth\PendingRegistrationService;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class VerifyEmailController extends Controller
 {
-    public function __invoke(Request $request, int $id, string $hash): RedirectResponse
+    public function __invoke(OtpCodeRequest $request, PendingRegistrationService $pendingRegistrationService): RedirectResponse
     {
-        $user = User::query()->findOrFail($id);
+        $pending = PendingRegistration::query()->find($request->session()->get('registration.pending_id'));
 
-        abort_unless(hash_equals($hash, sha1($user->getEmailForVerification())), 403);
-
-        if (! $user->hasVerifiedEmail() && $user->markEmailAsVerified()) {
-            event(new Verified($user));
+        if (! $pending) {
+            return redirect()->route('register');
         }
 
-        $request->session()->forget('verification.user_id');
+        $user = $pendingRegistrationService->verifyAndCreate(
+            $pending,
+            $request->string('code')->toString(),
+            $request,
+        );
+        event(new Verified($user));
 
-        if ($request->user()?->is($user)) {
-            return redirect()->to(RoleRedirector::path($user))->with('status', 'Your email has been verified.');
-        }
+        $request->session()->forget('registration.pending_id');
 
-        return redirect()->route('login')->with('status', 'Your email has been verified. Sign in to continue.');
+        return redirect()->route('login')->with('status', 'Your email has been verified and your account was created. Sign in to continue.');
     }
 }

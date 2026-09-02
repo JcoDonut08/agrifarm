@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
-use App\Services\Auth\LoginOtpService;
+use App\Support\Auth\RoleRedirector;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,7 +23,7 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('Auth/Login');
     }
 
-    public function store(LoginRequest $request, LoginOtpService $loginOtpService): RedirectResponse
+    public function store(LoginRequest $request): RedirectResponse
     {
         $this->ensureIsNotRateLimited($request);
 
@@ -38,9 +38,10 @@ class AuthenticatedSessionController extends Controller
         }
 
         RateLimiter::clear($this->throttleKey($request));
-        $loginOtpService->begin($user, $request->boolean('remember'), $request);
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
 
-        return redirect()->route('login.otp')->with('status', 'We sent a six-digit login code to your email.');
+        return redirect()->intended(RoleRedirector::path($user));
     }
 
     public function destroy(Request $request): RedirectResponse

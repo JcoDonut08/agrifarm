@@ -187,7 +187,7 @@ class LoginOtpService
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'email' => 'Your pending sign-in has expired. Enter your email and password again.',
+                'code' => 'Your pending sign-in has expired. Enter your email and password again.',
             ]);
         }
 

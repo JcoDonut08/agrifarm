@@ -54,7 +54,7 @@ tests/
   e2e/
 ```
 
-PostgreSQL is the application database. The approved authentication schema contains users, password-reset tokens, and hashed login OTP records. Server-side role middleware protects the three initial role landing routes, and authentication is not finalized until the OTP service succeeds.
+PostgreSQL is the application database. Public registrations remain pending until the email OTP succeeds, then a verified customer account is created. Existing users sign in directly with their password and are redirected to the workspace selected by their server-side role. Password-reset OTPs remain hashed and expiring, and role middleware protects the three initial landing routes.
 
 ## Add only when needed next
 

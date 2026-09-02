@@ -1,8 +1,8 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
-import FormField from '../../Components/FormField';
 import FormStatus from '../../Components/FormStatus';
+import OtpInput from '../../Components/OtpInput';
 import SubmitButton from '../../Components/SubmitButton';
 import AuthLayout from '../../Layouts/AuthLayout';
 
@@ -10,7 +10,7 @@ export default function OtpChallenge({ email, expiresMinutes, resendCooldownSeco
     const { flash } = usePage().props;
     const [resendIn, setResendIn] = useState(resendCooldownSeconds);
     const [resending, setResending] = useState(false);
-    const { data, setData, post, processing, errors } = useForm({ code: '' });
+    const { data, setData, post, processing, errors, clearErrors } = useForm({ code: '' });
 
     useEffect(() => {
         if (resendIn <= 0) return undefined;
@@ -20,69 +20,36 @@ export default function OtpChallenge({ email, expiresMinutes, resendCooldownSeco
 
     function submit(event) {
         event.preventDefault();
-        post('/login/otp', { preserveScroll: true });
+        post('/login/otp');
+    }
+
+    function updateCode(code) {
+        setData('code', code);
+        if (errors.code) clearErrors('code');
     }
 
     function resend() {
         setResending(true);
-        router.post('/login/otp/resend', {}, {
-            preserveScroll: true,
-            onSuccess: () => setResendIn(resendCooldownSeconds),
-            onFinish: () => setResending(false),
-        });
+        router.post('/login/otp/resend', {}, { preserveScroll: true, onSuccess: () => setResendIn(resendCooldownSeconds), onFinish: () => setResending(false) });
     }
 
     return (
-        <AuthLayout
-            eyebrow="Second step"
-            title="Enter your email security code"
-            description={`We sent a six-digit code to ${email}. It expires in ${expiresMinutes} minutes and can only be used once.`}
-            asideTitle="Keep your account secure"
-            asideItems={[
-                'Never share this code with another person.',
-                'Requesting a new code immediately invalidates the previous one.',
-            ]}
-        >
+        <AuthLayout eyebrow="Secure sign in" title="Verify it’s you." description={`Enter the 6-digit code sent to ${email}. It expires in ${expiresMinutes} minutes.`}>
             <Head title="Email security code" />
-            <div className="mb-6">
-                <h2 className="text-xl font-semibold text-emerald-950">Verify this sign-in</h2>
-                <p className="mt-1 text-sm leading-6 text-stone-500">Check your local email log or Mailpit during development.</p>
-            </div>
-
             <FormStatus>{flash?.status}</FormStatus>
 
-            <form className="mt-6 space-y-5" onSubmit={submit} noValidate>
-                <FormField
-                    id="code"
-                    label="Six-digit code"
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    value={data.code}
-                    onChange={(event) => setData('code', event.target.value.replace(/\D/g, '').slice(0, 6))}
-                    error={errors.code}
-                    className="[&_input]:text-center [&_input]:text-2xl [&_input]:font-semibold [&_input]:tracking-[0.35em]"
-                    required
-                    autoFocus
-                />
-                <SubmitButton processing={processing}>{processing ? 'Verifying…' : 'Verify and sign in'}</SubmitButton>
+            <form className={`${flash?.status ? 'mt-5' : ''} space-y-4`} onSubmit={submit} noValidate>
+                <OtpInput value={data.code} onChange={updateCode} error={errors.code} disabled={processing} />
+                <SubmitButton processing={processing} disabled={processing || data.code.length !== 6}>{processing ? 'Verifying...' : 'Verify & sign in'}</SubmitButton>
             </form>
 
-            <div className="mt-5 flex flex-col items-center gap-3 border-t border-stone-200 pt-5 text-sm sm:flex-row sm:justify-between">
-                <button
-                    type="button"
-                    onClick={resend}
-                    disabled={resending || resendIn > 0}
-                    className="min-h-10 rounded-lg px-2 font-semibold text-emerald-800 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:text-stone-400"
-                >
-                    {resending ? 'Sending…' : resendIn > 0 ? `Resend in ${resendIn}s` : 'Send a new code'}
+            <div className="mt-5 flex flex-col items-center gap-2 border-t border-stone-200 pt-4 text-sm sm:flex-row sm:justify-between">
+                <button type="button" onClick={resend} disabled={resending || resendIn > 0} className="min-h-10 rounded-lg px-2 font-bold text-forest-700 hover:bg-forest-50 disabled:cursor-not-allowed disabled:text-stone-400">
+                    {resending ? 'Sending...' : resendIn > 0 ? `Resend code in ${resendIn}s` : 'Send a new code'}
                 </button>
-                <Link href="/login" className="rounded-lg px-2 py-2 font-medium text-stone-600 hover:text-emerald-900">
-                    Start sign-in again
-                </Link>
+                <Link href="/login" className="rounded-lg px-2 py-2 font-semibold text-stone-600 hover:text-forest-800">Use a different account</Link>
             </div>
+            <p className="mt-3 text-center text-xs leading-5 text-stone-500">Never share this code. A new code immediately replaces the previous one.</p>
         </AuthLayout>
     );
 }

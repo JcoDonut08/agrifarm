@@ -13,12 +13,12 @@ AgriFarm is an undergraduate thesis project for an agricultural marketplace and 
 ## Authentication foundation
 
 - Customer-only public registration with recorded Terms and Privacy acceptance
-- Signed customer email verification
+- Six-digit customer email verification after registration
 - Shared credential form for Customer, Seller, and CENRO Admin accounts
 - Hashed, single-use six-digit email OTP before the authenticated session is created
 - OTP expiration, attempt limits, resend cooldown, hourly resend limit, and previous-code invalidation
 - Server-side role middleware and role-specific redirects
-- Laravel password-reset links for every role
+- Email OTP verification before password reset for every role
 - Session invalidation and CSRF-token renewal on logout
 - Public Terms of Use and Privacy Notice
 
@@ -63,9 +63,24 @@ npm run dev
 
 Open `http://127.0.0.1:8000`.
 
-## Local email testing
+## Gmail OTP delivery
 
-The default development mailer is `log`, so verification links, login OTPs, and password-reset links are written to `storage/logs/laravel.log`. No paid service or production SMTP is configured. Mailpit can be used instead by pointing Laravel's SMTP settings at a locally running Mailpit instance.
+AgriFarm sends registration, sign-in, and password-reset OTPs with Laravel Notifications and the built-in SMTP mailer. To deliver them to real Gmail inboxes, turn on 2-Step Verification for the sending Google account, create a Google App Password, and set these values in `.env`:
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME="your-agri-email@gmail.com"
+MAIL_PASSWORD="your-16-character-google-app-password"
+MAIL_FROM_ADDRESS="your-agri-email@gmail.com"
+MAIL_FROM_NAME="AgriFarm Marketplace"
+```
+
+Use the Google App Password, not the normal Gmail account password. After changing `.env`, run `php artisan config:clear`. Never commit the real email address or App Password.
+
+For offline development, set `MAIL_MAILER=log`; OTP messages will then be written to `storage/logs/laravel.log` instead of being delivered.
 
 ## Development accounts
 

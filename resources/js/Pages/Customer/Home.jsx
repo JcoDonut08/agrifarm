@@ -5,12 +5,14 @@ import RoleWelcome from '../../Components/RoleWelcome';
 export default function Home() {
     return (
         <>
-            <Head title="Customer area" />
+            <Head title="Customer workspace" />
             <RoleWelcome
-                title="Customer area"
-                introduction="Your verified customer account is signed in and protected by email code verification."
-                label="Authentication foundation ready"
-                detail="Marketplace, ordering, and customer profile features are intentionally outside this implementation and will be added in later project phases."
+                title="Customer workspace"
+                introduction="Your secure AgriFarm account is ready for the marketplace experience being prepared for customers."
+                label="Your marketplace access is ready"
+                detail="Browsing produce, ordering, and customer account tools will be introduced in a future marketplace phase. For now, your verified account and secure sign-in are active."
+                role="customer"
+                availableNow={['Verified customer access', 'Email code protection', 'Secure sign out']}
             />
         </>
     );

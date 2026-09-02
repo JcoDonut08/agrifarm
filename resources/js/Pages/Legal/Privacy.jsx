@@ -34,7 +34,7 @@ const sections = [
     {
         title: 'Implemented security practices',
         content: [
-            'The current authentication foundation uses Laravel password hashing, signed email-verification links, hashed and expiring login codes, failed-attempt and resend limits, server-side role middleware, session regeneration after authentication, and session invalidation on logout. Development email can be written to a local log or viewed in Mailpit.',
+            'The current authentication foundation uses Laravel password hashing, hashed and expiring registration and password-reset codes, failed-attempt and resend limits, server-side role middleware, session regeneration after authentication, and session invalidation on logout. Development email can be written to a local log or viewed in Mailpit.',
             'No system can promise absolute security. These practices describe the implemented foundation and are not a claim of penetration testing, external audit, encryption of every stored field, legal certification, or production-readiness.',
         ],
     },

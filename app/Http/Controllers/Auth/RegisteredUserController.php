@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use App\Models\PendingRegistration;
+use App\Services\Auth\PendingRegistrationService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,29 +17,24 @@ class RegisteredUserController extends Controller
         return Inertia::render('Auth/Register');
     }
 
-    public function store(RegisterRequest $request): RedirectResponse
+    public function store(RegisterRequest $request, PendingRegistrationService $pendingRegistrationService): RedirectResponse
     {
-        $user = DB::transaction(function () use ($request): User {
-            $user = new User([
+        $pending = PendingRegistration::query()->updateOrCreate(
+            ['email' => $request->string('email')->toString()],
+            [
                 'name' => $request->string('name')->toString(),
-                'email' => $request->string('email')->toString(),
                 'password' => $request->string('password')->toString(),
                 'terms_accepted_at' => now(),
                 'privacy_accepted_at' => now(),
-            ]);
+            ],
+        );
 
-            $user->forceFill(['role' => UserRole::Customer])->save();
-
-            return $user;
-        });
-
-        event(new Registered($user));
-
-        $request->session()->put('verification.user_id', $user->getKey());
+        $request->session()->put('registration.pending_id', $pending->getKey());
+        $pendingRegistrationService->issue($pending);
 
         return redirect()->route('verification.notice')->with(
             'status',
-            'Account created. Check your email for the verification link before entering the customer area.',
+            'We sent a six-digit verification code to your email. Your account will be created after verification.',
         );
     }
 }

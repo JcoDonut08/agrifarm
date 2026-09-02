@@ -48,6 +48,14 @@ class User extends Authenticatable implements MustVerifyEmailContract
     }
 
     /**
+     * @return HasMany<AccountOtp, $this>
+     */
+    public function accountOtps(): HasMany
+    {
+        return $this->hasMany(AccountOtp::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
