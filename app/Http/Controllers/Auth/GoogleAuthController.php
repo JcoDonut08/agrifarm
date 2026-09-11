@@ -114,6 +114,8 @@ class GoogleAuthController extends Controller
         try {
             $user = DB::transaction(function () use ($user, $email, $profile): User {
                 if ($user) {
+                    $user->forceFill(['avatar_url' => $this->profilePhotoUrl($profile)])->save();
+
                     if (! $user->hasVerifiedEmail()) {
                         $user->markEmailAsVerified();
                     }
@@ -130,6 +132,7 @@ class GoogleAuthController extends Controller
                     'privacy_accepted_at' => now(),
                 ]);
                 $user->forceFill([
+                    'avatar_url' => $this->profilePhotoUrl($profile),
                     'role' => UserRole::Customer,
                     'email_verified_at' => now(),
                 ])->save();
@@ -152,6 +155,19 @@ class GoogleAuthController extends Controller
         $request->session()->regenerate();
 
         return redirect()->intended(RoleRedirector::path($user));
+    }
+
+    /** @param array<string, mixed> $profile */
+    private function profilePhotoUrl(array $profile): ?string
+    {
+        $picture = $profile['picture'] ?? null;
+
+        return is_string($picture)
+            && strlen($picture) <= 2048
+            && filter_var($picture, FILTER_VALIDATE_URL)
+            && parse_url($picture, PHP_URL_SCHEME) === 'https'
+                ? $picture
+                : null;
     }
 
     /** @param array<string, mixed>|null $oauth */

@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../views/**/*.blade.php';
@@ -9,6 +11,7 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: Georgia, 'Times New Roman', serif;
 
     --color-forest-50: #effbef;
     --color-forest-100: #d9f5dc;
@@ -30,15 +33,24 @@
     --color-tomato-400: #f47b58;
     --color-tomato-500: #e85d3f;
     --color-aubergine-500: #7752a8;
+    --color-night-700: #30352f;
+    --color-night-800: #232723;
+    --color-night-900: #191c19;
+    --color-night-950: #101210;
 }
 
 @layer base {
     html {
         @apply bg-cream-50;
+        scroll-behavior: smooth;
+    }
+
+    html.dark {
+        @apply bg-night-950;
     }
 
     body {
-        @apply min-w-80 bg-cream-50 text-stone-900 antialiased;
+        @apply min-w-80 bg-cream-50 text-stone-900 antialiased transition-colors duration-200 dark:bg-night-950 dark:text-stone-100;
     }
 
     button,

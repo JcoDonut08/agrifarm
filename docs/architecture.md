@@ -54,7 +54,7 @@ tests/
   e2e/
 ```
 
-PostgreSQL is the application database. Public registrations remain pending until the email OTP succeeds, then a verified customer account is created. Existing users sign in directly with their password and are redirected to the workspace selected by their server-side role. Password-reset OTPs remain hashed and expiring, and role middleware protects the three initial landing routes.
+PostgreSQL is the application database. Public registrations remain pending until the email OTP succeeds, then a verified customer account is created. Existing users sign in directly with their password. Customers return to the marketplace homepage, while sellers and CENRO administrators are redirected to the workspace selected by their server-side role. Password-reset OTPs remain hashed and expiring, and role middleware protects the three initial workspace routes.
 
 ## Add only when needed next
 

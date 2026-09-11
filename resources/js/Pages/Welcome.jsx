@@ -1,80 +1,123 @@
-import { Head, Link } from '@inertiajs/react';
-
+﻿import { Head, Link, usePage } from '@inertiajs/react';
 import GuestLayout from '../Layouts/GuestLayout';
+import Marketplace from './Marketplace';
+import Cart from './Cart';
+import Favorites from './Favorites';
+import Notifications from './Notifications';
+import Icon from '../Components/Storefront/Icon';
+import ProductCard from '../Components/Storefront/ProductCard';
+import { ShopProvider } from '../Components/Storefront/ShopContext';
+import { communities, marketHref, products } from '../Components/Storefront/catalog';
 
-const accessTypes = [
-    { label: 'Customers', description: 'Create and verify an account for future marketplace access.', action: 'Create account', href: '/register' },
-    { label: 'Sellers', description: 'Use the seller account issued by the AgriFarm team.', action: 'Seller sign in', href: '/login' },
-    { label: 'CENRO administrators', description: 'Enter through the same secure account process.', action: 'Admin sign in', href: '/login' },
-];
+const popularProducts = [products[0], products[1], products[2], products[6]];
+const newProducts = [products[3], products[4], products[5], products[9]];
 
 export default function Welcome() {
+    const { url, props } = usePage();
+    const query = new URLSearchParams(url.split('?')[1]?.split('#')[0] || '');
+    const page = query.get('page') || 'home';
+    const market = page === 'marketplace';
+    const extraPage = { cart: Cart, favorites: Favorites, notifications: Notifications }[page];
+    const ExtraPage = extraPage;
+    const user = props.auth?.user;
+    const accountDestination = user
+        ? ({ customer: '/customer', seller: '/seller/dashboard', cenro_admin: '/admin/dashboard' }[user.role] || '/')
+        : '/register';
+
     return (
-        <GuestLayout>
-            <Head title="Local agricultural marketplace" />
-
-            <section className="overflow-hidden border-b border-forest-950/10 bg-white">
-                <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14 lg:px-8 lg:py-18">
-                    <div>
-                        <span className="inline-flex rounded-full bg-forest-100 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.15em] text-forest-700">
-                            Local agriculture, one secure account
-                        </span>
-                        <h1 className="mt-5 max-w-2xl text-4xl font-bold tracking-[-0.035em] text-forest-950 sm:text-5xl lg:text-6xl">
-                            Your way into the AgriFarm marketplace.
-                        </h1>
-                        <p className="mt-5 max-w-xl text-base leading-7 text-stone-600 sm:text-lg">
-                            AgriFarm is preparing a digital marketplace for local harvests. Create a customer account or sign in with your assigned role to access your workspace.
-                        </p>
-
-                        <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                            <Link href="/login" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-forest-700 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-forest-800">Sign in to AgriFarm</Link>
-                            <Link href="/register" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-forest-200 bg-white px-6 py-3 text-sm font-bold text-forest-800 hover:border-forest-300 hover:bg-forest-50">Create account</Link>
+        <ShopProvider>
+            <GuestLayout storefront market={market}>
+                <Head title={{ marketplace: 'Marketplace', cart: 'Your cart', favorites: 'Favorites', notifications: 'Notifications' }[page] || 'Fresh from your community'} />
+                {ExtraPage ? <ExtraPage /> : market ? <Marketplace key={url} initialBarangay={query.get('barangay') || ''} /> : <>
+                    <section className="home-hero" aria-labelledby="hero-heading">
+                        <img
+                            className="hero-photo"
+                            src="/images/market-hero-v2.png"
+                            alt="A basket of fresh leafy greens, tomatoes, carrots, and eggplants in a sunny community garden"
+                            fetchPriority="high"
+                        />
+                        <div className="hero-copy-surface" aria-hidden="true" />
+                        <div className="hero-foliage" aria-hidden="true"><i /><i /><i /><i /><i /></div>
+                        <div className="store-container hero-inner">
+                            <div className="hero-copy">
+                                <h1 id="hero-heading">Fresh from<br />your community.</h1>
+                                <p className="hero-description">Shop locally grown produce.<br />Support the farmers of Pasig.</p>
+                                <Link href={marketHref()} className="store-button hero-button">
+                                    Explore marketplace <Icon name="arrow" />
+                                </Link>
+                                <div className="hero-values">
+                                    <div><Icon name="sprout" /><span>Local farmers</span></div>
+                                    <div><Icon name="people" /><span>Stronger communities</span></div>
+                                    <div><Icon name="leaf" /><span>A greener tomorrow</span></div>
+                                </div>
+                            </div>
+                            <span className="hero-handwriting" aria-hidden="true">Good<br />Food &hearts;<br />Brighter<br />Pasig &hearts;</span>
                         </div>
-
-                        <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-stone-600">
-                            <span className="flex items-center gap-2"><CheckIcon /> Email verification</span>
-                            <span className="flex items-center gap-2"><CheckIcon /> Secure password sign-in</span>
-                            <span className="flex items-center gap-2"><CheckIcon /> Role-protected access</span>
-                        </div>
+                    </section>
+                    <div className="store-container home-content">
+                        <section className="home-section" aria-labelledby="communities-heading">
+                            <div className="section-heading">
+                                <div><h2 id="communities-heading">Featured Barangays</h2><p>Good things grow close to home.</p></div>
+                            </div>
+                            <div className="community-grid">
+                                {communities.map((community, index) => (
+                                    <Link href={marketHref(community.name)} className="community-card" key={community.name}>
+                                        <div
+                                            className="community-photo"
+                                            role="img"
+                                            aria-label={`Illustration of a community garden in Barangay ${community.name}`}
+                                            style={{ backgroundPosition: `${index * 50}% 50%` }}
+                                        />
+                                        <div className="community-copy">
+                                            <h3>{community.name}</h3>
+                                            <p>{community.description}</p>
+                                            <span>Explore products <Icon name="arrow" size={17} /></span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                        <section className="featured-banner" aria-labelledby="featured-heading">
+                            <div className="featured-photo" role="img" aria-label="Fresh pechay with crisp white stalks and green leaves" />
+                            <div className="featured-leaves" aria-hidden="true"><Icon name="leaf" size={110} /><Icon name="leaf" size={100} /></div>
+                            <div className="featured-copy">
+                                <p className="featured-eyebrow"><Icon name="trophy" size={25} /> #1 FEATURED BARANGAY</p>
+                                <h2 id="featured-heading">Barangay Rosario</h2>
+                                <div className="featured-rating" aria-label="Sample rating: 4.9 out of 5"><span aria-hidden="true">★★★★★</span> 4.9</div>
+                                <p>Rooted in community. Grown with care.</p>
+                                <Link className="store-button white-button" href={marketHref('Rosario')}>Shop Rosario <Icon name="arrow" /></Link>
+                            </div>
+                            <span className="featured-price">Fresh Pechay · ₱35 / bunch</span>
+                        </section>
+                        <ProductSection id="popular-heading" title="Popular Products" description="Everyday favorites from neighborhood growers." products={popularProducts} />
+                        <ProductSection id="fresh-heading" title="Fresh New Products" description="A fresh selection for your next meal." products={newProducts} />
+                        <section className="harvest-cta" aria-labelledby="harvest-heading">
+                            <div>
+                                <h2 id="harvest-heading">READY TO GRAB<br />THE HARVEST?</h2>
+                                <p>Browse the full marketplace or create an account to support<br className="desktop-break" /> local growers directly.</p>
+                            </div>
+                            <div className="harvest-actions">
+                                <Link href={marketHref()} className="store-button lime-button">Browse marketplace</Link>
+                                <Link href={accountDestination} className="store-button white-button">{user ? 'Open my account' : 'Create account'}</Link>
+                            </div>
+                        </section>
                     </div>
-
-                    <div className="relative min-h-80 overflow-hidden rounded-[2rem] bg-forest-900 shadow-[0_30px_80px_-36px_rgba(11,31,23,0.55)] sm:min-h-[30rem]">
-                        <img src="/images/agrifarm-market-hero.png" alt="A Filipino farmer arranging freshly harvested vegetables at a local collection point" className="absolute inset-0 size-full object-cover object-[68%_center]" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-forest-950/80 via-transparent to-transparent" />
-                        <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-                            <p className="text-sm font-bold uppercase tracking-[0.16em] text-harvest-400">Built around local harvests</p>
-                            <p className="mt-2 max-w-lg text-xl font-bold sm:text-2xl">A marketplace experience designed for Philippine farming communities.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-                <div className="max-w-2xl">
-                    <p className="text-xs font-bold uppercase tracking-[0.17em] text-forest-600">Choose your access</p>
-                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-forest-950 sm:text-3xl">One sign-in, separate workspaces</h2>
-                    <p className="mt-3 leading-7 text-stone-600">Use the account type assigned to you. Public registration always creates a customer account.</p>
-                </div>
-
-                <div className="mt-8 grid gap-4 md:grid-cols-3">
-                    {accessTypes.map((type, index) => (
-                        <article key={type.label} className="flex flex-col rounded-2xl border border-forest-950/10 bg-white p-5 shadow-sm sm:p-6">
-                            <span className="grid size-10 place-items-center rounded-xl bg-forest-100 text-sm font-bold text-forest-700">0{index + 1}</span>
-                            <h3 className="mt-5 text-lg font-bold text-forest-950">{type.label}</h3>
-                            <p className="mt-2 flex-1 text-sm leading-6 text-stone-600">{type.description}</p>
-                            <Link href={type.href} className="mt-5 inline-flex min-h-10 items-center font-bold text-forest-700 hover:text-forest-900">{type.action} <span aria-hidden="true" className="ml-2">→</span></Link>
-                        </article>
-                    ))}
-                </div>
-            </section>
-        </GuestLayout>
+                </>}
+            </GuestLayout>
+        </ShopProvider>
     );
 }
 
-function CheckIcon() {
+function ProductSection({ id, title, description, products }) {
     return (
-        <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-forest-100 text-forest-700">
-            <svg viewBox="0 0 20 20" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m5 10 3 3 7-7" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </span>
+        <section className="home-section" aria-labelledby={id}>
+            <div className="section-heading">
+                <div><h2 id={id}>{title}</h2><p>{description}</p></div>
+                <Link className="section-link" href={marketHref()}>View all <Icon name="arrow" size={17} /></Link>
+            </div>
+            <div className="home-product-grid">
+                {products.map((product) => <ProductCard product={product} key={product.id} />)}
+            </div>
+        </section>
     );
 }

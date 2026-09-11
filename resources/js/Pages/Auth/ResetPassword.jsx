@@ -15,9 +15,9 @@ export default function ResetPassword({ email }) {
     return (
         <AuthLayout eyebrow="Email verified" title="Create a new password." description="Choose a strong password you have not used for this account before.">
             <Head title="Reset password" />
-            <div className="mb-5 flex items-center gap-3 rounded-xl border border-forest-200 bg-forest-50 px-4 py-3 text-sm text-forest-950">
+            <div className="mb-5 flex items-center gap-3 rounded-xl border border-forest-200 bg-forest-50 px-4 py-3 text-sm text-forest-950 dark:border-white/15 dark:bg-night-800 dark:text-stone-100">
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-forest-700 text-white" aria-hidden="true">✓</span>
-                <span><strong className="block">Email verified</strong><span className="text-xs text-stone-600">{email}</span></span>
+                <span><strong className="block">Email verified</strong><span className="text-xs text-stone-600 dark:text-stone-300">{email}</span></span>
             </div>
             <form className="space-y-4" onSubmit={submit} noValidate>
                 <PasswordField id="password" label="New password" autoComplete="new-password" hint="Use at least 8 characters that are difficult to guess." value={data.password} onChange={(event) => setData('password', event.target.value)} error={errors.password} required autoFocus />

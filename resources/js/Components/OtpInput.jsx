@@ -56,7 +56,7 @@ export default function OtpInput({ value, onChange, error, disabled = false }) {
 
     return (
         <fieldset>
-            <legend className="block w-full text-center text-sm font-semibold text-stone-800">6-digit code</legend>
+            <legend className="block w-full text-center text-sm font-semibold text-stone-800 dark:text-stone-200">6-digit code</legend>
             <div className="mt-3 grid grid-cols-6 gap-2 sm:gap-3" onPaste={handlePaste}>
                 {digits.map((digit, index) => (
                     <input
@@ -73,13 +73,13 @@ export default function OtpInput({ value, onChange, error, disabled = false }) {
                         aria-label={`Code digit ${index + 1} of 6`}
                         aria-describedby={describedBy}
                         aria-invalid={Boolean(error)}
-                        className={`aspect-square min-w-0 rounded-xl border bg-cream-50 text-center text-xl font-bold text-forest-950 shadow-sm outline-none transition focus:bg-white focus:ring-4 focus:ring-harvest-400/35 sm:text-2xl ${
-                            error ? 'border-red-500 focus:border-red-600' : 'border-forest-200 focus:border-forest-600'
+                        className={`aspect-square min-w-0 rounded-xl border bg-cream-50 text-center text-xl font-bold text-forest-950 shadow-sm outline-none transition focus:bg-white focus:ring-4 focus:ring-harvest-400/35 dark:bg-night-800 dark:text-white dark:focus:bg-night-700 sm:text-2xl ${
+                            error ? 'border-red-500 focus:border-red-600' : 'border-forest-200 focus:border-forest-600 dark:border-white/15'
                         }`}
                     />
                 ))}
             </div>
-            {!error && <p id="code-hint" className="mt-2 text-center text-xs text-stone-500">Type or paste the complete code.</p>}
+            {!error && <p id="code-hint" className="mt-2 text-center text-xs text-stone-500 dark:text-stone-400">Type or paste the complete code.</p>}
             {error && <p id="code-error" className="mt-2 text-sm text-red-700" role="alert">{error}</p>}
         </fieldset>
     );

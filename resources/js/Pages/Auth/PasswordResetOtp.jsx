@@ -50,12 +50,12 @@ export default function PasswordResetOtp({ email, expiresMinutes, resendCooldown
             </form>
 
             <div className="mt-5 flex flex-col items-center gap-2 border-t border-stone-200 pt-4 text-sm sm:flex-row sm:justify-between">
-                <button type="button" onClick={resend} disabled={resending || resendIn > 0} className="min-h-10 rounded-lg px-2 font-bold text-forest-700 hover:bg-forest-50 disabled:cursor-not-allowed disabled:text-stone-400">
+                <button type="button" onClick={resend} disabled={resending || resendIn > 0} className="min-h-10 rounded-lg px-2 font-bold text-forest-700 hover:bg-forest-50 disabled:cursor-not-allowed disabled:text-stone-400 dark:text-forest-300 dark:hover:bg-white/10">
                     {resending ? 'Sending...' : resendIn > 0 ? `Resend code in ${resendIn}s` : 'Resend code'}
                 </button>
-                <Link href="/forgot-password" className="rounded-lg px-2 py-2 font-semibold text-stone-600 hover:text-forest-800">Change email</Link>
+                <Link href="/forgot-password" className="rounded-lg px-2 py-2 font-semibold text-stone-600 hover:text-forest-800 dark:text-stone-300 dark:hover:text-white">Change email</Link>
             </div>
-            <p className="mt-3 text-center text-xs leading-5 text-stone-500">The new-password form opens only after this code is verified.</p>
+            <p className="mt-3 text-center text-xs leading-5 text-stone-500 dark:text-stone-400">The new-password form opens only after this code is verified.</p>
         </AuthLayout>
     );
 }

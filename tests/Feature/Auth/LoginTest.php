@@ -23,7 +23,7 @@ class LoginTest extends TestCase
             'email' => $user->email,
             'password' => 'StrongPassword123!',
             'remember' => true,
-        ])->assertRedirect('/customer');
+        ])->assertRedirect('/');
 
         $this->assertAuthenticatedAs($user);
         $this->assertDatabaseCount('login_otps', 0);
@@ -66,7 +66,7 @@ class LoginTest extends TestCase
     public function test_each_role_is_redirected_directly_to_its_workspace(): void
     {
         $cases = [
-            [UserRole::Customer, '/customer'],
+            [UserRole::Customer, '/'],
             [UserRole::Seller, '/seller/dashboard'],
             [UserRole::CenroAdmin, '/admin/dashboard'],
         ];

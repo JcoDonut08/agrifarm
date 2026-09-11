@@ -33,7 +33,7 @@ export default function Register() {
                     <PasswordField id="password" label="Password" autoComplete="new-password" hint="Use at least 8 characters that are difficult to guess." value={data.password} onChange={(event) => setData('password', event.target.value)} error={errors.password} required />
                 </div>
 
-                <fieldset className="rounded-2xl border border-forest-200 bg-forest-50 p-4">
+                <fieldset className="rounded-2xl border border-forest-200 bg-forest-50 p-4 dark:border-white/15 dark:bg-night-800">
                     <legend className="sr-only">Legal acceptance</legend>
                     <ConsentCheckbox checked={data.legal} onChange={(checked) => {
                         setData('legal', checked);
@@ -48,7 +48,7 @@ export default function Register() {
 
             <GoogleAuthButton onClick={continueWithGoogle} error={errors.google} />
 
-            <p className="mt-5 text-center text-sm text-stone-600">Already registered? <Link href="/login" className="font-bold text-forest-700">Login</Link></p>
+            <p className="mt-5 text-center text-sm text-stone-600 dark:text-stone-300">Already registered? <Link href="/login" className="font-bold text-forest-700 dark:text-forest-300">Login</Link></p>
         </AuthLayout>
     );
 }
@@ -56,7 +56,7 @@ export default function Register() {
 function ConsentCheckbox({ checked, onChange, error, children }) {
     return (
         <div>
-            <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-stone-700">
+            <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-stone-700 dark:text-stone-300">
                 <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="mt-1 size-4 shrink-0 rounded border-forest-300 text-forest-700 focus:ring-harvest-400" />
                 <span>{children}</span>
             </label>

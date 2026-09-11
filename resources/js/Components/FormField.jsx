@@ -14,7 +14,7 @@ export default function FormField({
 
     return (
         <div className={className}>
-            <label htmlFor={id} className="block text-sm font-medium text-stone-800">
+            <label htmlFor={id} className="block text-sm font-medium text-stone-800 dark:text-stone-200">
                 {label}
             </label>
             <div className="relative mt-2">
@@ -23,16 +23,16 @@ export default function FormField({
                     name={id}
                     aria-describedby={describedBy}
                     aria-invalid={Boolean(error)}
-                    className={`block min-h-12 w-full rounded-xl border bg-cream-50 px-3.5 py-2.5 text-base text-stone-900 shadow-sm outline-none transition placeholder:text-stone-400 read-only:bg-stone-50 read-only:text-stone-600 focus:bg-white focus:ring-4 focus:ring-harvest-400/30 ${
+                    className={`block min-h-12 w-full rounded-xl border bg-cream-50 px-3.5 py-2.5 text-base text-stone-900 shadow-sm outline-none transition placeholder:text-stone-400 read-only:bg-stone-50 read-only:text-stone-600 focus:bg-white focus:ring-4 focus:ring-harvest-400/30 dark:bg-night-800 dark:text-white dark:placeholder:text-stone-500 dark:read-only:bg-night-950 dark:read-only:text-stone-400 dark:focus:bg-night-700 ${
                         leadingIcon ? 'pl-11' : ''
-                    } ${endAdornment ? 'pr-12' : ''} ${error ? 'border-red-500 focus:border-red-600' : 'border-forest-200 focus:border-forest-600'} ${inputClassName}`}
+                    } ${endAdornment ? 'pr-12' : ''} ${error ? 'border-red-500 focus:border-red-600' : 'border-forest-200 focus:border-forest-600 dark:border-white/15'} ${inputClassName}`}
                     {...inputProps}
                 />
                 {leadingIcon && <div className="pointer-events-none absolute inset-y-0 left-0 flex w-11 items-center justify-center text-forest-600">{leadingIcon}</div>}
                 {endAdornment && <div className="absolute inset-y-0 right-1 flex items-center">{endAdornment}</div>}
             </div>
             {hint && !error && (
-                <p id={`${id}-hint`} className="mt-1.5 text-sm leading-5 text-stone-500">
+                <p id={`${id}-hint`} className="mt-1.5 text-sm leading-5 text-stone-500 dark:text-stone-400">
                     {hint}
                 </p>
             )}

@@ -10,7 +10,7 @@ class RoleRedirector
     public static function path(User $user): string
     {
         return match ($user->role) {
-            UserRole::Customer => route('customer.home'),
+            UserRole::Customer => route('home'),
             UserRole::Seller => route('seller.dashboard'),
             UserRole::CenroAdmin => route('admin.dashboard'),
         };

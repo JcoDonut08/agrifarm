@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class GoogleAuthenticationTest extends TestCase
@@ -57,12 +58,15 @@ class GoogleAuthenticationTest extends TestCase
 
         $this->withSession(['oauth.google' => $this->oauthSession('register')])
             ->get('/auth/google/callback?state=valid-state&code=authorization-code')
-            ->assertRedirect('/customer');
+            ->assertRedirect('/');
 
         $user = User::query()->sole();
         $this->assertAuthenticatedAs($user);
         $this->assertSame('google@example.test', $user->email);
         $this->assertSame('Google Customer', $user->name);
+        $this->assertSame('https://lh3.googleusercontent.com/test-avatar', $user->avatar_url);
+        $this->get('/')->assertInertia(fn (Assert $page) => $page
+            ->where('auth.user.avatar_url', $user->avatar_url));
         $this->assertSame(UserRole::Customer, $user->role);
         $this->assertTrue($user->hasVerifiedEmail());
         $this->assertNotNull($user->terms_accepted_at);
@@ -76,7 +80,7 @@ class GoogleAuthenticationTest extends TestCase
 
         $this->withSession(['oauth.google' => $this->oauthSession('login')])
             ->get('/auth/google/callback?state=valid-state&code=authorization-code')
-            ->assertRedirect('/customer');
+            ->assertRedirect('/');
 
         $user = User::query()->sole();
         $this->assertAuthenticatedAs($user);
@@ -93,16 +97,43 @@ class GoogleAuthenticationTest extends TestCase
         $user = User::factory()->create([
             'email' => 'existing@example.test',
             'password' => 'ExistingPassword123!',
+            'avatar_url' => 'https://lh3.googleusercontent.com/old-avatar',
         ]);
         $this->fakeGoogleProfile($user->email, 'Different Google Name');
 
         $this->withSession(['oauth.google' => $this->oauthSession('login')])
             ->get('/auth/google/callback?state=valid-state&code=authorization-code')
-            ->assertRedirect('/customer');
+            ->assertRedirect('/');
 
         $this->assertAuthenticatedAs($user);
         $this->assertTrue(Hash::check('ExistingPassword123!', $user->fresh()->password));
         $this->assertSame($user->name, $user->fresh()->name);
+        $this->assertSame('https://lh3.googleusercontent.com/test-avatar', $user->fresh()->avatar_url);
+    }
+
+    public function test_missing_google_photo_clears_the_previous_photo_and_still_allows_login(): void
+    {
+        $user = User::factory()->create(['avatar_url' => 'https://lh3.googleusercontent.com/old-avatar']);
+        $this->fakeGoogleProfile($user->email, $user->name, null);
+
+        $this->withSession(['oauth.google' => $this->oauthSession('login')])
+            ->get('/auth/google/callback?state=valid-state&code=authorization-code')
+            ->assertRedirect('/');
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertNull($user->fresh()->avatar_url);
+    }
+
+    public function test_google_photo_with_an_unsafe_scheme_is_not_saved(): void
+    {
+        $this->fakeGoogleProfile('unsafe-photo@example.test', 'Customer', 'javascript:alert(1)');
+
+        $this->withSession(['oauth.google' => $this->oauthSession('login')])
+            ->get('/auth/google/callback?state=valid-state&code=authorization-code')
+            ->assertRedirect('/');
+
+        $this->assertNull(User::query()->sole()->avatar_url);
+        $this->assertAuthenticated();
     }
 
     public function test_google_callback_rejects_an_invalid_state(): void
@@ -129,7 +160,7 @@ class GoogleAuthenticationTest extends TestCase
         ];
     }
 
-    private function fakeGoogleProfile(string $email, string $name): void
+    private function fakeGoogleProfile(string $email, string $name, ?string $picture = 'https://lh3.googleusercontent.com/test-avatar'): void
     {
         Http::fake([
             'https://oauth2.googleapis.com/token' => Http::response([
@@ -141,6 +172,7 @@ class GoogleAuthenticationTest extends TestCase
                 'email' => $email,
                 'email_verified' => true,
                 'name' => $name,
+                ...($picture !== null ? ['picture' => $picture] : []),
             ]),
         ]);
     }

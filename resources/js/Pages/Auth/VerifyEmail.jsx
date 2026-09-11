@@ -50,12 +50,12 @@ export default function VerifyEmail({ email, authenticated, expiresMinutes, rese
             </form>
 
             <div className="mt-5 flex flex-col items-center gap-2 border-t border-stone-200 pt-4 text-sm sm:flex-row sm:justify-between">
-                <button type="button" disabled={sending || resendIn > 0} onClick={resend} className="min-h-10 rounded-lg px-2 font-bold text-forest-700 hover:bg-forest-50 disabled:cursor-not-allowed disabled:text-stone-400">
+                <button type="button" disabled={sending || resendIn > 0} onClick={resend} className="min-h-10 rounded-lg px-2 font-bold text-forest-700 hover:bg-forest-50 disabled:cursor-not-allowed disabled:text-stone-400 dark:text-forest-300 dark:hover:bg-white/10">
                     {sending ? 'Sending...' : resendIn > 0 ? `Resend code in ${resendIn}s` : 'Resend code'}
                 </button>
                 {authenticated
-                    ? <Link href="/logout" method="post" as="button" className="rounded-lg px-2 py-2 font-semibold text-stone-600 hover:text-forest-800">Sign out</Link>
-                    : <Link href="/register" className="rounded-lg px-2 py-2 font-semibold text-stone-600 hover:text-forest-800">Change email</Link>}
+                    ? <Link href="/logout" method="post" as="button" className="rounded-lg px-2 py-2 font-semibold text-stone-600 hover:text-forest-800 dark:text-stone-300 dark:hover:text-white">Sign out</Link>
+                    : <Link href="/register" className="rounded-lg px-2 py-2 font-semibold text-stone-600 hover:text-forest-800 dark:text-stone-300 dark:hover:text-white">Change email</Link>}
             </div>
         </AuthLayout>
     );

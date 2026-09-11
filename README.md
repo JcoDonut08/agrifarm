@@ -88,7 +88,7 @@ The seeder creates these accounts only outside production:
 
 | Role | Email | Password | Destination |
 | --- | --- | --- | --- |
-| Customer | `customer@agrifarm.test` | `AgriFarm123!` | `/customer` |
+| Customer | `customer@agrifarm.test` | `AgriFarm123!` | `/` (homepage) |
 | Seller | `seller@agrifarm.test` | `AgriFarm123!` | `/seller/dashboard` |
 | CENRO Admin | `admin@agrifarm.test` | `AgriFarm123!` | `/admin/dashboard` |
 
@@ -119,3 +119,7 @@ See [docs/architecture.md](docs/architecture.md) for the approved structure and 
 ## Deferred work
 
 Profile editing, customer and seller profiles, seller store setup, marketplace features, orders, inventory, forecasting integration, reporting, and deployment are not part of this authentication phase.
+
+Storefront visual conventions: [Design system](docs/design-system.md).
+
+Admin contact and report delivery: [Contact page](docs/contact.md).

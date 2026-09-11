@@ -1,0 +1,36 @@
+export default function Icon({ name, size = 20, ...props }) {
+    const paths = {
+        mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 6 9 7 9-7" /></>,
+        message: <path d="M21 11a8 8 0 0 1-8 8H7l-5 3V11a9 9 0 0 1 19 0Z" />,
+        flag: <path d="M5 22V3c5-4 9 4 15 0v11c-6 4-10-4-15 0" />,
+        send: <><path d="m22 2-7 20-4-9-9-4ZM11 13 22 2" /></>,
+        trend: <path d="m3 17 6-6 4 4 8-10M15 5h6v6" />,
+        reset: <><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6" /></>,
+        trash: <><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></>,
+        receipt: <><path d="M5 3v18l3-2 4 2 4-2 3 2V3l-3 2-4-2-4 2Z M9 9h6M9 13h6" /></>,
+        lock: <><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></>,
+        settings: <><path d="M4 6h16M4 12h16M4 18h16" /><circle cx="8" cy="6" r="2" fill="currentColor" /><circle cx="16" cy="12" r="2" fill="currentColor" /><circle cx="10" cy="18" r="2" fill="currentColor" /></>,
+        user: <><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></>,
+        logout: <><path d="M9 3H4v18h5M10 12h11m-4-4 4 4-4 4" /></>,
+        arrow: <path d="M4 12h16m-6-6 6 6-6 6" />,
+        heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" />,
+        cart: <><path d="M2 3h3l2.5 12h11L21 7H6M8 15l-1 3h12" /><circle cx="9" cy="21" r="1" /><circle cx="18" cy="21" r="1" /></>,
+        bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 10h18c0-3-3-3-3-10M10 21h4" /></>,
+        search: <><circle cx="10.5" cy="10.5" r="7.5" /><path d="m16 16 5 5" /></>,
+        pin: <><path d="M19 10c0 5-7 12-7 12S5 15 5 10a7 7 0 0 1 14 0Z" /><circle cx="12" cy="9" r="2.5" /></>,
+        tag: <><path d="m21 12-9 9-10-10V2h9Z" /><circle cx="7" cy="7" r="1" /></>,
+        sort: <path d="M7 3v18m-4-4 4 4 4-4M17 21V3m-4 4 4-4 4 4" />,
+        chevron: <path d="m7 10 5 5 5-5" />,
+        plus: <path d="M12 5v14M5 12h14" />,
+        minus: <path d="M5 12h14" />,
+        close: <path d="m6 6 12 12M18 6 6 18" />,
+        menu: <path d="M3 6h18M3 12h18M3 18h18" />,
+        leaf: <><path d="M5 20C1 7 12 4 21 3c-1 11-4 19-14 14M3 22 16 9" /></>,
+        sprout: <><path d="M12 22V11M12 15C5 16 3 12 3 7c6 0 9 3 9 8ZM12 11c0-7 4-9 10-9 0 6-4 10-10 9ZM5 22h14" /></>,
+        people: <><circle cx="12" cy="6" r="3" /><circle cx="4" cy="9" r="2" /><circle cx="20" cy="9" r="2" /><path d="M6 21v-4a6 6 0 0 1 12 0v4M2 19v-3c0-2 1-3 3-3M22 19v-3c0-2-1-3-3-3" /></>,
+        trophy: <><path d="M7 3h10v6a5 5 0 0 1-10 0ZM7 5H3v3a4 4 0 0 0 5 4M17 5h4v3a4 4 0 0 1-5 4M12 14v6m-5 1h10" /></>,
+        check: <path d="m5 12 4 4L19 6" />,
+    };
+
+    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{paths[name] || paths.leaf}</svg>;
+}

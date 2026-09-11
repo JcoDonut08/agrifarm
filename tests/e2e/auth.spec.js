@@ -13,10 +13,33 @@ const viewports = [
 for (const viewport of viewports) {
     test(`${viewport.name}: marketplace account experience`, async ({ page }, testInfo) => {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await page.addInitScript(() => {
+            if (! localStorage.getItem('agrifarm-theme')) localStorage.setItem('agrifarm-theme', 'light');
+        });
 
         await page.goto('/');
-        await expect(page.getByRole('heading', { name: 'Your way into the AgriFarm marketplace.' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Sign in to AgriFarm' })).toBeVisible();
+        await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh from');
+        await expect(page.getByRole('link', { name: 'Create account', exact: true }).first()).toBeVisible();
+        await page.getByRole('button', { name: 'Open account menu' }).click();
+        await page.getByRole('button', { name: 'Settings', exact: true }).click();
+        await page.getByRole('button', { name: 'Dark', exact: true }).click();
+        await expect(page.locator('html')).toHaveClass(/dark/);
+        expect(await page.evaluate(() => localStorage.getItem('agrifarm-theme'))).toBe('dark');
+        await page.reload();
+        await expect(page.locator('html')).toHaveClass(/dark/);
+        await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-home-dark.png`), fullPage: true });
+        await page.getByRole('button', { name: 'Open account menu' }).click();
+        await page.getByRole('button', { name: 'Settings', exact: true }).click();
+        await page.getByRole('button', { name: 'Light', exact: true }).click();
+        await page.keyboard.press('Escape');
+        await expect(page.locator('html')).not.toHaveClass(/dark/);
+        if (viewport.width <= 1000) {
+            await page.getByRole('button', { name: 'Open navigation menu' }).click();
+            await expect(page.getByRole('navigation', { name: 'Mobile navigation' })).toBeVisible();
+            await page.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: 'Marketplace', exact: true }).click();
+            await expect(page).toHaveURL(/\?page=marketplace$/);
+            await page.goto('/');
+        }
         await assertNoHorizontalOverflow(page);
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-home.png`), fullPage: true });
 
@@ -58,20 +81,23 @@ for (const viewport of viewports) {
         await page.getByRole('button', { name: 'Verify & create account' }).click();
         await expect(page).toHaveURL(/\/login$/);
 
-        await completeLogin(page, 'customer@agrifarm.test', '/customer', {
+        await completeLogin(page, 'customer@agrifarm.test', '/', {
             exerciseControls: true,
             loginScreenshotPath: testInfo.outputPath(`${viewport.name}-login.png`),
         });
-        await expect(page.getByRole('heading', { name: 'Customer workspace' })).toBeVisible();
-        await expect(page.getByText('Your marketplace access is ready')).toBeVisible();
+        await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh from');
+        await expect(page.getByRole('button', { name: 'Open account menu' })).toBeVisible();
         await assertNoHorizontalOverflow(page);
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-customer.png`), fullPage: true });
+        await openCustomerProfile(page);
+        await expect(page).toHaveURL(/\/customer$/);
         await page.getByRole('button', { name: 'Sign out' }).click();
         await expect(page).toHaveURL(/\/login$/);
 
         await completeLogin(page, 'seller@agrifarm.test', '/seller/dashboard');
-        await expect(page.getByRole('heading', { name: 'Seller workspace', exact: true })).toBeVisible();
-        await expect(page.getByText('Your seller workspace is ready')).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Barangay store overview', exact: true })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Sales overview' })).toBeVisible();
+        if (viewport.width <= 800) await page.getByRole('button', { name: 'Toggle seller navigation' }).click();
         await page.getByRole('button', { name: 'Sign out' }).click();
 
         await completeLogin(page, 'admin@agrifarm.test', '/admin/dashboard');
@@ -104,7 +130,8 @@ for (const viewport of viewports) {
         await expect(page).toHaveURL(/\/login$/);
         await expect(page.getByRole('status')).toContainText('reset');
 
-        await completeLogin(page, 'customer@agrifarm.test', '/customer');
+        await completeLogin(page, 'customer@agrifarm.test', '/');
+        await openCustomerProfile(page);
         await page.getByRole('button', { name: 'Sign out' }).click();
         await expect(page).toHaveURL(/\/login$/);
     });
@@ -128,6 +155,11 @@ async function completeLogin(page, email, expectedPath, options = {}) {
     await page.getByLabel('Remember me').check();
     await page.getByRole('button', { name: 'Login' }).click();
     await expect(page).toHaveURL(new RegExp(`${escapeRegExp(expectedPath)}$`));
+}
+
+async function openCustomerProfile(page) {
+    await page.getByRole('button', { name: 'Open account menu' }).click();
+    await page.getByRole('link', { name: 'My profile', exact: true }).click();
 }
 
 async function pasteOtp(page, code) {

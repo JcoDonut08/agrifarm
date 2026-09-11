@@ -15,7 +15,7 @@ export default function PasswordField({ id = 'password', label = 'Password', ...
                 <button
                     type="button"
                     onClick={() => setVisible((value) => !value)}
-                    className="grid size-10 place-items-center rounded-lg text-stone-500 transition hover:bg-forest-50 hover:text-forest-700"
+                    className="grid size-10 place-items-center rounded-lg text-stone-500 transition hover:bg-forest-50 hover:text-forest-700 dark:text-stone-400 dark:hover:bg-white/10 dark:hover:text-forest-300"
                     aria-label={`${visible ? 'Hide' : 'Show'} ${label.toLowerCase()}`}
                     aria-pressed={visible}
                 >

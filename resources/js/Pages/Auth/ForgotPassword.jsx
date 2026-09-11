@@ -23,7 +23,7 @@ export default function ForgotPassword() {
                 <SubmitButton processing={processing}>{processing ? 'Sending code...' : 'Send verification code'}</SubmitButton>
             </form>
             <p className="mt-5 text-center text-sm"><Link href="/login" className="font-bold text-forest-700">Back to sign in</Link></p>
-            <p className="mt-4 rounded-xl border border-forest-100 bg-forest-50 px-4 py-3 text-xs leading-5 text-stone-600">For your security, the password form unlocks only after the email code is verified.</p>
+            <p className="mt-4 rounded-xl border border-forest-100 bg-forest-50 px-4 py-3 text-xs leading-5 text-stone-600 dark:border-white/15 dark:bg-night-800 dark:text-stone-300">For your security, the password form unlocks only after the email code is verified.</p>
         </AuthLayout>
     );
 }

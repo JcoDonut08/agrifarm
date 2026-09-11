@@ -1,5 +1,5 @@
 export default function GoogleAuthButton({ href, onClick, error }) {
-    const className = 'inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-bold text-stone-800 shadow-sm transition hover:border-forest-300 hover:bg-forest-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 focus-visible:ring-offset-2';
+    const className = 'inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-bold text-stone-800 shadow-sm transition hover:border-forest-300 hover:bg-forest-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 focus-visible:ring-offset-2 dark:border-white/15 dark:bg-night-800 dark:text-white dark:hover:bg-night-700 dark:focus-visible:ring-offset-night-950';
 
     return (
         <div className="mt-5">

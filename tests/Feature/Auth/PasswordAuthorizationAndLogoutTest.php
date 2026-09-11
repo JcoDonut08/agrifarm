@@ -61,7 +61,7 @@ class PasswordAuthorizationAndLogoutTest extends TestCase
                 'email' => $user->email,
                 'password' => 'NewPassword123!',
             ])->assertRedirect(match ($role) {
-                UserRole::Customer => '/customer',
+                UserRole::Customer => '/',
                 UserRole::Seller => '/seller/dashboard',
                 UserRole::CenroAdmin => '/admin/dashboard',
             });
