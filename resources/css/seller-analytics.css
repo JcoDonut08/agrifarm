@@ -1,0 +1,191 @@
+.seller-analytics { display: grid; gap: 20px; }
+.analytics-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.analytics-heading .seller-page-title { margin-bottom: 4px; }
+.analytics-heading > div > p,.seller-panel-heading > div > p { margin: 0; color: #64746a; font-size: 13px; }
+.analytics-range { display: inline-flex; min-height: 36px; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid #dce4d8; border-radius: 8px; background: #fff; color: #52655a; font-size: 12px; font-weight: 650; white-space: nowrap; }
+.analytics-range svg { color: #27744b; }
+
+.analytics-filters { display: flex; align-items: flex-end; gap: 16px; padding-block: 16px; }
+.analytics-periods { display: inline-flex; flex: 0 0 auto; padding: 3px; border: 1px solid #dce4d8; border-radius: 9px; background: #f5f7f2; }
+.analytics-periods button,.analytics-chart-toggle button { min-height: 34px; padding: 0 12px; border-radius: 6px; color: #5f6f65; font-size: 12px; font-weight: 650; white-space: nowrap; }
+.analytics-periods button:hover,.analytics-chart-toggle button:hover { color: #174f34; background: #eaf1e7; }
+.analytics-periods button[aria-pressed=true],.analytics-chart-toggle button[aria-pressed=true] { color: #fff; background: #176a43; box-shadow: 0 1px 2px #183d2830; }
+.analytics-custom-dates,.analytics-selects { display: flex; align-items: flex-end; gap: 10px; }
+.analytics-selects { min-width: 0; margin-left: auto; }
+.analytics-filters label { display: grid; gap: 4px; color: #5c6d62; font-size: 11px; font-weight: 650; }
+.analytics-filters select,.analytics-filters input { min-width: 145px; height: 36px; padding: 0 10px; border: 1px solid #d7e0d5; border-radius: 7px; outline: none; background: #fff; color: #1f3428; font: inherit; font-size: 12px; }
+.analytics-filters select:focus,.analytics-filters input:focus { border-color: #4c8a62; box-shadow: 0 0 0 3px #2f845123; }
+
+.analytics-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.analytics-metric { display: flex; min-width: 0; gap: 13px; padding: 18px; border: 1px solid #dfe5db; border-radius: 12px; background: #fff; }
+.analytics-metric > span { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border-radius: 10px; background: #edf4e8; color: #39734b; }
+.analytics-metric > span svg { width: 20px; height: 20px; }
+.analytics-metric h2 { margin: 0; color: #566a5d; font-size: 12px; font-weight: 700; }
+.analytics-metric strong { display: block; margin-top: 3px; font-size: clamp(22px, 2vw, 30px); line-height: 1.2; letter-spacing: -.7px; font-variant-numeric: tabular-nums; }
+.analytics-metric p { margin: 5px 0 0; color: #68796e; font-size: 11px; line-height: 1.45; }
+.analytics-metric--primary { border-color: #347458; background: #15593e; color: #fffdf3; }
+.analytics-metric--primary > span { background: #2b7152; color: #fff; }
+.analytics-metric--primary h2 { color: #e0eee3; }
+.analytics-metric--primary p { color: #c4dfcc; }
+
+.analytics-overview-grid,.analytics-detail-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(280px, .75fr); gap: 20px; }
+.analytics-trend,.analytics-outcomes,.analytics-products,.analytics-categories { min-height: 320px; }
+.analytics-trend .seller-panel-heading { align-items: flex-start; }
+.analytics-trend .seller-panel-heading > div { min-width: 0; }
+.analytics-chart-toggle { display: inline-flex; flex: 0 0 auto; padding: 3px; border: 1px solid #dce4d8; border-radius: 8px; background: #f5f7f2; }
+.analytics-chart-toggle button { min-height: 31px; padding-inline: 10px; font-size: 11px; }
+.analytics-bar-chart { display: flex; height: 230px; align-items: stretch; gap: 8px; padding-top: 18px; overflow-x: auto; }
+.analytics-bar-column { display: flex; min-width: 38px; flex: 1 0 38px; flex-direction: column; gap: 7px; color: #6a796f; font-size: 10px; text-align: center; }
+.analytics-bar-track { position: relative; display: flex; min-height: 0; flex: 1; align-items: flex-end; justify-content: center; border-bottom: 1px solid #d9e1d6; background: linear-gradient(to bottom, #edf1eb 1px, transparent 1px); background-size: 100% 25%; }
+.analytics-bar-fill { display: block; width: min(34px, 64%); border-radius: 6px 6px 2px 2px; background: #2b8053; transition: height .2s ease; }
+.analytics-bar-fill:hover { background: #185f3b; }
+.analytics-bar-value { position: absolute; z-index: 1; top: 4px; color: #43604e; font-size: 9px; font-weight: 700; white-space: nowrap; }
+
+.analytics-outcome-list { display: grid; gap: 25px; padding-top: 12px; }
+.analytics-outcome-list > div > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.analytics-outcome-list span { color: #344b3d; font-size: 13px; }
+.analytics-outcome-list strong { font-size: 15px; }
+.analytics-outcome-list small { color: #738078; font-size: 11px; font-weight: 600; }
+.analytics-outcome-track { display: block; height: 8px; overflow: hidden; border-radius: 4px; background: #e9eee7; }
+.analytics-outcome-track i { display: block; height: 100%; border-radius: inherit; background: #3b895d; }
+.analytics-outcome-track--cancelled i { background: #b45b4e; }
+.analytics-outcome-track--progress i { background: #d29b3f; }
+
+.analytics-products table { min-width: 650px; }
+.analytics-products tbody tr { border-bottom: 1px solid #e6ebe4; }
+.analytics-products tbody tr:last-child { border-bottom: 0; }
+.analytics-products td { padding: 12px 10px; color: #31473a; font-size: 12px; vertical-align: middle; }
+.analytics-products td:not(:first-child) { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.analytics-product-name { display: flex; min-width: 150px; align-items: center; gap: 8px; }
+.analytics-product-name > svg { flex: 0 0 auto; color: #b47b1d; }
+.analytics-product-name strong,.analytics-product-name small { display: block; }
+.analytics-product-name small { margin-top: 2px; color: #758178; font-size: 10px; }
+
+.analytics-category-list { display: grid; gap: 19px; padding-top: 4px; }
+.analytics-category-list > div > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.analytics-category-list strong { font-size: 13px; }
+.analytics-category-list div > span { font-size: 12px; font-weight: 700; }
+.analytics-category-list > div > span { display: block; height: 7px; margin: 7px 0 5px; overflow: hidden; border-radius: 4px; background: #e9eee7; }
+.analytics-category-list i { display: block; height: 100%; border-radius: inherit; background: #4a8c62; }
+.analytics-category-list small { color: #718078; font-size: 10px; }
+
+.analytics-customer-list { margin-top: 2px; }
+.analytics-customer-header,.analytics-customer-row { display: grid; grid-template-columns: 64px minmax(180px, 1.2fr) minmax(120px, .6fr) minmax(130px, .7fr) minmax(210px, 1fr); align-items: center; column-gap: 18px; }
+.analytics-customer-header { min-height: 36px; padding: 0 12px; background: #f3f6f1; color: #627268; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+.analytics-customer-row { min-height: 67px; padding: 11px 12px; border-bottom: 1px solid #e3e9e1; }
+.analytics-customer-row:last-child { border-bottom: 0; }
+.analytics-customer-rank { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid transparent; border-radius: 50%; background: #eef2ed; color: #617068; font-size: 12px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.analytics-customer-rank--1 { width: 36px; height: 36px; border-color: #dfbf63; background: #f8edc9; color: #8a6417; box-shadow: 0 2px 5px #8a64171f; }
+.analytics-customer-rank--1 svg { stroke-width: 1.9; }
+.analytics-customer-rank--2 { background: #e8ece9; color: #59665d; }
+.analytics-customer-rank--3 { background: #f0dfd0; color: #825637; }
+.analytics-customer-name { display: flex; min-width: 0; align-items: center; gap: 10px; }
+.analytics-customer-avatar { position: relative; display: grid; width: 40px; height: 40px; flex: 0 0 40px; overflow: hidden; place-items: center; border: 1px solid #cfe0cc; border-radius: 50%; background: #e8f2e4; color: #28633d; font-size: 12px; font-weight: 750; letter-spacing: .02em; }
+.analytics-customer-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.analytics-customer-avatar[data-source=walk-in]::after { position: absolute; right: -1px; bottom: -1px; width: 12px; height: 12px; border: 2px solid #fff; border-radius: 50%; background: #5b9369; content: ''; }
+.analytics-customer-name strong { overflow: hidden; color: #263e30; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.analytics-customer-stat small,.analytics-customer-value small,.analytics-customer-product > small { display: none; }
+.analytics-customer-stat strong,.analytics-customer-value strong { color: #344a3c; font-size: 13px; font-variant-numeric: tabular-nums; }
+.analytics-customer-value strong { color: #1d5e3c; }
+.analytics-customer-product { display: flex; min-width: 0; align-items: center; gap: 9px; }
+.analytics-customer-product > span { display: grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; border-radius: 8px; background: #edf4e9; color: #3d7950; }
+.analytics-customer-product > div { min-width: 0; }
+.analytics-customer-product strong,.analytics-customer-product > div small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.analytics-customer-product strong { color: #344a3c; font-size: 12px; }
+.analytics-customer-product > div small { margin-top: 2px; color: #718078; font-size: 10px; }
+.analytics-empty { display: flex; min-height: 210px; flex-direction: column; align-items: center; justify-content: center; padding: 22px; color: #688072; text-align: center; }
+.analytics-empty svg { margin-bottom: 9px; }
+.analytics-empty strong { color: #2b4134; font-size: 14px; }
+.analytics-empty p { max-width: 300px; margin: 5px 0 0; font-size: 11px; line-height: 1.6; }
+.analytics-data-note { display: flex; gap: 11px; padding: 14px 16px; border: 1px solid #dbe3d8; border-radius: 9px; background: #f1f5eb; color: #516459; }
+.analytics-data-note svg { flex: 0 0 auto; margin-top: 1px; color: #417450; }
+.analytics-data-note p { margin: 0; font-size: 11px; line-height: 1.6; }
+
+.dark .analytics-heading > div > p,.dark .seller-panel-heading > div > p,.dark .analytics-metric p,.dark .analytics-product-name small,.dark .analytics-category-list small { color: #b4c0b8; }
+.dark .analytics-range,.dark .analytics-metric { border-color: #39433c; background: #202722; color: #edf2ee; }
+.dark .analytics-range { color: #c6d1c9; }
+.dark .analytics-metric h2 { color: #c5d2c9; }
+.dark .analytics-metric > span { background: #2b4030; color: #b3d7a1; }
+.dark .analytics-metric--primary { border-color: #3c7d5c; background: #15593e; color: #f2fff3; }
+.dark .analytics-metric--primary h2 { color: #e2f0e5; }
+.dark .analytics-metric--primary > span { background: #2b7152; color: #fff; }
+.dark .analytics-periods,.dark .analytics-chart-toggle { border-color: #455148; background: #29312b; }
+.dark .analytics-periods button,.dark .analytics-chart-toggle button { color: #c1ccc4; }
+.dark .analytics-periods button:hover,.dark .analytics-chart-toggle button:hover { color: #edf2ee; background: #354238; }
+.dark .analytics-periods button[aria-pressed=true],.dark .analytics-chart-toggle button[aria-pressed=true] { color: #fff; background: #417c58; }
+.dark .analytics-filters label { color: #c2cec5; }
+.dark .analytics-filters select,.dark .analytics-filters input { border-color: #4b5a50; background: #181f1a; color: #edf2ee; color-scheme: dark; }
+.dark .analytics-bar-track { border-color: #455048; background: linear-gradient(to bottom, #303a33 1px, transparent 1px); background-size: 100% 25%; }
+.dark .analytics-bar-fill { background: #79aa85; }
+.dark .analytics-bar-value { color: #d1ddd4; }
+.dark .analytics-outcome-list span,.dark .analytics-products td,.dark .analytics-empty strong { color: #e0e8e2; }
+.dark .analytics-outcome-list small { color: #b2beb6; }
+.dark .analytics-outcome-track,.dark .analytics-category-list > div > span { background: #343d37; }
+.dark .analytics-products tbody tr,.dark .analytics-customer-row { border-color: #39433c; }
+.dark .analytics-customer-header { background: #263029; color: #b8c5bc; }
+.dark .analytics-customer-rank { background: #303a33; color: #c1cbc4; }
+.dark .analytics-customer-rank--1 { border-color: #806e3d; background: #4b412a; color: #efd38a; box-shadow: none; }
+.dark .analytics-customer-rank--2 { background: #3a413c; color: #d1d9d3; }
+.dark .analytics-customer-rank--3 { background: #49382d; color: #e3b993; }
+.dark .analytics-customer-avatar { border-color: #48614d; background: #2b4030; color: #c4deb9; }
+.dark .analytics-customer-avatar[data-source=walk-in]::after { border-color: #202722; background: #80ad88; }
+.dark .analytics-customer-name strong,.dark .analytics-customer-stat strong { color: #e0e8e2; }
+.dark .analytics-customer-value strong { color: #a9d6b4; }
+.dark .analytics-customer-product > span { background: #2b4030; color: #b3d7a1; }
+.dark .analytics-customer-product strong { color: #e0e8e2; }
+.dark .analytics-customer-product > div small { color: #aebbb2; }
+.dark .analytics-empty { color: #a9b9ad; }
+.dark .analytics-data-note { border-color: #415046; background: #263229; color: #c5d0c8; }
+
+@media (max-width: 1199px) {
+    .analytics-filters { flex-wrap: wrap; }
+    .analytics-selects { margin-left: 0; }
+    .analytics-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .analytics-overview-grid,.analytics-detail-grid { grid-template-columns: minmax(0, 1fr); }
+    .analytics-trend,.analytics-outcomes,.analytics-products,.analytics-categories { min-height: auto; }
+}
+
+@media (max-width: 900px) {
+    .analytics-customer-header { display: none; }
+    .analytics-customer-row { grid-template-columns: 42px minmax(0, 1fr) auto; grid-template-areas: "rank customer value" "rank orders product"; gap: 9px 10px; padding: 14px 0; }
+    .analytics-customer-rank { grid-area: rank; align-self: start; }
+    .analytics-customer-name { grid-area: customer; }
+    .analytics-customer-stat { grid-area: orders; }
+    .analytics-customer-value { grid-area: value; text-align: right; }
+    .analytics-customer-product { grid-area: product; justify-content: flex-end; min-width: 150px; }
+    .analytics-customer-stat small,.analytics-customer-value small { display: inline; margin-right: 5px; color: #708077; font-size: 10px; }
+    .analytics-customer-stat strong,.analytics-customer-value strong { font-size: 12px; }
+    .dark .analytics-customer-stat small,.dark .analytics-customer-value small { color: #aebbb2; }
+}
+
+@media (max-width: 700px) {
+    .analytics-heading { align-items: flex-start; flex-direction: column; gap: 11px; }
+    .analytics-range { white-space: normal; }
+    .analytics-filters { align-items: stretch; }
+    .analytics-periods { width: 100%; overflow-x: auto; }
+    .analytics-periods button { flex: 1; min-height: 40px; padding-inline: 10px; }
+    .analytics-custom-dates,.analytics-selects { display: grid; width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .analytics-filters select,.analytics-filters input { width: 100%; min-width: 0; height: 42px; }
+}
+
+@media (max-width: 450px) {
+    .seller-analytics { gap: 16px; }
+    .analytics-metrics { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .analytics-metric { padding: 15px; }
+    .analytics-metric strong { font-size: 25px; }
+    .analytics-trend .seller-panel-heading { align-items: stretch; flex-direction: column; }
+    .analytics-chart-toggle { width: 100%; }
+    .analytics-chart-toggle button { min-height: 38px; flex: 1; }
+    .analytics-bar-chart { height: 215px; }
+    .analytics-bar-column { min-width: 34px; }
+    .analytics-customer-row { grid-template-columns: 42px minmax(0, 1fr); grid-template-areas: "rank customer" "rank value" "rank orders" "rank product"; }
+    .analytics-customer-value { text-align: left; }
+    .analytics-customer-product { min-width: 0; justify-content: flex-start; }
+    .analytics-customer-product > small { display: inline; color: #708077; font-size: 10px; }
+    .dark .analytics-customer-product > small { color: #aebbb2; }
+    .analytics-data-note { padding: 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .analytics-bar-fill { transition: none; }
+}

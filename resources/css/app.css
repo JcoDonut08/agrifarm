@@ -1,6 +1,76 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+}
+
+:root {
+    --radius: 0.625rem;
+    --background: #fffdf5;
+    --foreground: #17382b;
+    --card: #ffffff;
+    --card-foreground: #17382b;
+    --popover: #ffffff;
+    --popover-foreground: #17382b;
+    --primary: #0d6b35;
+    --primary-foreground: #ffffff;
+    --secondary: #edf4ed;
+    --secondary-foreground: #17382b;
+    --muted: #f1f4ef;
+    --muted-foreground: #66736b;
+    --accent: #e4efe5;
+    --accent-foreground: #0c542d;
+    --destructive: #c44336;
+    --border: #dce5dc;
+    --input: #dce5dc;
+    --ring: #12863f;
+}
+
+.dark {
+    --background: #151a17;
+    --foreground: #edf2ee;
+    --card: #202722;
+    --card-foreground: #edf2ee;
+    --popover: #202722;
+    --popover-foreground: #edf2ee;
+    --primary: #65ad7a;
+    --primary-foreground: #0e1b12;
+    --secondary: #28312a;
+    --secondary-foreground: #e3ebe5;
+    --muted: #252e28;
+    --muted-foreground: #aeb9b1;
+    --accent: #2b3b30;
+    --accent-foreground: #dce9df;
+    --destructive: #de776b;
+    --border: #39433c;
+    --input: #455248;
+    --ring: #9bcaa7;
+}
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+async function downloadBuffer(download) {
+    const stream = await download.createReadStream();
+    const chunks = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    return Buffer.concat(chunks);
+}
+
 const accounts = [
     ['brgyrosario@gmail.com', 'Barangay Rosario', 390],
     ['brgymaybunga@gmail.com', 'Barangay Maybunga', 768],
@@ -8,7 +15,10 @@ const accounts = [
 for (const [email, name, width] of accounts) {
     test(`seller ${name} at ${width}px`, async ({ page }, testInfo) => {
         await page.setViewportSize({ width, height: 1000 });
-        await page.addInitScript(() => { if (!localStorage.getItem('agrifarm-theme')) localStorage.setItem('agrifarm-theme', 'light'); });
+        await page.addInitScript(() => {
+            if (!localStorage.getItem('agrifarm-theme')) localStorage.setItem('agrifarm-theme', 'light');
+            window.print = () => { window.__orderReceiptPrinted = true; };
+        });
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         await page.goto('/login');
@@ -17,12 +27,48 @@ for (const [email, name, width] of accounts) {
         await page.getByRole('button', { name: 'Login', exact: true }).click();
         await expect(page).toHaveURL(/\/seller\/dashboard$/);
         await expect(page.getByRole('heading', { name: 'Sales overview' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Weather & farm outlook' })).toBeVisible();
+        const openMeteoAttribution = page.getByText('Weather data by Open-Meteo');
+        const googleAttribution = page.getByText('Source: Includes weather data from Google');
+        await expect(openMeteoAttribution.or(googleAttribution)).toBeVisible();
+        if (await openMeteoAttribution.count()) await expect(openMeteoAttribution).toHaveAttribute('href', 'https://open-meteo.com/');
+        const weatherReading = page.locator('.seller-weather-current > strong');
+        if (await weatherReading.count()) {
+            await expect(weatherReading).toContainText('°C');
+            await expect(page.getByRole('tab', { name: 'Temperature' })).toHaveAttribute('aria-selected', 'true');
+            await page.getByRole('tab', { name: 'Precipitation' }).click();
+            await expect(page.getByRole('tab', { name: 'Precipitation' })).toHaveAttribute('aria-selected', 'true');
+            await page.getByRole('tab', { name: 'Wind' }).click();
+            await expect(page.getByRole('tab', { name: 'Wind' })).toHaveAttribute('aria-selected', 'true');
+            await page.getByRole('tab', { name: 'Temperature' }).click();
+            await expect(page.locator('.agrifarm-weather-scene')).toBeVisible();
+            await page.emulateMedia({ reducedMotion: 'reduce' });
+            await expect.poll(() => page.locator('.farm-plant').first().evaluate(element => getComputedStyle(element).animationName)).toBe('none');
+            await page.emulateMedia({ reducedMotion: 'no-preference' });
+            const forecastDays = page.locator('.seller-weather-days article > button');
+            if (await forecastDays.count() > 1) {
+                await expect(forecastDays).toHaveCount(8);
+                await expect(page.getByRole('button', { name: 'Later forecast days' })).toHaveCount(0);
+                const labels = await forecastDays.locator('strong').allTextContents();
+                expect(labels).toContain('Mon');
+                const todayIndex = labels.findIndex(label => label.trim() === 'Today');
+                const otherIndex = labels.findIndex((_, index) => index !== todayIndex);
+                await forecastDays.nth(otherIndex).click();
+                await expect(forecastDays.nth(otherIndex)).toHaveAttribute('aria-pressed', 'true');
+                if (todayIndex >= 0) {
+                    await expect(page.locator('.seller-weather-kicker')).not.toHaveText('Now');
+                    await forecastDays.nth(todayIndex).click();
+                    await expect(page.locator('.seller-weather-kicker')).toHaveText('Now');
+                }
+            }
+        } else await expect(page.getByText('Weather data unavailable')).toBeVisible();
         await expect(page.getByRole('button', { name: 'Add product' })).toHaveCount(0);
         await expect(page.getByText('Seller Dashboard', { exact: true })).toHaveCount(0);
         await expect(page.getByText(/Good morning/)).toHaveCount(0);
-        await page.getByLabel('Sales period').selectOption('This month');
+        await expect(page.getByRole('group', { name: 'Sales period' }).getByRole('button')).toHaveCount(4);
+        await page.getByRole('button', { name: 'Month', exact: true }).click();
         await expect(page.getByText('No sales this month')).toBeVisible();
-        await page.getByLabel('Sales period').selectOption('This week');
+        await page.getByRole('button', { name: 'Week', exact: true }).click();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
         await page.screenshot({ path: testInfo.outputPath(`seller-${width}.png`), fullPage: true });
         await page.getByRole('button', { name: 'Manage products' }).click();
@@ -45,27 +91,299 @@ for (const [email, name, width] of accounts) {
         await productModal.getByRole('button', { name: 'Add product', exact: true }).click();
         await expect(productModal).not.toBeVisible();
         await expect(page.getByRole('status')).toHaveText('Product added successfully.');
-        await expect(page.locator('.seller-product-item')).toHaveCount(1);
+        await expect(page.locator('.seller-product-card')).toHaveCount(1);
         await page.reload();
-        await expect(page.locator('.seller-product-item h2')).toHaveText('Fresh Pechay');
-        await expect(page.locator('.seller-product-item')).toContainText('35.00');
-        await expect(page.locator('.seller-product-item')).toContainText('3 bunch available');
-        await expect.poll(() => page.locator('.seller-product-item img').evaluate(img => img.complete && img.naturalWidth > 0)).toBeTruthy();
+        await expect(page.locator('.seller-product-card h2')).toHaveText('Fresh Pechay');
+        await expect(page.locator('.seller-product-card')).toContainText('35.00');
+        await expect(page.locator('.seller-product-card')).toContainText('3 bunch available');
+        await expect(page.getByRole('searchbox')).toHaveCount(0);
+        await expect.poll(() => page.locator('.seller-product-card img').evaluate(img => img.complete && img.naturalWidth > 0)).toBeTruthy();
+        const pechayCard = page.locator('.seller-product-card').filter({ hasText: 'Fresh Pechay' });
+        const editPechay = pechayCard.getByRole('button', { name: 'Edit Fresh Pechay' });
+        await editPechay.hover();
+        await expect.poll(() => editPechay.evaluate(element => getComputedStyle(element, '::after').content)).toContain('Edit product');
+        await editPechay.click();
+        const editProductModal = page.getByRole('dialog', { name: 'Edit product' });
+        await expect(editProductModal).toBeVisible();
+        await expect(editProductModal.locator('.product-preview-image img')).toBeVisible();
+        await editProductModal.getByLabel('Description', { exact: false }).fill('Updated harvest from our barangay garden.');
+        await editProductModal.getByRole('button', { name: 'Save changes' }).click();
+        await expect(editProductModal).not.toBeVisible();
+        await expect(page.getByRole('status')).toHaveText('Product updated successfully.');
+        await expect(pechayCard).toContainText('Updated harvest');
+
+        await page.getByRole('button', { name: 'Add product', exact: true }).click();
+        await page.getByLabel('Product name', { exact: true }).fill('Sweet Basil');
+        await page.getByLabel('Category', { exact: true }).selectOption('Herbs');
+        await page.getByLabel('Description', { exact: false }).fill('Fresh aromatic basil leaves.');
+        await page.getByLabel('Price (PHP)', { exact: true }).fill('30');
+        await page.getByLabel('Selling unit', { exact: true }).selectOption('bunch');
+        await page.getByLabel('Available stock', { exact: true }).fill('8');
+        await page.locator('#product-photo').setInputFiles({ name: 'basil.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
+        await productModal.getByRole('button', { name: 'Add product', exact: true }).click();
+        await expect(page.locator('.seller-product-card')).toHaveCount(2);
+        const productPagination = page.getByRole('navigation', { name: 'Products pagination' });
+        await expect(productPagination).toContainText('Showing 1–2 of 2 products');
+        await expect(productPagination.getByRole('button', { name: 'Previous page' })).toBeDisabled();
+        await expect(productPagination.getByRole('button', { name: 'Next page' })).toBeDisabled();
+        await page.getByLabel('Select Fresh Pechay').check();
+        await page.getByLabel('Select Sweet Basil').check();
+        await expect(page.getByText('2 selected', { exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Delete selected' })).toBeEnabled();
+        await page.screenshot({ path: testInfo.outputPath(`product-actions-${width}.png`), fullPage: true });
+        await page.getByLabel('Select all products').uncheck();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
         await page.screenshot({ path: testInfo.outputPath(`saved-products-${width}.png`), fullPage: true });
-        for (const section of ['Orders', 'Forecasting', 'Analytics', 'Store Profile', 'Dashboard']) {
+        await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+        await expect(page.locator('html')).toHaveClass(/dark/);
+        await page.screenshot({ path: testInfo.outputPath(`products-dark-${width}.png`), fullPage: true });
+        await page.getByRole('button', { name: 'Switch to light mode' }).click();
+        await expect(page.locator('html')).not.toHaveClass(/dark/);
+        for (const section of ['Orders', 'Forecasting', 'Analytics', 'Reports', 'Store Profile', 'Dashboard']) {
             if (width <= 800) await page.getByRole('button', { name: 'Toggle seller navigation' }).click();
             await page.getByRole('navigation', { name: 'Seller navigation' }).getByRole('button', { name: section, exact: true }).click();
             if (section === 'Store Profile') await expect(page.getByLabel('Email address', { exact: true })).toHaveValue(email);
-            else if (section !== 'Dashboard') await expect(page.getByRole('heading', { name: section, exact: true })).toBeVisible();
+            else if (section === 'Orders') {
+                await expect(page.getByRole('heading', { name: 'Customer orders' })).toBeVisible();
+                await expect(page.locator('.order-summary-card')).toHaveCount(6);
+                await page.getByRole('button', { name: 'Add walk-in order' }).click();
+                const walkInModal = page.getByRole('dialog', { name: 'Add walk-in order' });
+                await expect(walkInModal).toBeVisible();
+                await walkInModal.getByRole('button', { name: 'Add order', exact: true }).click();
+                await expect(walkInModal.getByText('Choose a product.')).toBeVisible();
+                await walkInModal.getByLabel('Customer name').fill('Walk-in buyer');
+                await walkInModal.getByLabel('Product', { exact: true }).selectOption({ label: 'Fresh Pechay · 3 bunch available' });
+                await walkInModal.getByLabel('Quantity', { exact: true }).fill('2');
+                await walkInModal.getByRole('button', { name: 'Add order', exact: true }).click();
+                await expect(walkInModal).not.toBeVisible();
+                await expect(page.getByRole('status')).toHaveText('Walk-in order added successfully.');
+                await expect(page.getByRole('status')).toHaveCount(0, { timeout: 4500 });
+                await expect(page.getByText(/^#WALK-\d{5}$/)).toBeVisible();
+                await expect(page.getByText('Walk-in buyer')).toBeVisible();
+                const ordersPagination = page.getByRole('navigation', { name: 'Orders pagination' });
+                await expect(ordersPagination).toContainText('Showing 1–1 of 1 order');
+                await expect(ordersPagination.getByRole('button', { name: 'Previous page' })).toBeDisabled();
+                await expect(ordersPagination.getByRole('button', { name: 'Next page' })).toBeDisabled();
+                const orderRow = page.locator('.order-row');
+                await expect(orderRow.locator('.order-product-thumb img')).toHaveAttribute('src', /\/seller\/products\/\d+\/photo/);
+                await expect.poll(() => orderRow.locator('.order-product-thumb img').evaluate(img => img.complete && img.naturalWidth > 0)).toBeTruthy();
+                await expect(orderRow.locator('.order-status-icon')).toHaveAttribute('aria-label', 'Pending');
+                await expect(orderRow.getByText('Pending', { exact: true })).toHaveCount(0);
+                const acceptOrder = orderRow.getByRole('button', { name: 'Accept order' });
+                await acceptOrder.hover();
+                await expect.poll(() => acceptOrder.evaluate(element => getComputedStyle(element, '::after').opacity)).toBe('1');
+                await expect.poll(() => acceptOrder.evaluate(element => getComputedStyle(element, '::after').content)).toContain('Accept order');
+                await page.screenshot({ path: testInfo.outputPath(`order-actions-${width}.png`), fullPage: true });
+                await orderRow.getByRole('button', { name: 'View order' }).click();
+                const orderDetail = page.getByRole('dialog', { name: 'Order details' });
+                await expect(orderDetail).toBeVisible();
+                await expect(orderDetail).toContainText('Walk-in buyer');
+                await expect(orderDetail).toContainText('Fresh Pechay');
+                await expect(orderDetail.locator('.order-detail-product img')).toBeVisible();
+                await page.screenshot({ path: testInfo.outputPath(`order-detail-${width}.png`), fullPage: true });
+                await orderDetail.getByRole('button', { name: 'Close', exact: true }).click();
+                await expect(orderDetail).not.toBeVisible();
+                await page.getByRole('button', { name: /Reservations 0/ }).click();
+                await expect(page.getByText('No reservations yet')).toBeVisible();
+                await page.screenshot({ path: testInfo.outputPath(`orders-${width}.png`), fullPage: true });
+                await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+                await expect(page.locator('html')).toHaveClass(/dark/);
+                await expect.poll(() => page.getByRole('button', { name: 'Add walk-in order' }).evaluate(element => getComputedStyle(element).color)).toBe('rgb(255, 255, 255)');
+                await page.screenshot({ path: testInfo.outputPath(`orders-dark-${width}.png`), fullPage: true });
+                await page.getByRole('button', { name: /Pending 1/ }).click();
+                await orderRow.getByRole('button', { name: 'Accept order' }).hover();
+                await page.screenshot({ path: testInfo.outputPath(`order-actions-dark-${width}.png`), fullPage: true });
+                await page.getByRole('button', { name: 'Switch to light mode' }).click();
+                await expect(page.locator('html')).not.toHaveClass(/dark/);
+                await page.getByRole('button', { name: /Pending 1/ }).click();
+                await orderRow.getByRole('button', { name: 'Accept order' }).click();
+                await expect(page.getByRole('button', { name: /Pending 0/ })).toHaveAttribute('aria-pressed', 'true');
+                await expect(orderRow).toHaveCount(0);
+
+                await page.getByRole('button', { name: /Preparing 1/ }).click();
+                await expect(orderRow.locator('.order-status-icon')).toHaveAttribute('aria-label', 'Preparing');
+                await orderRow.getByRole('button', { name: 'Mark for delivery' }).click();
+                await expect(page.getByRole('button', { name: /Preparing 0/ })).toHaveAttribute('aria-pressed', 'true');
+                await expect(orderRow).toHaveCount(0);
+
+                await page.getByRole('button', { name: /Out for delivery 1/ }).click();
+                await expect(orderRow.locator('.order-status-icon')).toHaveAttribute('aria-label', 'Out for delivery');
+                await orderRow.getByRole('button', { name: 'Confirm delivery' }).click();
+                await expect(page.getByRole('button', { name: /Out for delivery 0/ })).toHaveAttribute('aria-pressed', 'true');
+                await expect(orderRow).toHaveCount(0);
+
+                await page.getByRole('button', { name: /Delivered 1/ }).click();
+                await expect(orderRow.locator('.order-status-icon')).toHaveAttribute('aria-label', 'Delivered');
+                await expect(page.getByRole('button', { name: /Delivered 1/ })).toHaveAttribute('aria-pressed', 'true');
+                await orderRow.getByRole('button', { name: 'Print receipt' }).click();
+                await expect.poll(() => page.evaluate(() => window.__orderReceiptPrinted)).toBeTruthy();
+                const receipt = page.locator('.order-receipt');
+                await expect(receipt).toContainText(name);
+                await expect(receipt).toContainText('ORDER RECEIPT');
+                await expect(receipt.locator('.receipt-items')).toContainText('Fresh Pechay');
+                await expect(receipt.locator('.receipt-totals')).toContainText('TOTAL');
+                await expect(receipt).toContainText('Thank you for supporting your local barangay farm.');
+                await page.emulateMedia({ media: 'print' });
+                await expect(page.locator('#app')).toHaveCSS('display', 'none');
+                await expect.poll(() => receipt.evaluate(element => {
+                    const receiptBox = element.getBoundingClientRect();
+                    const pageBox = document.body.getBoundingClientRect();
+                    return Math.abs((receiptBox.left + receiptBox.right) / 2 - (pageBox.left + pageBox.right) / 2) < 1;
+                })).toBeTruthy();
+                await page.screenshot({ path: testInfo.outputPath(`receipt-${width}.png`), fullPage: true });
+                const receiptPdf = await page.pdf({ path: testInfo.outputPath(`receipt-${width}.pdf`), preferCSSPageSize: true, printBackground: true });
+                expect(receiptPdf.toString('latin1').match(/\/Type\s*\/Page\b/g) || []).toHaveLength(1);
+                await page.emulateMedia({ media: 'screen' });
+                await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+                await expect(page.locator('.order-receipt')).toHaveCount(0);
+            }
+            else if (section === 'Analytics') {
+                await expect(page.getByRole('heading', { name: 'Analytics', exact: true })).toBeVisible();
+                const completedSalesMetric = page.locator('.analytics-metric').filter({ has: page.getByRole('heading', { name: 'Completed sales value' }) });
+                await expect(completedSalesMetric).toContainText('\u20B170.00');
+                await expect(page.getByRole('heading', { name: 'Completed sales trend' })).toBeVisible();
+                await expect(page.getByRole('heading', { name: 'Product performance' })).toBeVisible();
+                await expect(page.locator('.analytics-products')).toContainText('Fresh Pechay');
+                await expect(page.locator('.analytics-products')).toContainText('2 bunch');
+                await expect(page.getByRole('heading', { name: 'Top customers' })).toBeVisible();
+                const customersMetric = page.locator('.analytics-metric').filter({ has: page.getByRole('heading', { name: 'Customers', exact: true }) });
+                await expect(customersMetric).toContainText('1');
+                await expect(page.getByRole('heading', { name: 'Cancellation rate' })).toHaveCount(0);
+                await expect(page.locator('.analytics-customers')).toContainText('Walk-in buyer');
+                await expect(page.locator('.analytics-customers')).toContainText('\u20B170.00');
+                await expect(page.locator('.analytics-customers')).toContainText('Frequently bought product');
+                await expect(page.locator('.analytics-customer-product')).toContainText('Fresh Pechay');
+                await expect(page.locator('.analytics-customer-avatar')).toHaveAttribute('data-source', 'walk-in');
+                await expect(page.locator('.analytics-customer-rank--1')).toHaveAttribute('aria-label', 'Rank 1');
+                await expect(page.getByRole('heading', { name: 'Inventory insights' })).toHaveCount(0);
+                await expect(page.locator('.analytics-data-note')).toContainText('does not confirm payment received and is not profit');
+                await page.getByLabel('Category').selectOption('Herbs');
+                await expect(completedSalesMetric).toContainText('\u20B10.00');
+                await page.getByLabel('Category').selectOption('all');
+                await page.getByRole('button', { name: 'Custom', exact: true }).click();
+                await expect(page.getByLabel('From', { exact: true })).toBeVisible();
+                await expect(page.getByLabel('To', { exact: true })).toBeVisible();
+                await page.getByRole('button', { name: 'Month', exact: true }).click();
+                await page.getByRole('group', { name: 'Chart measure' }).getByRole('button', { name: 'Orders', exact: true }).click();
+                await expect(page.getByRole('group', { name: 'Chart measure' }).getByRole('button', { name: 'Orders', exact: true })).toHaveAttribute('aria-pressed', 'true');
+                await page.screenshot({ path: testInfo.outputPath(`analytics-${width}.png`), fullPage: true });
+                await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+                await expect(page.locator('html')).toHaveClass(/dark/);
+                await expect.poll(() => page.getByRole('heading', { name: 'Delivered orders' }).evaluate(element => getComputedStyle(element).color)).toBe('rgb(197, 210, 201)');
+                await page.screenshot({ path: testInfo.outputPath(`analytics-dark-${width}.png`), fullPage: true });
+                await page.getByRole('button', { name: 'Switch to light mode' }).click();
+                await expect(page.locator('html')).not.toHaveClass(/dark/);
+            }
+            else if (section === 'Reports') {
+                await expect(page.getByRole('heading', { name: 'Generate reports', exact: true })).toBeVisible();
+                await expect(page.getByRole('heading', { name: 'Sales summary', exact: true })).toBeVisible();
+                await expect(page.getByLabel('From', { exact: true })).toBeVisible();
+                await expect(page.getByLabel('To', { exact: true })).toBeVisible();
+                await expect(page.locator('.report-paper')).toHaveCount(0);
+
+                const salesReport = page.locator('.report-option-card--sales');
+                await salesReport.getByRole('button', { name: 'Generate preview' }).click();
+                await expect(page.locator('.report-paper')).toContainText('Walk-in buyer');
+                await expect(page.locator('.report-summary')).toContainText('₱70.00');
+                await expect(page.locator('.report-summary')).toContainText('Customers');
+
+                const productReport = page.locator('.report-option-card--products');
+                await productReport.getByRole('button', { name: 'Generate preview' }).click();
+                await expect(page.locator('.report-preview-section').getByRole('heading', { name: 'Product performance', exact: true })).toBeVisible();
+                await expect(page.locator('.report-paper')).toContainText('Fresh Pechay');
+
+                const customerReport = page.locator('.report-option-card--customers');
+                await customerReport.getByText('CSV', { exact: true }).click();
+                await customerReport.getByRole('button', { name: 'Generate preview' }).click();
+                await expect(page.locator('.report-preview-section').getByRole('heading', { name: 'Customer insights', exact: true })).toBeVisible();
+                await expect(page.locator('.report-paper')).toContainText('Walk-in buyer');
+                await expect(page.getByRole('navigation', { name: 'Customer insights pagination' })).toContainText('Showing 1–1 of 1 row');
+
+                const csvDownload = page.waitForEvent('download');
+                await page.getByRole('button', { name: 'Download CSV' }).click();
+                const csvFile = await csvDownload;
+                expect(csvFile.suggestedFilename()).toMatch(/^agrifarm-customer-insights-\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}\.csv$/);
+                const csvContents = (await downloadBuffer(csvFile)).toString('utf8');
+                expect(csvContents).toContain('AgriFarm');
+                expect(csvContents).toContain('Customer insights');
+                expect(csvContents).toContain(name);
+                expect(csvContents.indexOf('AgriFarm')).toBeLessThan(csvContents.indexOf('Delivered orders'));
+                await customerReport.getByText('Excel', { exact: true }).click();
+                const excelDownload = page.waitForEvent('download');
+                await page.getByRole('button', { name: 'Download Excel' }).click();
+                const excelFile = await excelDownload;
+                expect(excelFile.suggestedFilename()).toMatch(/^agrifarm-customer-insights-\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}\.xlsx$/);
+                const excelContents = await downloadBuffer(excelFile);
+                expect(excelContents.subarray(0, 2).toString('latin1')).toBe('PK');
+                const excelModule = await import('exceljs');
+                const ExcelJS = excelModule.default || excelModule;
+                const workbook = new ExcelJS.Workbook();
+                await workbook.xlsx.load(excelContents);
+                const worksheet = workbook.worksheets[0];
+                expect(worksheet.getCell('A1').value).toBe('AgriFarm — Customer insights');
+                expect(worksheet.getCell('A2').value).toContain(name);
+                expect(worksheet.getCell('A3').value).toBe('Reporting period');
+                expect(worksheet.getTable('AgriFarmReportTable')).toBeTruthy();
+                expect(worksheet.getRow(6).values).toContain('Delivered orders');
+                await customerReport.getByText('PDF', { exact: true }).click();
+                await page.evaluate(() => { window.__orderReceiptPrinted = false; });
+                const pdfDownload = page.waitForEvent('download');
+                await page.getByRole('button', { name: 'Download PDF' }).click();
+                const pdfFile = await pdfDownload;
+                expect(pdfFile.suggestedFilename()).toMatch(/^agrifarm-customer-insights-\d{4}-\d{2}-\d{2}-to-\d{4}-\d{2}-\d{2}\.pdf$/);
+                const pdfContents = await downloadBuffer(pdfFile);
+                expect(pdfContents.subarray(0, 5).toString('latin1')).toBe('%PDF-');
+                expect(pdfContents.length).toBeGreaterThan(5000);
+                await pdfFile.saveAs(testInfo.outputPath(`report-download-${width}.pdf`));
+                expect(await page.evaluate(() => window.__orderReceiptPrinted)).toBeFalsy();
+                await page.screenshot({ path: testInfo.outputPath(`reports-${width}.png`), fullPage: true });
+                await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+                await expect(page.locator('html')).toHaveClass(/dark/);
+                await page.waitForTimeout(250);
+                await page.screenshot({ path: testInfo.outputPath(`reports-dark-${width}.png`), fullPage: true });
+                await page.getByRole('button', { name: 'Switch to light mode' }).click();
+                await expect(page.locator('html')).not.toHaveClass(/dark/);
+            }
+            else if (section === 'Dashboard') {
+                const totalSalesCard = page.locator('.seller-stat').filter({ has: page.getByRole('heading', { name: 'Total sales' }) });
+                await expect(totalSalesCard).toContainText('₱70.00');
+                await expect(totalSalesCard).toContainText('1 completed order');
+                await expect(page.locator('.seller-sales-total')).toHaveText('₱70.00');
+                await expect(page.locator('.seller-chart-bars')).toHaveAttribute('aria-label', /₱70\.00 in completed sales this week/);
+                await expect(page.locator('.seller-recent-orders')).toContainText('Fresh Pechay');
+                await expect(page.locator('.seller-recent-orders')).toContainText('₱70.00');
+                await expect(page.locator('.seller-recent-orders')).toContainText('Delivered');
+                await expect(page.locator('.seller-recent-product-image img')).toHaveAttribute('src', /\/seller\/products\/\d+\/photo/);
+                await expect(page.locator('.seller-inventory-item')).toContainText('1 bunch left');
+                await expect(page.locator('.seller-inventory-item')).toContainText('Low stock');
+                await page.getByRole('button', { name: 'Today', exact: true }).click();
+                await expect(page.locator('.seller-sales-total')).toHaveText('₱70.00');
+                await page.getByRole('button', { name: 'Month', exact: true }).click();
+                await expect(page.locator('.seller-sales-total')).toHaveText('₱70.00');
+                await page.getByRole('button', { name: 'Year', exact: true }).click();
+                await expect(page.locator('.seller-sales-total')).toHaveText('₱70.00');
+                await page.getByRole('button', { name: 'Week', exact: true }).click();
+                await page.screenshot({ path: testInfo.outputPath(`dashboard-live-${width}.png`), fullPage: true });
+            }
+            else await expect(page.getByRole('heading', { name: section, exact: true })).toBeVisible();
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
         }
+        if (width <= 800) await page.getByRole('button', { name: 'Toggle seller navigation' }).click();
+        await page.getByRole('navigation', { name: 'Seller navigation' }).getByRole('button', { name: 'Products', exact: true }).click();
+        await page.getByLabel('Select all products').check();
+        await page.getByRole('button', { name: 'Delete selected' }).click();
+        const deleteConfirmation = page.getByRole('dialog', { name: 'Delete selected products?' });
+        await expect(deleteConfirmation).toBeVisible();
+        await expect(deleteConfirmation).toContainText('Are you sure you want to delete 2 selected products?');
+        await deleteConfirmation.getByRole('button', { name: 'Delete products', exact: true }).click();
+        await expect(page.getByRole('status')).toHaveText('2 products deleted successfully.');
+        await expect(page.getByText('Your next harvest starts here')).toBeVisible();
         await page.locator('.seller-account').click();
         await expect(page.getByText('SELLER CENTER', { exact: true })).toHaveCount(0);
         await page.getByRole('button', { name: 'Notifications', exact: true }).click();
-        await expect(page.getByText('No notifications yet')).toBeVisible();
+        await expect(page.locator('#seller-notification-panel')).toBeVisible();
         await page.keyboard.press('Escape');
-        await expect(page.getByText('No notifications yet')).toHaveCount(0);
+        await expect(page.locator('#seller-notification-panel')).toHaveCount(0);
         await page.getByLabel('Choose profile photo').setInputFiles({ name: 'profile.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
         await page.getByRole('button', { name: 'Save photo', exact: true }).click();
         await expect(page.getByRole('status')).toContainText('Profile photo updated successfully.');
@@ -78,7 +396,7 @@ for (const [email, name, width] of accounts) {
         await page.reload();
         await expect(page.locator('html')).toHaveClass(/dark/);
         await page.getByRole('button', { name: 'Notifications', exact: true }).click();
-        await expect(page.getByText('No notifications yet')).toBeVisible();
+        await expect(page.locator('#seller-notification-panel')).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
         await page.screenshot({ path: testInfo.outputPath(`profile-dark-${width}.png`), fullPage: true });
         await page.getByRole('button', { name: 'Close notifications' }).click();

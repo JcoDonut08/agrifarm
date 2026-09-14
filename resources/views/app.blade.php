@@ -8,7 +8,7 @@
         <script>
             (() => {
                 const savedTheme = localStorage.getItem('agrifarm-theme');
-                const dark = savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const dark = savedTheme === 'dark' || ((!savedTheme || savedTheme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
                 document.documentElement.classList.toggle('dark', dark);
                 document.documentElement.style.colorScheme = dark ? 'dark' : 'light';

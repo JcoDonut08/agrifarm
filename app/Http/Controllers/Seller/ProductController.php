@@ -6,25 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
+    private const CATEGORIES = ['Vegetables', 'Fruits', 'Herbs', 'Beans'];
+
+    private const UNITS = ['kg', 'bunch', 'piece', 'head', 'pack'];
+
     public function store(Request $request): RedirectResponse
     {
-        $request->merge(['name' => trim((string) $request->input('name'))]);
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'category' => ['required', Rule::in(['Vegetables', 'Fruits', 'Herbs', 'Beans'])],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'price' => ['required', 'numeric', 'min:0.01', 'max:99999999.99', 'decimal:0,2'],
-            'unit' => ['required', Rule::in(['kg', 'bunch', 'piece', 'head', 'pack'])],
-            'stock' => ['required', 'integer', 'min:0', 'max:1000000'],
-            'threshold' => ['required', 'integer', 'min:0', 'max:1000000'],
-            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=6000,max_height=6000'],
-        ]);
+        $data = $this->validatedProduct($request, true);
         $path = $request->file('photo')->store('products/'.$request->user()->id, 'local');
         if (! $path) {
             throw ValidationException::withMessages(['photo' => 'The photo could not be saved. Please try again.']);
@@ -42,11 +37,96 @@ class ProductController extends Controller
         return redirect('/seller/dashboard?section=products')->with('status', 'Product added successfully.');
     }
 
+    public function update(Request $request, Product $product): RedirectResponse
+    {
+        $this->ensureOwner($request, $product);
+        $data = $this->validatedProduct($request, false);
+        $previousPath = $product->photo_path;
+        $replacementPath = null;
+
+        if ($request->hasFile('photo')) {
+            $replacementPath = $request->file('photo')->store('products/'.$request->user()->id, 'local');
+            if (! $replacementPath) {
+                throw ValidationException::withMessages(['photo' => 'The photo could not be saved. Please try again.']);
+            }
+            $data['photo_path'] = $replacementPath;
+        }
+        unset($data['photo']);
+
+        try {
+            $product->update($data);
+        } catch (\Throwable $exception) {
+            if ($replacementPath) {
+                Storage::disk('local')->delete($replacementPath);
+            }
+            throw $exception;
+        }
+
+        if ($replacementPath && $previousPath !== $replacementPath) {
+            Storage::disk('local')->delete($previousPath);
+        }
+
+        return redirect('/seller/dashboard?section=products')->with('status', 'Product updated successfully.');
+    }
+
+    public function destroy(Request $request, Product $product): RedirectResponse
+    {
+        $this->ensureOwner($request, $product);
+        $path = $product->photo_path;
+        $product->delete();
+        Storage::disk('local')->delete($path);
+
+        return redirect('/seller/dashboard?section=products')->with('status', 'Product deleted successfully.');
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'product_ids' => ['required', 'array', 'min:1', 'max:100'],
+            'product_ids.*' => ['required', 'integer', 'distinct'],
+        ]);
+        $ids = collect($data['product_ids'])->map(fn ($id) => (int) $id)->unique()->values();
+        $products = Product::where('user_id', $request->user()->id)->whereIn('id', $ids)->get();
+
+        if ($products->count() !== $ids->count()) {
+            throw ValidationException::withMessages(['product_ids' => 'One or more selected products could not be deleted.']);
+        }
+
+        $paths = $products->pluck('photo_path')->all();
+        DB::transaction(fn () => Product::where('user_id', $request->user()->id)->whereIn('id', $ids)->delete());
+        Storage::disk('local')->delete($paths);
+
+        $count = $ids->count();
+
+        return redirect('/seller/dashboard?section=products')->with('status', "{$count} ".($count === 1 ? 'product' : 'products').' deleted successfully.');
+    }
+
     public function photo(Request $request, Product $product)
     {
-        abort_unless($product->user_id === $request->user()->id, 404);
+        $this->ensureOwner($request, $product);
         abort_unless(Storage::disk('local')->exists($product->photo_path), 404);
 
         return response()->file(Storage::disk('local')->path($product->photo_path), ['Cache-Control' => 'private, max-age=3600', 'X-Content-Type-Options' => 'nosniff']);
+    }
+
+    private function validatedProduct(Request $request, bool $photoRequired): array
+    {
+        $request->merge(['name' => trim((string) $request->input('name'))]);
+
+        return $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'category' => ['required', Rule::in(self::CATEGORIES)],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'price' => ['required', 'numeric', 'min:0.01', 'max:99999999.99', 'decimal:0,2'],
+            'unit' => ['required', Rule::in(self::UNITS)],
+            'stock' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'threshold' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'photo' => [$photoRequired ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=6000,max_height=6000'],
+        ]);
+    }
+
+    private function ensureOwner(Request $request, Product $product): void
+    {
+        abort_unless($product->user_id === $request->user()->id, 404);
     }
 }

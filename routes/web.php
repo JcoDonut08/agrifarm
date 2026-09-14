@@ -7,6 +7,7 @@ use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\ProfileController;
+use App\Http\Controllers\Seller\WalkInOrderController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -31,7 +32,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('seller.dashboard');
 
     Route::middleware('role:seller')->group(function () {
-        Route::post('/seller/products', [ProductController::class, 'store'])->middleware('throttle:20,1')->name('seller.products.store');
+        Route::post('/seller/products', [ProductController::class, 'store'])->middleware('throttle:seller-product-management')->name('seller.products.store');
+        Route::patch('/seller/products/{product}', [ProductController::class, 'update'])->middleware('throttle:seller-product-management')->name('seller.products.update');
+        Route::delete('/seller/products', [ProductController::class, 'bulkDestroy'])->middleware('throttle:seller-product-management')->name('seller.products.bulk-destroy');
+        Route::delete('/seller/products/{product}', [ProductController::class, 'destroy'])->middleware('throttle:seller-product-management')->name('seller.products.destroy');
+        Route::post('/seller/orders/walk-in', [WalkInOrderController::class, 'store'])->middleware('throttle:30,1')->name('seller.orders.walk-in.store');
+        Route::patch('/seller/orders/{walkInOrder}/status', [WalkInOrderController::class, 'updateStatus'])->middleware('throttle:seller-order-status')->name('seller.orders.status.update');
         Route::get('/seller/products/{product}/photo', [ProductController::class, 'photo'])->name('seller.products.photo');
         Route::post('/seller/profile/photo', [ProfileController::class, 'photo'])->middleware('throttle:10,1')->name('seller.profile.photo');
         Route::get('/seller/profile/photo', [ProfileController::class, 'showPhoto']);

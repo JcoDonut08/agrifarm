@@ -7,6 +7,7 @@ export default function Icon({ name, size = 20, ...props }) {
         trend: <path d="m3 17 6-6 4 4 8-10M15 5h6v6" />,
         reset: <><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6" /></>,
         trash: <><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" /></>,
+        edit: <><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z" /><path d="m13.5 6.5 4 4" /></>,
         receipt: <><path d="M5 3v18l3-2 4 2 4-2 3 2V3l-3 2-4-2-4 2Z M9 9h6M9 13h6" /></>,
         lock: <><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></>,
         settings: <><path d="M4 6h16M4 12h16M4 18h16" /><circle cx="8" cy="6" r="2" fill="currentColor" /><circle cx="16" cy="12" r="2" fill="currentColor" /><circle cx="10" cy="18" r="2" fill="currentColor" /></>,
@@ -30,6 +31,8 @@ export default function Icon({ name, size = 20, ...props }) {
         people: <><circle cx="12" cy="6" r="3" /><circle cx="4" cy="9" r="2" /><circle cx="20" cy="9" r="2" /><path d="M6 21v-4a6 6 0 0 1 12 0v4M2 19v-3c0-2 1-3 3-3M22 19v-3c0-2-1-3-3-3" /></>,
         trophy: <><path d="M7 3h10v6a5 5 0 0 1-10 0ZM7 5H3v3a4 4 0 0 0 5 4M17 5h4v3a4 4 0 0 1-5 4M12 14v6m-5 1h10" /></>,
         check: <path d="m5 12 4 4L19 6" />,
+        leaf: <><path d="M20 4C11 4 5 8 5 15c0 3 2 5 5 5 7 0 10-8 10-16Z" /><path d="M4 21c3-6 7-9 13-12" /></>,
+        sprout: <><path d="M12 21v-9" /><path d="M12 12C7 12 4 9 4 5c5 0 8 3 8 7Z" /><path d="M12 15c0-5 3-8 8-8 0 5-3 8-8 8Z" /></>,
     };
 
     return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{paths[name] || paths.leaf}</svg>;

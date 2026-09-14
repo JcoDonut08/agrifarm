@@ -1,46 +1,77 @@
 import { useEffect, useState } from 'react';
 
 const storageKey = 'agrifarm-theme';
+const allowedThemes = ['light', 'dark', 'system'];
 
-export default function ThemeToggle({ inverted = false, settings = false }) {
+function savedTheme() {
+    try {
+        const saved = localStorage.getItem(storageKey);
+        return allowedThemes.includes(saved) ? saved : 'system';
+    } catch {
+        return 'system';
+    }
+}
+
+export default function ThemeToggle({ inverted = false, settings = false, systemOption = false, labels = {} }) {
+    const [preference, setPreference] = useState(savedTheme);
     const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
 
     useEffect(() => {
+        const media = window.matchMedia('(prefers-color-scheme: dark)');
+        const syncSystemTheme = () => {
+            if (savedTheme() !== 'system') return;
+            applyTheme(media.matches);
+            setDark(media.matches);
+        };
         const syncTheme = (event) => {
-            if (event.key === storageKey && event.newValue) {
-                applyTheme(event.newValue === 'dark');
-                setDark(event.newValue === 'dark');
-            }
+            if (event.key !== storageKey) return;
+            const next = allowedThemes.includes(event.newValue) ? event.newValue : 'system';
+            const nextDark = next === 'dark' || (next === 'system' && media.matches);
+            applyTheme(nextDark);
+            setPreference(next);
+            setDark(nextDark);
         };
 
+        media.addEventListener('change', syncSystemTheme);
         window.addEventListener('storage', syncTheme);
 
-        return () => window.removeEventListener('storage', syncTheme);
+        return () => {
+            media.removeEventListener('change', syncSystemTheme);
+            window.removeEventListener('storage', syncTheme);
+        };
     }, []);
 
-    function setTheme(nextDark) {
+    function setTheme(nextPreference) {
+        const nextDark = nextPreference === 'dark'
+            || (nextPreference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
         applyTheme(nextDark);
-        try { localStorage.setItem(storageKey, nextDark ? 'dark' : 'light'); } catch { /* Keep the current session usable without storage. */ }
+        try { localStorage.setItem(storageKey, nextPreference); } catch { /* Keep the current session usable without storage. */ }
+        setPreference(nextPreference);
         setDark(nextDark);
     }
 
     if (settings) return (
         <fieldset className="appearance-settings">
-            <legend>Appearance</legend>
-            <p>Choose how AgriFarm looks on this device.</p>
+            <legend>{labels.title || 'Appearance'}</legend>
+            <p>{labels.description || 'Choose how AgriFarm looks on this device.'}</p>
             <div className="appearance-options">
-                <button type="button" aria-pressed={!dark} onClick={() => setTheme(false)}><SunIcon />Light</button>
-                <button type="button" aria-pressed={dark} onClick={() => setTheme(true)}><MoonIcon />Dark</button>
+                <button type="button" aria-pressed={preference === 'light'} onClick={() => setTheme('light')}><SunIcon />{labels.light || 'Light'}</button>
+                <button type="button" aria-pressed={preference === 'dark'} onClick={() => setTheme('dark')}><MoonIcon />{labels.dark || 'Dark'}</button>
+                {systemOption && <button type="button" aria-pressed={preference === 'system'} onClick={() => setTheme('system')}><SystemIcon />{labels.system || 'System'}</button>}
             </div>
         </fieldset>
     );
 
+    const switchLabel = dark
+        ? (labels.switchToLight || 'Switch to light mode')
+        : (labels.switchToDark || 'Switch to dark mode');
+
     return (
         <button
             type="button"
-            onClick={() => setTheme(!dark)}
-            aria-label={`Switch to ${dark ? 'light' : 'dark'} mode`}
-            title={`Switch to ${dark ? 'light' : 'dark'} mode`}
+            onClick={() => setTheme(dark ? 'light' : 'dark')}
+            aria-label={switchLabel}
+            title={switchLabel}
             aria-pressed={dark}
             className={`grid size-10 shrink-0 place-items-center rounded-xl border transition ${inverted ? 'border-white/25 bg-white/10 text-white hover:bg-white/20' : 'border-forest-950/10 text-forest-800 hover:bg-forest-50 dark:border-white/15 dark:text-harvest-400 dark:hover:bg-white/10'}`}
         >
@@ -69,6 +100,15 @@ function MoonIcon() {
     return (
         <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20.2 15.2A8.5 8.5 0 0 1 8.8 3.8 8.5 8.5 0 1 0 20.2 15.2Z" />
+        </svg>
+    );
+}
+
+function SystemIcon() {
+    return (
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="14" rx="2" />
+            <path d="M8 22h8M12 18v4" />
         </svg>
     );
 }
