@@ -20,19 +20,8 @@ for (const viewport of viewports) {
         await page.goto('/');
         await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh from');
         await expect(page.getByRole('link', { name: 'Create account', exact: true }).first()).toBeVisible();
-        await page.getByRole('button', { name: 'Open account menu' }).click();
-        await page.getByRole('button', { name: 'Settings', exact: true }).click();
-        await page.getByRole('button', { name: 'Dark', exact: true }).click();
-        await expect(page.locator('html')).toHaveClass(/dark/);
-        expect(await page.evaluate(() => localStorage.getItem('agrifarm-theme'))).toBe('dark');
-        await page.reload();
-        await expect(page.locator('html')).toHaveClass(/dark/);
-        await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-home-dark.png`), fullPage: true });
-        await page.getByRole('button', { name: 'Open account menu' }).click();
-        await page.getByRole('button', { name: 'Settings', exact: true }).click();
-        await page.getByRole('button', { name: 'Light', exact: true }).click();
-        await page.keyboard.press('Escape');
-        await expect(page.locator('html')).not.toHaveClass(/dark/);
+        await expect(page.locator('header').getByRole('link', { name: 'Log in' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Open account menu' })).toHaveCount(0);
         if (viewport.width <= 1000) {
             await page.getByRole('button', { name: 'Open navigation menu' }).click();
             await expect(page.getByRole('navigation', { name: 'Mobile navigation' })).toBeVisible();
@@ -42,6 +31,13 @@ for (const viewport of viewports) {
         }
         await assertNoHorizontalOverflow(page);
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-home.png`), fullPage: true });
+        await page.getByRole('button', { name: /^Add .* to cart$/ }).first().click();
+        await expect(page.getByRole('link', { name: 'Shopping cart, 1 items' })).toBeVisible();
+        await page.goto('/?page=cart');
+        await expect(page.getByText('These are sample products.')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Checkout coming soon' })).toHaveCount(0);
+        await assertNoHorizontalOverflow(page);
+        await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-cart-signed-out.png`), fullPage: true });
 
         await page.goto('/terms');
         await expect(page.getByRole('heading', { name: 'Terms of Use', level: 1 })).toBeVisible();
@@ -87,6 +83,26 @@ for (const viewport of viewports) {
         });
         await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh from');
         await expect(page.getByRole('button', { name: 'Open account menu' })).toBeVisible();
+        await expect(page.locator('header').getByRole('link', { name: 'Log in' })).toHaveCount(0);
+        await page.goto('/?page=cart');
+        await expect(page.getByText('These are sample products.')).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Log in to checkout' })).toHaveCount(0);
+        await assertNoHorizontalOverflow(page);
+        await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-cart-signed-in.png`), fullPage: true });
+        await page.goto('/');
+        await page.getByRole('button', { name: 'Open account menu' }).click();
+        await page.getByRole('button', { name: 'Settings', exact: true }).click();
+        await page.getByRole('button', { name: 'Dark', exact: true }).click();
+        await expect(page.locator('html')).toHaveClass(/dark/);
+        expect(await page.evaluate(() => localStorage.getItem('agrifarm-theme'))).toBe('dark');
+        await page.reload();
+        await expect(page.locator('html')).toHaveClass(/dark/);
+        await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-home-dark.png`), fullPage: true });
+        await page.getByRole('button', { name: 'Open account menu' }).click();
+        await page.getByRole('button', { name: 'Settings', exact: true }).click();
+        await page.getByRole('button', { name: 'Light', exact: true }).click();
+        await page.keyboard.press('Escape');
+        await expect(page.locator('html')).not.toHaveClass(/dark/);
         await assertNoHorizontalOverflow(page);
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-customer.png`), fullPage: true });
         await openCustomerProfile(page);

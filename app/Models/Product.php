@@ -3,9 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Scout\Searchable;
 
 class Product extends Model
 {
+    use Searchable;
+
     protected $fillable = ['name', 'category', 'description', 'price', 'unit', 'stock', 'threshold', 'photo_path'];
 
     protected $hidden = ['photo_path'];
@@ -20,5 +25,29 @@ class Product extends Model
     public function getPhotoUrlAttribute(): string
     {
         return '/seller/products/'.$this->id.'/photo';
+    }
+
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function walkInOrders(): HasMany
+    {
+        return $this->hasMany(WalkInOrder::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'category' => $this->category,
+            'description' => $this->description,
+        ];
     }
 }

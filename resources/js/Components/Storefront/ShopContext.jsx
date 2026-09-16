@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { products } from './catalog';
+import { products as previewProducts } from './catalog';
 
 const ShopContext = createContext(null);
 const storageKey = 'agrifarm-marketplace-preview-v1';
 
-function readSaved() {
+function readSaved(products) {
     try {
         const saved = JSON.parse(localStorage.getItem(storageKey)) || {};
         const ids = new Set(products.map((product) => product.id));
@@ -17,8 +17,8 @@ function readSaved() {
     }
 }
 
-export function ShopProvider({ children }) {
-    const [saved, setSaved] = useState(readSaved);
+export function ShopProvider({ children, products = previewProducts }) {
+    const [saved, setSaved] = useState(() => readSaved(products));
     const [panel, setPanel] = useState(null);
     const [notice, setNotice] = useState('');
     const [noticeId, setNoticeId] = useState(0);
@@ -36,6 +36,15 @@ export function ShopProvider({ children }) {
     }, [saved]);
 
     useEffect(() => {
+        const available = new Map(products.map((product) => [product.id, product]));
+        setSaved((previous) => {
+            const favorites = previous.favorites.filter((id) => available.has(id));
+            const cart = Object.fromEntries(Object.entries(previous.cart).map(([id, quantity]) => [id, Math.min(quantity, available.get(id)?.stock || 0)]).filter(([, quantity]) => quantity > 0));
+            return favorites.length === previous.favorites.length && JSON.stringify(cart) === JSON.stringify(previous.cart) ? previous : { favorites, cart };
+        });
+    }, [products]);
+
+    useEffect(() => {
         if (!notice || noticePaused) return;
         const timeout = window.setTimeout(() => setNotice(''), 8000);
         return () => window.clearTimeout(timeout);
@@ -51,14 +60,26 @@ export function ShopProvider({ children }) {
         });
     }
 
-    function add(product) {
-        if ((saved.cart[product.id] || 0) >= product.stock) {
+    function addQuantity(product, quantity) {
+        if ((saved.cart[product.id] || 0) + quantity > product.stock) {
             notify('You have added all available stock for this item.');
             return false;
         }
-        changeQuantity(product.id, 1);
-        notify(`${product.name} added to your cart.`, 'cart');
+        changeQuantity(product.id, quantity);
+        notify(`${quantity} ${quantity === 1 ? 'unit' : 'units'} of ${product.name} added to your cart.`, 'cart');
         return true;
+    }
+
+    function clearPurchased(ids) {
+        setSaved((previous) => {
+            const cart = { ...previous.cart };
+            ids.forEach((id) => { delete cart[id]; });
+            return { ...previous, cart };
+        });
+    }
+
+    function add(product) {
+        return addQuantity(product, 1);
     }
 
     function saveForLater(id) {
@@ -77,7 +98,7 @@ export function ShopProvider({ children }) {
         setSaved((previous) => ({ ...previous, favorites: previous.favorites.includes(id) ? previous.favorites.filter((item) => item !== id) : [...previous.favorites, id] }));
     }
 
-    const value = { ...saved, panel, setPanel, notice, noticeId, noticeTarget, dismissNotice: () => setNotice(''), setNoticePaused, add, saveForLater, changeQuantity, toggleFavorite, count: Object.values(saved.cart).reduce((total, quantity) => total + quantity, 0) };
+    const value = { ...saved, products, panel, setPanel, notice, noticeId, noticeTarget, dismissNotice: () => setNotice(''), setNoticePaused, add, addQuantity, saveForLater, changeQuantity, clearPurchased, toggleFavorite, count: Object.values(saved.cart).reduce((total, quantity) => total + quantity, 0) };
     return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
 

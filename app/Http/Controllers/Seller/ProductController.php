@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Services\ProductPhotoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,13 +18,10 @@ class ProductController extends Controller
 
     private const UNITS = ['kg', 'bunch', 'piece', 'head', 'pack'];
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ProductPhotoService $photos): RedirectResponse
     {
         $data = $this->validatedProduct($request, true);
-        $path = $request->file('photo')->store('products/'.$request->user()->id, 'local');
-        if (! $path) {
-            throw ValidationException::withMessages(['photo' => 'The photo could not be saved. Please try again.']);
-        }
+        $path = $photos->store($request->file('photo'), $request->user()->id);
         unset($data['photo']);
         try {
             $product = new Product([...$data, 'photo_path' => $path]);
@@ -37,7 +35,7 @@ class ProductController extends Controller
         return redirect('/seller/dashboard?section=products')->with('status', 'Product added successfully.');
     }
 
-    public function update(Request $request, Product $product): RedirectResponse
+    public function update(Request $request, Product $product, ProductPhotoService $photos): RedirectResponse
     {
         $this->ensureOwner($request, $product);
         $data = $this->validatedProduct($request, false);
@@ -45,10 +43,7 @@ class ProductController extends Controller
         $replacementPath = null;
 
         if ($request->hasFile('photo')) {
-            $replacementPath = $request->file('photo')->store('products/'.$request->user()->id, 'local');
-            if (! $replacementPath) {
-                throw ValidationException::withMessages(['photo' => 'The photo could not be saved. Please try again.']);
-            }
+            $replacementPath = $photos->store($request->file('photo'), $request->user()->id);
             $data['photo_path'] = $replacementPath;
         }
         unset($data['photo']);

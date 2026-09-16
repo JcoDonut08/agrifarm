@@ -2,21 +2,32 @@
 import GuestLayout from '../Layouts/GuestLayout';
 import Marketplace from './Marketplace';
 import Cart from './Cart';
+import Checkout from './Checkout';
 import Favorites from './Favorites';
 import Notifications from './Notifications';
+import ProductDetail from './ProductDetail';
+import SellerStorefront from './SellerStorefront';
 import Icon from '../Components/Storefront/Icon';
-import ProductCard from '../Components/Storefront/ProductCard';
+import ProductCard, { ProducePhoto } from '../Components/Storefront/ProductCard';
 import { ShopProvider } from '../Components/Storefront/ShopContext';
-import { communities, marketHref, products } from '../Components/Storefront/catalog';
-
-const popularProducts = [products[0], products[1], products[2], products[6]];
-const newProducts = [products[3], products[4], products[5], products[9]];
+import { communities, marketHref, money, productHref, products } from '../Components/Storefront/catalog';
 
 export default function Welcome() {
     const { url, props } = usePage();
+    const sellerProducts = props.sellerProducts || [];
+    const hasSellerProducts = sellerProducts.length > 0;
+    const listings = hasSellerProducts ? sellerProducts : products;
+    const popularProducts = hasSellerProducts ? listings.slice(0, 4) : [products[0], products[1], products[2], products[6]];
+    const newProducts = hasSellerProducts ? listings.slice(4, 8) : [products[3], products[4], products[5], products[9]];
+    const bestBarangay = props.bestBarangay;
+    const bestSellingProducts = (props.bestSellingProducts || []).map((sale) => listings.find((product) => product.id === sale.id)).filter(Boolean);
+    const bestBarangaySale = props.bestBarangayProduct;
+    const bestBarangayProduct = listings.find((product) => product.id === bestBarangaySale?.id);
     const query = new URLSearchParams(url.split('?')[1]?.split('#')[0] || '');
     const page = query.get('page') || 'home';
     const market = page === 'marketplace';
+    const productId = query.get('product') || '';
+    const selectedProduct = listings.find((product) => product.id === productId);
     const extraPage = { cart: Cart, favorites: Favorites, notifications: Notifications }[page];
     const ExtraPage = extraPage;
     const user = props.auth?.user;
@@ -25,10 +36,10 @@ export default function Welcome() {
         : '/register';
 
     return (
-        <ShopProvider>
-            <GuestLayout storefront market={market}>
-                <Head title={{ marketplace: 'Marketplace', cart: 'Your cart', favorites: 'Favorites', notifications: 'Notifications' }[page] || 'Fresh from your community'} />
-                {ExtraPage ? <ExtraPage /> : market ? <Marketplace key={url} initialBarangay={query.get('barangay') || ''} /> : <>
+        <ShopProvider products={listings}>
+            <GuestLayout storefront market={market || page === 'product' || page === 'seller'}>
+                <Head title={{ marketplace: 'Marketplace', cart: 'Your cart', checkout: 'Checkout', favorites: 'Favorites', notifications: 'Notifications', product: selectedProduct?.name || 'Product not found', seller: props.sellerProfile?.name || 'Seller not found' }[page] || 'Fresh from your community'} />
+                {page === 'product' ? <ProductDetail productId={productId} products={listings} reviewFeed={props.reviewFeed} user={user} /> : page === 'seller' ? <SellerStorefront profile={props.sellerProfile} /> : page === 'checkout' ? <Checkout order={props.checkoutOrder} /> : ExtraPage ? <ExtraPage /> : market ? <Marketplace key={url} products={listings} hasSellerProducts={hasSellerProducts} serverResults={props.marketplaceResults} initialBarangay={query.get('barangay') || ''} initialSort={query.get('sort') || ''} /> : <>
                     <section className="home-hero" aria-labelledby="hero-heading">
                         <img
                             className="hero-photo"
@@ -60,8 +71,10 @@ export default function Welcome() {
                                 <div><h2 id="communities-heading">Featured Barangays</h2><p>Good things grow close to home.</p></div>
                             </div>
                             <div className="community-grid">
-                                {communities.map((community, index) => (
-                                    <Link href={marketHref(community.name)} className="community-card" key={community.name}>
+                                {communities.map((community, index) => {
+                                    const stats = props.communityStats?.find((item) => item.name === community.name);
+                                    const active = !hasSellerProducts || (stats?.listingCount || 0) > 0;
+                                    const content = <>
                                         <div
                                             className="community-photo"
                                             role="img"
@@ -70,27 +83,41 @@ export default function Welcome() {
                                         />
                                         <div className="community-copy">
                                             <h3>{community.name}</h3>
-                                            <p>{community.description}</p>
-                                            <span>Explore products <Icon name="arrow" size={17} /></span>
+                                            <p>{hasSellerProducts ? `${stats?.listingCount || 0} ${(stats?.listingCount || 0) === 1 ? 'seller listing' : 'seller listings'}` : community.description}</p>
+                                            <span>{active ? <>Explore products <Icon name="arrow" size={17} /></> : 'Awaiting listings'}</span>
                                         </div>
-                                    </Link>
-                                ))}
+                                    </>;
+                                    return active
+                                        ? <Link href={marketHref(community.name)} className="community-card" key={community.name}>{content}</Link>
+                                        : <div className="community-card is-unavailable" key={community.name}>{content}</div>;
+                                })}
                             </div>
                         </section>
-                        <section className="featured-banner" aria-labelledby="featured-heading">
-                            <div className="featured-photo" role="img" aria-label="Fresh pechay with crisp white stalks and green leaves" />
-                            <div className="featured-leaves" aria-hidden="true"><Icon name="leaf" size={110} /><Icon name="leaf" size={100} /></div>
+                        <section className={`featured-banner ${bestBarangayProduct ? 'has-featured-product' : ''}`} aria-labelledby="featured-heading">
+                            {!bestBarangayProduct && <div className="featured-photo" role="img" aria-label="Fresh leafy produce from a local garden" />}
                             <div className="featured-copy">
-                                <p className="featured-eyebrow"><Icon name="trophy" size={25} /> #1 FEATURED BARANGAY</p>
-                                <h2 id="featured-heading">Barangay Rosario</h2>
-                                <div className="featured-rating" aria-label="Sample rating: 4.9 out of 5"><span aria-hidden="true">★★★★★</span> 4.9</div>
-                                <p>Rooted in community. Grown with care.</p>
-                                <Link className="store-button white-button" href={marketHref('Rosario')}>Shop Rosario <Icon name="arrow" /></Link>
+                                <p className="featured-eyebrow"><Icon name="trophy" size={25} /> {bestBarangay ? 'BEST BARANGAY' : 'BEST BARANGAY · RANKING PENDING'}</p>
+                                <h2 id="featured-heading">{bestBarangay ? `Barangay ${bestBarangay.name}` : 'Fresh communities, growing together'}</h2>
+                                <p>{bestBarangay ? `${money(bestBarangay.deliveredRevenue)} from ${bestBarangay.deliveredOrderCount} delivered walk-in ${bestBarangay.deliveredOrderCount === 1 ? 'order' : 'orders'}.` : 'The leading barangay will appear after walk-in orders are delivered.'}</p>
+                                <div className="featured-actions"><Link className="store-button white-button" href={bestBarangayProduct ? productHref(bestBarangayProduct.id) : marketHref()}>{bestBarangayProduct ? 'View featured product' : 'Browse marketplace'} <Icon name="arrow" /></Link>{bestBarangay && <Link className="featured-market-link" href={marketHref(bestBarangay.name)}>Shop {bestBarangay.name} <Icon name="arrow" size={17} /></Link>}</div>
                             </div>
-                            <span className="featured-price">Fresh Pechay · ₱35 / bunch</span>
+                            {bestBarangayProduct ? <div className="featured-product-stage">
+                                <div className="featured-stage-image"><ProducePhoto product={bestBarangayProduct} className="featured-product-photo" /></div>
+                                <div className="featured-stage-copy">
+                                    <span className="featured-stage-kicker"><Icon name="sprout" size={16} /> {bestBarangaySale.orderCount ? 'MOST ORDERED' : 'LOCAL LISTING'}</span>
+                                    <Link href={productHref(bestBarangayProduct.id)} className="featured-stage-name">{bestBarangayProduct.name} <Icon name="arrow" size={18} /></Link>
+                                    <span className="featured-stage-origin">From Barangay {bestBarangay.name}</span>
+                                    <strong>{money(bestBarangayProduct.price)} <small>/ {bestBarangayProduct.unit}</small></strong>
+                                    {bestBarangaySale.orderCount > 0 && <span className="featured-stage-sales">{bestBarangaySale.orderCount} delivered walk-in {bestBarangaySale.orderCount === 1 ? 'order' : 'orders'}</span>}
+                                </div>
+                            </div> : <span className="featured-price">Based on delivered walk-in sales</span>}
                         </section>
-                        <ProductSection id="popular-heading" title="Popular Products" description="Everyday favorites from neighborhood growers." products={popularProducts} />
-                        <ProductSection id="fresh-heading" title="Fresh New Products" description="A fresh selection for your next meal." products={newProducts} />
+                        <section className="home-section top-selling-section" aria-labelledby="top-selling-heading">
+                            <div className="section-heading"><div><h2 id="top-selling-heading">Best-selling plants</h2><p>Most ordered products from delivered walk-in sales.</p></div>{bestSellingProducts.length > 0 && <Link className="section-link" href={marketHref(null, 'best-selling')}>View all <Icon name="arrow" size={17} /></Link>}</div>
+                            {bestSellingProducts.length > 0 ? <div className="home-product-grid">{bestSellingProducts.map((product) => <ProductCard product={product} key={product.id} />)}</div> : <div className="top-selling-empty"><Icon name="trophy" size={28} /><div><h3>No best sellers yet</h3><p>Products with delivered walk-in orders will appear here.</p></div></div>}
+                        </section>
+                        <ProductSection id="popular-heading" title={hasSellerProducts ? 'Fresh from local sellers' : 'Popular Products'} description={hasSellerProducts ? 'Real harvests listed by AgriFarm growers.' : 'Everyday favorites from neighborhood growers.'} products={popularProducts} />
+                        {newProducts.length > 0 && <ProductSection id="fresh-heading" title={hasSellerProducts ? 'More to explore' : 'Fresh New Products'} description={hasSellerProducts ? 'Find more produce from local sellers.' : 'A fresh selection for your next meal.'} products={newProducts} />}
                         <section className="harvest-cta" aria-labelledby="harvest-heading">
                             <div>
                                 <h2 id="harvest-heading">READY TO GRAB<br />THE HARVEST?</h2>

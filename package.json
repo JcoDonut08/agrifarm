@@ -7,6 +7,7 @@
         "test:e2e": "playwright test"
     },
     "devDependencies": {
+        "@axe-core/playwright": "^4.13.0",
         "@inertiajs/vite": "^3.7.0",
         "@playwright/test": "^1.62.1",
         "@tailwindcss/vite": "^4.0.0",

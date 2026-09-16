@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
-import Icon from '../../Components/Storefront/Icon';
+import Icon from './Storefront/Icon';
 
 export default function ConfirmationDialog({
     open,
@@ -57,10 +57,7 @@ export default function ConfirmationDialog({
     >
         <div className="seller-confirmation-content">
             <span className="seller-confirmation-icon"><Icon name={icon} size={25} /></span>
-            <div>
-                <h2 id={titleId}>{title}</h2>
-                <p id={descriptionId}>{description}</p>
-            </div>
+            <div><h2 id={titleId}>{title}</h2><p id={descriptionId}>{description}</p></div>
         </div>
         <div className="seller-confirmation-actions">
             <button ref={cancelButton} type="button" className="seller-outline-button" disabled={busy} onClick={dismiss}>{cancelLabel}</button>

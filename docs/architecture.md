@@ -1,97 +1,45 @@
 # AgriFarm architecture
 
-## Goal
-
-Keep AgriFarm understandable, testable, and easy for a small thesis team to maintain. The application is a Laravel monolith with a React interface connected by Inertia. Python forecasting remains an independent workspace until integration is explicitly required.
-
-## Request flow
+AgriFarm is a Laravel monolith with a React/Inertia interface. Laravel owns validation, authorization, persistence, and business rules; React owns rendering and transient interaction state.
 
 ```text
-Browser
-  -> Laravel route
-  -> Controller
-  -> Service when the workflow needs one
-  -> Eloquent model
-  -> PostgreSQL
-  -> Inertia response
-  -> React page
+Browser -> route -> controller/request -> Eloquent -> PostgreSQL
+        <- Inertia page props <- React page/components
 ```
 
-React owns display and interface state. Laravel owns validation, authorization, business rules, and database access.
-
-## Current authentication foundation
+## Current feature areas
 
 ```text
 app/
-  Enums/UserRole.php
-  Http/
-    Controllers/Auth/
-    Controllers/{Customer,Seller,Admin}/
-    Requests/Auth/
-    Middleware/EnsureUserHasRole.php
-    Middleware/HandleInertiaRequests.php
-  Models/{User,LoginOtp}.php
-  Services/Auth/LoginOtpService.php
-  Providers/
-database/
-  migrations/
-  factories/
-  seeders/
-resources/
-  css/app.css
-  js/
-    Components/
-    Layouts/
-    Pages/{Auth,Legal,Customer,Seller,Admin}/
-    app.jsx
-  views/app.blade.php
-routes/
-  auth.php
-  console.php
-  web.php
+  Http/Controllers/
+    Auth/                    registration, login OTP, password reset
+    Seller/                  inventory, orders, profile
+    StorefrontController     public catalog, search, rankings, reviews, shops
+    ProductReviewController  customer review CRUD
+    CustomerCheckoutController  COD orders, stock locks, price snapshots
+  Models/                    users, products, reviews, walk-in orders
+  Services/Auth/             multi-step authentication workflows
+resources/js/
+  Components/Storefront/     shared storefront controls and product/review UI
+  Layouts/                   storefront and role workspace shells
+  Pages/                     customer, seller, admin, legal, product/shop pages
+resources/css/
+  storefront.css             customer storefront and public seller shops
+  seller.css                 seller workspace
 tests/
-  Feature/Auth/
-  e2e/
+  Feature/                   authorization, validation, persistence, page props
+  e2e/                       responsive browser interactions and accessibility
 ```
 
-PostgreSQL is the application database. Public registrations remain pending until the email OTP succeeds, then a verified customer account is created. Existing users sign in directly with their password. Customers return to the marketplace homepage, while sellers and CENRO administrators are redirected to the workspace selected by their server-side role. Password-reset OTPs remain hashed and expiring, and role middleware protects the three initial workspace routes.
+## Rules
 
-## Add only when needed next
+- Use Eloquent as the data-access layer; do not add repositories.
+- Keep simple CRUD in controllers. Use services and database transactions for multi-write workflows such as order placement, payment, stock reservation, or analytics generation.
+- Protect seller-owned resources server-side. Public routes expose only intentionally mapped storefront fields and safe image responses.
+- Query-string storefront pages preserve shareable URLs. Review pagination uses `review_page`; marketplace pagination uses `market_page`.
+- Cart/favorites remain client-side. COD checkout uses a UUID-keyed header and transactional, locked stock decrements; each seller receives one line in their existing Orders workspace.
+- Add directories and abstractions only when a real feature needs them.
 
-- `app/Policies`: first resource ownership or authorization policy
-- `forecasting`: independent SARIMA development phase
+## Deferred boundary
 
-Do not create placeholder directories. Git does not track empty folders, and speculative structure makes the codebase harder to navigate.
-
-## Service rule
-
-A service is not required merely because a model exists. Simple Eloquent CRUD can remain in a small controller. Use a service for operations such as placing an order, reserving inventory, processing a payment once, or calculating analytics. Laravel database transactions belong around multi-write workflows that must succeed together.
-
-No repository layer is planned. Eloquent is the project's data-access layer.
-
-## Remaining database design gate
-
-Before migrations are created, review and approve:
-
-- profile ownership beyond the current user role
-- product-to-inventory cardinality
-- order and payment status transitions
-- order-item price snapshots
-- inventory concurrency and prevention of negative stock
-- idempotency for transaction/payment processing
-- forecast values and metric relationships
-- whether generated reports need persistent records
-
-Use decimal columns for money, foreign keys and indexes for relationships, and constraints for important invariants. Store relational data in columns and related tables unless JSON has a specific justified use.
-
-## Forecasting boundary
-
-When forecasting work begins, create a root `forecasting/` workspace with `src/`, `tests/`, and isolated data directories. Laravel-to-Python integration and FastAPI remain deferred. Raw research data, processed data, and generated outputs must not be committed.
-
-## Naming and organization
-
-- Use `Admin` consistently for CENRO administrative code and `cenro_admin` for the eventual role value.
-- Use `resources/js/Layouts` for page shells; do not create a duplicate `Components/Layout` folder.
-- Keep models flat in `app/Models` until their number genuinely makes grouping helpful.
-- Clarify whether the proposed `Transaction` entity represents a payment, ledger entry, or both before naming its model and table.
-- Add a `Report` model only if report files or report-generation history must be stored.
+Forecasting remains a separate future workspace. Online payments, automatic delivery-fee calculation, and report retention still need design before production integration.

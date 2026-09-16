@@ -5,7 +5,7 @@ import Icon from '../../Components/Storefront/Icon';
 import SellerFlashStatus from './SellerFlashStatus';
 import Pagination from './Pagination';
 import { categoryLabel, localizeMessage, unitLabel } from './SellerLocale';
-import ConfirmationDialog from './ConfirmationDialog';
+import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import '../../../css/seller-products.css';
 
 const initial = { name: '', category: '', description: '', price: '', unit: 'kg', stock: '', threshold: '5' };

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WalkInOrder extends Model
 {
@@ -15,5 +16,15 @@ class WalkInOrder extends Model
             'unit_price' => 'decimal:2',
             'total' => 'decimal:2',
         ];
+    }
+
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function checkout(): BelongsTo
+    {
+        return $this->belongsTo(CustomerCheckout::class, 'customer_checkout_id');
     }
 }

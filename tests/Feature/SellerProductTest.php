@@ -17,7 +17,7 @@ class SellerProductTest extends TestCase
 
     private function payload(array $overrides = []): array
     {
-        return [...['name' => 'Fresh Pechay', 'category' => 'Vegetables', 'description' => 'Fresh harvest', 'price' => '35.50', 'unit' => 'bunch', 'stock' => 3, 'threshold' => 5, 'photo' => UploadedFile::fake()->createWithContent('photo.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII='))], ...$overrides];
+        return [...['name' => 'Fresh Pechay', 'category' => 'Vegetables', 'description' => 'Fresh harvest', 'price' => '35.50', 'unit' => 'bunch', 'stock' => 3, 'threshold' => 5, 'photo' => $this->photo()], ...$overrides];
     }
 
     public function test_seller_can_save_and_retrieve_products_and_photos_without_accessing_another_sellers_inventory(): void
@@ -31,7 +31,7 @@ class SellerProductTest extends TestCase
         $this->assertSame($seller->id, $product->user_id);
         $this->assertSame('35.50', $product->price);
         Storage::disk('local')->assertExists($product->photo_path);
-        $this->get($product->photo_url)->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->get($product->photo_url)->assertOk()->assertHeader('Content-Type', extension_loaded('gd') || extension_loaded('imagick') ? 'image/webp' : 'image/png');
         $this->get('/seller/dashboard')->assertInertia(fn (Assert $page) => $page->has('products', 1)->where('products.0.name', 'Fresh Pechay'));
         $this->actingAs($other)->get('/seller/dashboard')->assertInertia(fn (Assert $page) => $page->has('products', 0));
         $this->get($product->photo_url)->assertNotFound();
@@ -44,6 +44,33 @@ class SellerProductTest extends TestCase
         $this->post('/seller/products', [...$this->payload(), 'price' => '-1', 'stock' => '1.5', 'unit' => 'invalid', 'category' => 'invalid', 'photo' => UploadedFile::fake()->create('bad.txt', 1, 'text/plain')])->assertSessionHasErrors(['price', 'stock', 'unit', 'category', 'photo']);
         $this->assertDatabaseCount('products', 0);
         $this->actingAs(User::factory()->create(['role' => UserRole::Customer]))->post('/seller/products', $this->payload())->assertForbidden();
+    }
+
+    public function test_enabled_image_driver_resizes_and_encodes_seller_photos(): void
+    {
+        if (! extension_loaded('gd')) {
+            $this->markTestSkipped('GD is disabled in this PHP process.');
+        }
+
+        Storage::fake('local');
+        $seller = User::factory()->seller()->create();
+        $image = imagecreatetruecolor(1800, 1200);
+        imagefill($image, 0, 0, imagecolorallocate($image, 34, 126, 63));
+        ob_start();
+        imagejpeg($image, null, 90);
+        $content = ob_get_clean();
+        imagedestroy($image);
+
+        $this->actingAs($seller)->post('/seller/products', $this->payload([
+            'photo' => UploadedFile::fake()->createWithContent('harvest.jpg', $content),
+        ]))->assertSessionHasNoErrors();
+        $product = Product::firstOrFail();
+        $this->assertStringEndsWith('.webp', $product->photo_path);
+        $stored = Storage::disk('local')->get($product->photo_path);
+        $dimensions = getimagesizefromstring($stored);
+        $this->assertSame('image/webp', $dimensions['mime']);
+        $this->assertSame(1600, $dimensions[0]);
+        $this->assertLessThan(strlen($content), strlen($stored));
     }
 
     public function test_seller_can_edit_a_product_and_optionally_replace_its_photo(): void
@@ -64,7 +91,7 @@ class SellerProductTest extends TestCase
         $this->assertSame($originalPath, $product->photo_path);
         Storage::disk('local')->assertExists($originalPath);
 
-        $replacement = UploadedFile::fake()->createWithContent('replacement.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII='));
+        $replacement = $this->photo('replacement.png');
         $this->post("/seller/products/{$product->id}", [...$this->payload(['name' => 'Premium Pechay', 'photo' => $replacement]), '_method' => 'patch'])
             ->assertSessionHasNoErrors();
         $replacementPath = $product->fresh()->photo_path;
@@ -112,5 +139,21 @@ class SellerProductTest extends TestCase
         $this->delete('/seller/products', ['product_ids' => [$otherProduct->id]])->assertSessionHasErrors('product_ids');
         $this->delete("/seller/products/{$otherProduct->id}")->assertNotFound();
         $this->assertDatabaseHas('products', ['id' => $otherProduct->id]);
+    }
+
+    private function photo(string $name = 'photo.png'): UploadedFile
+    {
+        if (! extension_loaded('gd')) {
+            return UploadedFile::fake()->createWithContent($name, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII='));
+        }
+
+        $image = imagecreatetruecolor(4, 4);
+        imagefill($image, 0, 0, imagecolorallocate($image, 34, 126, 63));
+        ob_start();
+        imagepng($image);
+        $content = ob_get_clean();
+        imagedestroy($image);
+
+        return UploadedFile::fake()->createWithContent($name, $content);
     }
 }

@@ -20,13 +20,12 @@ export default function GuestLayout({ children, authPage = false, storefront = f
 
     if (authPage) {
         return (
-            <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-forest-950 dark:bg-night-950">
-                <img src="/images/agrifarm-auth-produce-color.png" alt="" aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20 size-full object-cover" />
-                <div className="pointer-events-none fixed inset-0 -z-10 bg-forest-900/50 dark:bg-black/70" aria-hidden="true" />
+            <div className="dark relative isolate flex min-h-dvh flex-col overflow-hidden bg-night-950">
+                <img src="/images/agrifarm-auth-produce-realistic.png" alt="" aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20 size-full object-cover" />
+                <div className="pointer-events-none fixed inset-0 -z-10 bg-black/55" aria-hidden="true" />
 
-                <header className="relative z-10 flex items-center justify-between px-4 pt-4 sm:px-7 sm:pt-6 lg:px-10 lg:pt-8">
+                <header className="relative z-10 px-4 pt-4 sm:px-7 sm:pt-6 lg:px-10 lg:pt-8">
                     <AppMark inverted />
-                    <ThemeToggle inverted />
                 </header>
 
                 <main className="flex flex-1">{children}</main>

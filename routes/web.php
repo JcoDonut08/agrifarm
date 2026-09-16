@@ -2,18 +2,21 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CustomerCheckoutController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\ProfileController;
 use App\Http\Controllers\Seller\WalkInOrderController;
+use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\StorefrontController;
+use App\Http\Controllers\StorefrontProductPhotoController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+Route::get('/', [StorefrontController::class, 'index'])->name('home');
+Route::get('/marketplace/products/{product}/photo', StorefrontProductPhotoController::class)->name('marketplace.products.photo');
+Route::get('/marketplace/sellers/{user}/photo', \App\Http\Controllers\StorefrontSellerPhotoController::class)->name('marketplace.sellers.photo');
 
 Route::get('/terms', [LegalPageController::class, 'terms'])->name('terms');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
@@ -21,6 +24,20 @@ Route::post('/contact', [ContactController::class, 'store'])->name('contact.stor
 Route::get('/privacy', [LegalPageController::class, 'privacy'])->name('privacy');
 
 require __DIR__.'/auth.php';
+
+Route::post('/product-reviews', [ProductReviewController::class, 'store'])
+    ->middleware(['auth', 'role:customer', 'throttle:10,1'])
+    ->name('product-reviews.store');
+Route::patch('/product-reviews/{productReview}', [ProductReviewController::class, 'update'])
+    ->middleware(['auth', 'role:customer', 'throttle:10,1'])
+    ->name('product-reviews.update');
+Route::delete('/product-reviews/{productReview}', [ProductReviewController::class, 'destroy'])
+    ->middleware(['auth', 'role:customer', 'throttle:10,1'])
+    ->name('product-reviews.destroy');
+
+Route::post('/checkout', [CustomerCheckoutController::class, 'store'])
+    ->middleware(['auth', 'role:customer', 'throttle:10,1'])
+    ->name('checkout.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/customer', CustomerHomeController::class)

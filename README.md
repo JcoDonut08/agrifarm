@@ -1,36 +1,24 @@
 # AgriFarm
 
-AgriFarm is an undergraduate thesis project for an agricultural marketplace and decision-support system. The current implementation provides the complete account and role-access foundation; marketplace, inventory, profile editing, forecasting integration, and deployment remain deferred.
+AgriFarm is a Laravel 12 + React 19/Inertia marketplace for Pasig barangay sellers. It includes role-based authentication, seller inventory and order tools, a database-backed customer storefront, public seller shops, customer reviews, and Cash on Delivery orders. Online payments and forecasting remain deferred.
 
-## Current stack
+## Stack
 
-- Laravel 12 and PHP 8.2+
-- React 19 and Inertia.js 3
-- Tailwind CSS 4 and Vite 8
-- PostgreSQL as the application database
-- Eloquent models and Laravel session authentication
+- PHP 8.2+, Laravel 12, Eloquent, PostgreSQL
+- React 19, Inertia.js 3, Tailwind CSS 4, Vite 8
+- PHPUnit feature tests and Playwright browser tests
 
-## Authentication foundation
+## Implemented behavior
 
-- Customer-only public registration with recorded Terms and Privacy acceptance
-- Six-digit customer email verification after registration
-- Shared credential form for Customer, Seller, and CENRO Admin accounts
-- Hashed, single-use six-digit email OTP before the authenticated session is created
-- OTP expiration, attempt limits, resend cooldown, hourly resend limit, and previous-code invalidation
-- Server-side role middleware and role-specific redirects
-- Email OTP verification before password reset for every role
-- Session invalidation and CSRF-token renewal on logout
-- Public Terms of Use and Privacy Notice
+- Customer registration, email verification, password recovery, and role-aware login for customers, sellers, and CENRO admins
+- Seller profiles, private product/photo management, inventory, walk-in orders, and public-safe image routes
+- Customer marketplace search/filter/sort, product detail, favorites, and a device-local cart
+- Public seller shop at `/?page=seller&seller={id}` using the seller's real name, photo, barangay, and live listings
+- Multiple customer reviews per product, with owner-only edit/delete, anonymous display, rating filters, and five reviews per page
+- Three-step COD checkout for real seller listings: delivery details, order review, confirmation. Prices and stock are verified and reserved server-side; sellers receive the order in their Orders workspace.
+- Light/dark themes; light mode uses a `#f5f5f5` page canvas with white cards
 
-## Requirements
-
-- PHP 8.2 or newer with the `pdo_pgsql` extension
-- Composer 2
-- Node.js 22.12 or newer
-- npm
-- PostgreSQL
-
-Laravel 12 is used because the current development machine runs PHP 8.2.
+The cart itself is stored on the device and does not reserve stock. Only real seller listings can be submitted as COD orders; sample catalog products remain previews. Delivery charges are not configured and must be agreed with the seller before fulfillment.
 
 ## Local setup
 
@@ -39,60 +27,31 @@ composer install
 npm install
 Copy-Item .env.example .env
 php artisan key:generate
-```
-
-Create a local PostgreSQL database named `agrifarm`, then set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` in `.env`. Never commit `.env`. On the current Windows development machine PostgreSQL listens on port `5433`, so the local `DB_PORT` must match that service.
-
-Run the schema and create development-only accounts:
-
-```powershell
 php artisan migrate --seed
 ```
 
-If the Windows PHP installation has PostgreSQL available but disabled in `php.ini`, enable `pdo_pgsql` before running the command. A one-command local check can also be run with `php -d extension=pdo_pgsql artisan migrate --seed`.
-
-Start the backend and frontend in separate terminals:
+Set the PostgreSQL connection and mail settings in `.env`, then run the backend and frontend separately:
 
 ```powershell
 php artisan serve
-```
-
-```powershell
 npm run dev
 ```
 
-Open `http://127.0.0.1:8000`.
+Open `http://127.0.0.1:8000`. Never commit `.env`, credentials, research data, or generated test artifacts.
 
-## Gmail OTP delivery
-
-AgriFarm sends registration, sign-in, and password-reset OTPs with Laravel Notifications and the built-in SMTP mailer. To deliver them to real Gmail inboxes, turn on 2-Step Verification for the sending Google account, create a Google App Password, and set these values in `.env`:
-
-```dotenv
-MAIL_MAILER=smtp
-MAIL_SCHEME=smtp
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME="your-agri-email@gmail.com"
-MAIL_PASSWORD="your-16-character-google-app-password"
-MAIL_FROM_ADDRESS="your-agri-email@gmail.com"
-MAIL_FROM_NAME="AgriFarm Marketplace"
-```
-
-Use the Google App Password, not the normal Gmail account password. After changing `.env`, run `php artisan config:clear`. Never commit the real email address or App Password.
-
-For offline development, set `MAIL_MAILER=log`; OTP messages will then be written to `storage/logs/laravel.log` instead of being delivered.
+For local mail-free development use `MAIL_MAILER=log`. Gmail delivery requires SMTP on port 587 and a Google App Password; run `php artisan config:clear` after changing mail configuration.
 
 ## Development accounts
 
-The seeder creates these accounts only outside production:
+These non-production accounts use `AgriFarm123!`:
 
-| Role | Email | Password | Destination |
-| --- | --- | --- | --- |
-| Customer | `customer@agrifarm.test` | `AgriFarm123!` | `/` (homepage) |
-| Seller | `seller@agrifarm.test` | `AgriFarm123!` | `/seller/dashboard` |
-| CENRO Admin | `admin@agrifarm.test` | `AgriFarm123!` | `/admin/dashboard` |
+| Role | Email | Destination |
+| --- | --- | --- |
+| Customer | `customer@agrifarm.test` | `/` |
+| Seller | `seller@agrifarm.test` | `/seller/dashboard` |
+| CENRO Admin | `admin@agrifarm.test` | `/admin/dashboard` |
 
-Seller and CENRO Admin accounts cannot be created through public registration.
+Barangay partner accounts are listed in [docs/barangay-sellers.md](docs/barangay-sellers.md).
 
 ## Quality checks
 
@@ -103,23 +62,14 @@ npm run build
 npm run test:e2e
 ```
 
-PHP feature tests use an isolated in-memory SQLite database and never touch the configured PostgreSQL database. Playwright creates a disposable ignored SQLite file, seeds the three development accounts, starts Laravel locally, and tests the full browser flow in installed Google Chrome at 390px, 768px, and 1440px.
+PHP tests use isolated SQLite. Playwright uses `database/playwright.sqlite`, seeds development users, starts Laravel on port 8010, and checks responsive behavior in Chrome.
 
-## Development rules
+## Development boundaries
 
-- Laravel owns validation, authorization, authentication, and database access.
-- React owns presentation and transient interface state through Inertia.
-- Public registration must always assign `customer` on the server; never add a role selector.
-- Keep controllers small and use services for multi-step security or business workflows.
-- Use Eloquent directly rather than adding a repository layer.
-- Keep real research data, credentials, `vendor`, `node_modules`, and generated QA artifacts out of Git.
+- Laravel owns validation, authorization, business rules, and persistence.
+- React owns presentation and transient UI state through Inertia.
+- Use Eloquent directly; add a service only for multi-step workflows or transactions.
+- Public registration always creates a customer; seller/admin accounts are seeded or administered.
+- Deferred work: online payment processing, automated delivery-fee calculation, forecasting-service integration, production reporting, and deployment.
 
-See [docs/architecture.md](docs/architecture.md) for the approved structure and feature boundaries.
-
-## Deferred work
-
-Profile editing, customer and seller profiles, seller store setup, marketplace features, orders, inventory, forecasting integration, reporting, and deployment are not part of this authentication phase.
-
-Storefront visual conventions: [Design system](docs/design-system.md).
-
-Admin contact and report delivery: [Contact page](docs/contact.md).
+See [architecture](docs/architecture.md), [storefront behavior](docs/storefront-preview.md), and the [design system](docs/design-system.md) before changing those areas.
