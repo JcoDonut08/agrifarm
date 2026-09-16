@@ -15,7 +15,7 @@ Use the semantic tokens in `resources/css/storefront.css`; do not add near-dupli
 | Primary | `#0f783e` | `#168044` |
 | Primary hover | `#09562d` | `#106335` |
 
-Use Instrument Sans for interface text. Impact is reserved for the harvest CTA heading and Segoe Print for the short hero note. Gold is for ratings/Best Seller; green is the default action and identity color.
+Use the system UI font for interface text (Segoe UI on Windows). Segoe Print is reserved for the short hero note, and Courier New for printed receipts. Gold is for ratings/Best Seller; green is the default action and identity color.
 
 ## Layout and components
 

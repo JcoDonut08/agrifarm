@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
-use App\Models\Product;
 use App\Models\CustomerCheckout;
+use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\User;
 use App\Models\WalkInOrder;
@@ -31,6 +31,8 @@ class StorefrontController extends Controller
             ->orderByDesc('revenue')
             ->orderBy('product_id')
             ->get();
+        $topSales = $rankedOrders->take(4);
+        $bestSellerIds = $topSales->pluck('product_id');
         $salesByProduct = $rankedOrders->keyBy('product_id');
         $recentCutoff = now()->subDays(7);
         $previousCutoff = now()->subDays(14);
@@ -64,10 +66,10 @@ class StorefrontController extends Controller
                 'sellerName' => $product->seller?->name,
                 'sellerAvatarUrl' => $this->sellerAvatarUrl($product->seller),
                 'barangay' => $this->sellerBarangay($product->seller),
-                'photoUrl' => '/marketplace/products/'.$product->id.'/photo?v='.$product->updated_at->timestamp,
+                'photoUrl' => '/marketplace/products/'.$product->id.'/photo?v='.$product->photoVersion(),
                 'listedAt' => $product->created_at->toDateString(),
                 'salesRankScore' => (int) ($salesByProduct->get($product->id)?->order_count ?? 0),
-                'isBestSeller' => $rankedOrders->first()?->product_id === $product->id,
+                'isBestSeller' => $bestSellerIds->contains($product->id),
                 'isTrending' => (int) ($recentSales[$product->id] ?? 0) >= 2
                     && (int) ($recentSales[$product->id] ?? 0) > (int) ($previousSales[$product->id] ?? 0),
                 'isNew' => $product->created_at->greaterThanOrEqualTo($recentCutoff),
@@ -80,7 +82,7 @@ class StorefrontController extends Controller
                 ?: $b['deliveredOrderCount'] <=> $a['deliveredOrderCount']
                 ?: strcmp($a['name'], $b['name']))
             ->first();
-        $bestSellingProducts = $rankedOrders->take(4)->map(fn (WalkInOrder $sales) => [
+        $bestSellingProducts = $topSales->map(fn (WalkInOrder $sales) => [
             'id' => 'seller-'.$sales->product_id,
             'orderCount' => (int) $sales->order_count,
         ])->all();
@@ -132,22 +134,25 @@ class StorefrontController extends Controller
                 ];
             }
         }
-        if ($request->query('page') === 'checkout' && is_string($request->query('order'))) {
-            $checkout = CustomerCheckout::query()->with('items:id,customer_checkout_id,product_name,unit,quantity,unit_price,total,status')
+        if (in_array($request->query('page'), ['checkout', 'order-success'], true) && is_string($request->query('order'))) {
+            $checkout = CustomerCheckout::query()->with('items:id,customer_checkout_id,product_id,product_name,unit,quantity,unit_price,total,status')
                 ->where('user_id', $request->user()?->id)->find($request->query('order'));
             if ($checkout) {
                 $props['checkoutOrder'] = [
                     'id' => $checkout->id,
+                    'reference' => $checkout->reference_number,
+                    'placedAt' => $checkout->created_at->toIso8601String(),
                     'recipientName' => $checkout->recipient_name,
+                    'contactEmail' => $checkout->contact_email,
                     'phone' => $checkout->phone,
                     'address' => $checkout->address,
-                    'barangay' => $checkout->barangay,
                     'notes' => $checkout->notes,
                     'goodsTotal' => (float) $checkout->goods_total,
                     'items' => $checkout->items->map(fn (WalkInOrder $item) => [
                         'name' => $item->product_name, 'unit' => $item->unit,
                         'quantity' => $item->quantity, 'price' => (float) $item->unit_price,
                         'status' => $item->status,
+                        'photoUrl' => $item->product_id ? '/marketplace/products/'.$item->product_id.'/photo' : null,
                     ])->all(),
                 ];
             }
@@ -329,6 +334,7 @@ class StorefrontController extends Controller
             ->paginate(5, ['*'], 'review_page');
 
         $viewerId = $request->user()?->id;
+
         return [
             'summary' => $stats,
             'counts' => collect(range(1, 5))->mapWithKeys(fn (int $star) => [$star => (int) ($counts[$star] ?? 0)])->all(),

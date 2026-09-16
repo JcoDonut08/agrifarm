@@ -144,7 +144,7 @@
     .order-receipt { position: static; display: block !important; box-sizing: border-box; flex: 0 0 70mm; width: 70mm; min-height: 0; margin: 0 auto; padding: 6mm 0 8mm; color: #000; background: #fff; font-family: "Courier New", Courier, monospace; font-size: 9.5px; line-height: 1.35; print-color-adjust: exact; }
     .receipt-brand { display: flex; flex-direction: column; align-items: center; padding-bottom: 4mm; text-align: center; }
     .receipt-brand svg { margin-bottom: 1mm; color: #000; }
-    .receipt-brand strong { font-family: Arial, sans-serif; font-size: 22px; line-height: 1; }
+    .receipt-brand strong { font-family: var(--font-sans); font-size: 22px; line-height: 1; }
     .receipt-brand span { margin-top: 2mm; font-size: 11px; font-weight: 700; }
     .receipt-brand small { margin-top: .5mm; font-size: 8px; }
     .receipt-heading { padding: 3mm 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; text-align: center; }

@@ -56,7 +56,7 @@ const dateTime = (value, filipino) => new Intl.DateTimeFormat(filipino ? 'fil-PH
 const receiptDateTime = (value, filipino) => new Intl.DateTimeFormat(filipino ? 'fil-PH' : 'en-PH', {
     year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true,
 }).format(new Date(value));
-const orderNumber = order => `#${order.checkout ? 'COD' : 'WALK'}-${String(order.id).padStart(5, '0')}`;
+const orderNumber = order => order.checkout?.reference_number || `#WALK-${String(order.id).padStart(5, '0')}`;
 const ORDERS_PER_PAGE = 10;
 
 export default function Orders({ products = [], orders = [], filipino = false }) {
@@ -284,7 +284,7 @@ export default function Orders({ products = [], orders = [], filipino = false })
                         <div><dt>{filipino ? 'Mamimili' : 'Customer'}</dt><dd>{viewingOrder.customer_name}</dd></div>
                         <div><dt>{filipino ? 'Petsa ng order' : 'Date ordered'}</dt><dd>{dateTime(viewingOrder.created_at, filipino)}</dd></div>
                         <div><dt>{filipino ? 'Uri ng order' : 'Order type'}</dt><dd>{viewingOrder.checkout ? 'Cash on Delivery' : 'Walk-in order'}</dd></div>
-                        {viewingOrder.checkout && <><div><dt>Phone</dt><dd>{viewingOrder.checkout.phone}</dd></div><div><dt>Delivery address</dt><dd>{viewingOrder.checkout.address}, Barangay {viewingOrder.checkout.barangay}, Pasig City</dd></div><div><dt>Delivery charge</dt><dd>Confirm with customer before fulfillment</dd></div>{viewingOrder.checkout.notes && <div><dt>Delivery notes</dt><dd>{viewingOrder.checkout.notes}</dd></div>}</>}
+                        {viewingOrder.checkout && <><div><dt>Phone</dt><dd>{viewingOrder.checkout.phone}</dd></div><div><dt>Delivery address</dt><dd>{viewingOrder.checkout.address}</dd></div><div><dt>Delivery charge</dt><dd>Confirm with customer before fulfillment</dd></div>{viewingOrder.checkout.notes && <div><dt>Delivery notes</dt><dd>{viewingOrder.checkout.notes}</dd></div>}</>}
                         <div><dt>{filipino ? 'Dami' : 'Quantity'}</dt><dd>{viewingOrder.quantity} {unitLabel(viewingOrder.unit, filipino)}</dd></div>
                         <div><dt>{filipino ? 'Presyo bawat unit' : 'Unit price'}</dt><dd>{money(viewingOrder.unit_price)}</dd></div>
                         <div><dt>{filipino ? 'Kabuuan' : 'Total'}</dt><dd>{money(viewingOrder.total)}</dd></div>
@@ -306,7 +306,7 @@ export default function Orders({ products = [], orders = [], filipino = false })
                 <div><dt>{filipino ? 'Petsa' : 'Date'}</dt><dd>{receiptDateTime(receiptOrder.created_at, filipino)}</dd></div>
                 <div><dt>{filipino ? 'Mamimili' : 'Customer'}</dt><dd>{receiptOrder.customer_name}</dd></div>
                 <div><dt>{filipino ? 'Uri ng order' : 'Order type'}</dt><dd>{receiptOrder.checkout ? 'Cash on Delivery' : 'Walk-in'}</dd></div>
-                {receiptOrder.checkout && <><div><dt>Phone</dt><dd>{receiptOrder.checkout.phone}</dd></div><div><dt>Delivery address</dt><dd>{receiptOrder.checkout.address}, Barangay {receiptOrder.checkout.barangay}, Pasig City</dd></div></>}
+                {receiptOrder.checkout && <><div><dt>Phone</dt><dd>{receiptOrder.checkout.phone}</dd></div><div><dt>Delivery address</dt><dd>{receiptOrder.checkout.address}</dd></div></>}
                 <div><dt>Status</dt><dd>{filipino ? (statuses.find(status => status.value === receiptOrder.status)?.filipinoShort || 'Naghihintay') : (statuses.find(status => status.value === receiptOrder.status)?.shortLabel || 'Pending')}</dd></div>
             </dl>
             <table className="receipt-items">

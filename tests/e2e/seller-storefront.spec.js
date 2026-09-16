@@ -69,9 +69,9 @@ test('seller listing appears in customer homepage, marketplace, detail, and cart
         await expect(page.locator('.top-selling-section .product-badge')).toHaveCount(1);
         await expect(page.locator('.top-selling-section .product-badge')).toHaveText('Best Seller');
         await expect(page.locator('.featured-banner')).toContainText('Barangay Rosario');
-        await expect(page.locator('.featured-banner')).toContainText('₱145.50 from 2 delivered walk-in orders');
+        await expect(page.locator('.featured-banner')).toContainText('₱145.50 from 2 delivered orders');
         await expect(page.locator('.featured-stage-copy')).toContainText(productName);
-        await expect(page.locator('.featured-stage-copy')).toContainText('2 delivered walk-in orders');
+        await expect(page.locator('.featured-stage-copy')).toContainText('2 delivered orders');
         await expect(page.locator('.featured-stage-image')).toBeVisible();
         await expect(page.locator('.featured-product-photo img')).toHaveAttribute('src', /\/marketplace\/products\/\d+\/photo/);
         expect(await page.locator('.featured-product-photo').evaluate((photo) => getComputedStyle(photo).position)).toBe('relative');

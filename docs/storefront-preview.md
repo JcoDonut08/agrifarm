@@ -8,17 +8,21 @@ This is the short source of truth for the customer storefront. Use it to avoid r
 - Marketplace: `/?page=marketplace`
 - Product detail: `/?page=product&product={catalog-key}`
 - Seller shop: `/?page=seller&seller={user-id}`
-- Checkout: `/?page=checkout`; private order confirmation: `/?page=checkout&order={uuid}`
+- Checkout: `/?page=checkout`; private placed-order page: `/?page=order-success&order={uuid}`
 - Seller-created products come from PostgreSQL; fallback preview products remain available for the designed demo catalog.
 - Public product and seller photos use controlled marketplace image routes. Original seller uploads remain private.
 - Favorites and cart quantities are stored in `localStorage`. Stock is reserved only by a successful server-side COD checkout.
+- Customer profiles can save a photo, name, username, mobile number, delivery address, and password. Saved contact and address details can prefill checkout.
 
 ## Cash on Delivery checkout
 
-- Three progress steps: delivery details → review order → confirmation. Customer accounts only.
+- Three steps before submission: delivery details → payment method → confirm order. The final step reviews delivery, payment, product photos, and goods total; only then can the customer place the order.
+- Cash on Delivery is the only enabled option. GCash and Maya are visibly disabled and labeled “Coming soon”; no online payment is taken.
+- Address fields in the customer profile and checkout offer Photon/OpenStreetMap suggestions as the customer types. Customers can enter an address manually when no suggestion fits or the service is unavailable.
 - Only real seller products are orderable; sample catalog items remain in the cart and are not sent.
 - Laravel validates delivery information, payment method (`cod` only), each product, stock, and live prices. It locks products and records orders atomically; repeated checkout UUIDs cannot reserve stock twice.
 - Each line is visible in its seller’s Orders workspace with the buyer’s delivery details; cancelling restores stock.
+- New checkouts receive a random uppercase alphanumeric `AgFrm-` reference shared by the placed-order page, customer PDF/print order slip, and seller Orders. Older issued references remain unchanged. The UUID remains the private URL and retry key. Order slips are marked unpaid until Cash on Delivery is collected.
 - Delivery charges are not configured. Show only the goods subtotal, disclose that any charge must be confirmed by the seller before fulfillment, and never claim a final delivered total or online payment.
 
 ## Product reviews

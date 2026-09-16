@@ -116,7 +116,7 @@ class ProductController extends Controller
             'unit' => ['required', Rule::in(self::UNITS)],
             'stock' => ['required', 'integer', 'min:0', 'max:1000000'],
             'threshold' => ['required', 'integer', 'min:0', 'max:1000000'],
-            'photo' => [$photoRequired ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=6000,max_height=6000'],
+            'photo' => [$photoRequired ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240', 'dimensions:max_width=6000,max_height=6000'],
         ]);
     }
 

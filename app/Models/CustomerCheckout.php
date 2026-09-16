@@ -12,7 +12,7 @@ class CustomerCheckout extends Model
 
     protected $keyType = 'string';
 
-    protected $fillable = ['id', 'user_id', 'recipient_name', 'phone', 'address', 'barangay', 'notes', 'payment_method', 'goods_total'];
+    protected $fillable = ['id', 'user_id', 'recipient_name', 'contact_email', 'phone', 'address', 'barangay', 'notes', 'payment_method', 'goods_total', 'reference_number'];
 
     public function customer(): BelongsTo
     {

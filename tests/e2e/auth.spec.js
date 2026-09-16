@@ -107,6 +107,7 @@ for (const viewport of viewports) {
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-customer.png`), fullPage: true });
         await openCustomerProfile(page);
         await expect(page).toHaveURL(/\/customer$/);
+        await page.getByRole('button', { name: 'Open account menu' }).click();
         await page.getByRole('button', { name: 'Sign out' }).click();
         await expect(page).toHaveURL(/\/login$/);
 
@@ -148,6 +149,7 @@ for (const viewport of viewports) {
 
         await completeLogin(page, 'customer@agrifarm.test', '/');
         await openCustomerProfile(page);
+        await page.getByRole('button', { name: 'Open account menu' }).click();
         await page.getByRole('button', { name: 'Sign out' }).click();
         await expect(page).toHaveURL(/\/login$/);
     });

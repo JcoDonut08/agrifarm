@@ -13,7 +13,7 @@
         }
     </style>
 </head>
-<body style="margin:0;background:#f3f8ed;color:#17231c;font-family:Arial,Helvetica,sans-serif;">
+<body style="margin:0;background:#f3f8ed;color:#17231c;font-family:system-ui,'Segoe UI',Arial,sans-serif;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">{{ $preheader }}</div>
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3f8ed;">
         <tr>
@@ -47,7 +47,7 @@
                     <tr>
                         <td class="email-content" style="padding:38px 42px 32px;">
                             <div style="margin-bottom:10px;font-size:11px;line-height:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#0f854c;">{{ $eyebrow }}</div>
-                            <h1 style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:31px;line-height:38px;color:#07311f;">{{ $title }}</h1>
+                            <h1 style="margin:0 0 18px;font-family:system-ui,'Segoe UI',Arial,sans-serif;font-size:31px;line-height:38px;color:#07311f;">{{ $title }}</h1>
                             <p style="margin:0 0 12px;font-size:16px;line-height:25px;color:#35483d;">Hello {{ $recipientName }},</p>
                             <p style="margin:0 0 26px;font-size:16px;line-height:25px;color:#526158;">{{ $intro }}</p>
 

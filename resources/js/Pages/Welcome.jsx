@@ -38,8 +38,8 @@ export default function Welcome() {
     return (
         <ShopProvider products={listings}>
             <GuestLayout storefront market={market || page === 'product' || page === 'seller'}>
-                <Head title={{ marketplace: 'Marketplace', cart: 'Your cart', checkout: 'Checkout', favorites: 'Favorites', notifications: 'Notifications', product: selectedProduct?.name || 'Product not found', seller: props.sellerProfile?.name || 'Seller not found' }[page] || 'Fresh from your community'} />
-                {page === 'product' ? <ProductDetail productId={productId} products={listings} reviewFeed={props.reviewFeed} user={user} /> : page === 'seller' ? <SellerStorefront profile={props.sellerProfile} /> : page === 'checkout' ? <Checkout order={props.checkoutOrder} /> : ExtraPage ? <ExtraPage /> : market ? <Marketplace key={url} products={listings} hasSellerProducts={hasSellerProducts} serverResults={props.marketplaceResults} initialBarangay={query.get('barangay') || ''} initialSort={query.get('sort') || ''} /> : <>
+                <Head title={{ marketplace: 'Marketplace', cart: 'Your cart', checkout: 'Checkout', 'order-success': 'Order placed', favorites: 'Favorites', notifications: 'Notifications', product: selectedProduct?.name || 'Product not found', seller: props.sellerProfile?.name || 'Seller not found' }[page] || 'Fresh from your community'} />
+                {page === 'product' ? <ProductDetail productId={productId} products={listings} reviewFeed={props.reviewFeed} user={user} /> : page === 'seller' ? <SellerStorefront profile={props.sellerProfile} /> : page === 'checkout' || page === 'order-success' ? <Checkout order={props.checkoutOrder} successPage={page === 'order-success'} /> : ExtraPage ? <ExtraPage /> : market ? <Marketplace key={url} products={listings} hasSellerProducts={hasSellerProducts} serverResults={props.marketplaceResults} initialBarangay={query.get('barangay') || ''} initialSort={query.get('sort') || ''} /> : <>
                     <section className="home-hero" aria-labelledby="hero-heading">
                         <img
                             className="hero-photo"
@@ -98,7 +98,7 @@ export default function Welcome() {
                             <div className="featured-copy">
                                 <p className="featured-eyebrow"><Icon name="trophy" size={25} /> {bestBarangay ? 'BEST BARANGAY' : 'BEST BARANGAY · RANKING PENDING'}</p>
                                 <h2 id="featured-heading">{bestBarangay ? `Barangay ${bestBarangay.name}` : 'Fresh communities, growing together'}</h2>
-                                <p>{bestBarangay ? `${money(bestBarangay.deliveredRevenue)} from ${bestBarangay.deliveredOrderCount} delivered walk-in ${bestBarangay.deliveredOrderCount === 1 ? 'order' : 'orders'}.` : 'The leading barangay will appear after walk-in orders are delivered.'}</p>
+                                <p>{bestBarangay ? `${money(bestBarangay.deliveredRevenue)} from ${bestBarangay.deliveredOrderCount} delivered ${bestBarangay.deliveredOrderCount === 1 ? 'order' : 'orders'}.` : 'The leading barangay will appear after orders are delivered.'}</p>
                                 <div className="featured-actions"><Link className="store-button white-button" href={bestBarangayProduct ? productHref(bestBarangayProduct.id) : marketHref()}>{bestBarangayProduct ? 'View featured product' : 'Browse marketplace'} <Icon name="arrow" /></Link>{bestBarangay && <Link className="featured-market-link" href={marketHref(bestBarangay.name)}>Shop {bestBarangay.name} <Icon name="arrow" size={17} /></Link>}</div>
                             </div>
                             {bestBarangayProduct ? <div className="featured-product-stage">
@@ -108,13 +108,13 @@ export default function Welcome() {
                                     <Link href={productHref(bestBarangayProduct.id)} className="featured-stage-name">{bestBarangayProduct.name} <Icon name="arrow" size={18} /></Link>
                                     <span className="featured-stage-origin">From Barangay {bestBarangay.name}</span>
                                     <strong>{money(bestBarangayProduct.price)} <small>/ {bestBarangayProduct.unit}</small></strong>
-                                    {bestBarangaySale.orderCount > 0 && <span className="featured-stage-sales">{bestBarangaySale.orderCount} delivered walk-in {bestBarangaySale.orderCount === 1 ? 'order' : 'orders'}</span>}
+                                    {bestBarangaySale.orderCount > 0 && <span className="featured-stage-sales">{bestBarangaySale.orderCount} delivered {bestBarangaySale.orderCount === 1 ? 'order' : 'orders'}</span>}
                                 </div>
-                            </div> : <span className="featured-price">Based on delivered walk-in sales</span>}
+                            </div> : <span className="featured-price">Based on delivered sales</span>}
                         </section>
                         <section className="home-section top-selling-section" aria-labelledby="top-selling-heading">
-                            <div className="section-heading"><div><h2 id="top-selling-heading">Best-selling plants</h2><p>Most ordered products from delivered walk-in sales.</p></div>{bestSellingProducts.length > 0 && <Link className="section-link" href={marketHref(null, 'best-selling')}>View all <Icon name="arrow" size={17} /></Link>}</div>
-                            {bestSellingProducts.length > 0 ? <div className="home-product-grid">{bestSellingProducts.map((product) => <ProductCard product={product} key={product.id} />)}</div> : <div className="top-selling-empty"><Icon name="trophy" size={28} /><div><h3>No best sellers yet</h3><p>Products with delivered walk-in orders will appear here.</p></div></div>}
+                            <div className="section-heading"><div><h2 id="top-selling-heading">Best-selling plants</h2><p>Most ordered products from delivered sales.</p></div>{bestSellingProducts.length > 0 && <Link className="section-link" href={marketHref(null, 'best-selling')}>View all <Icon name="arrow" size={17} /></Link>}</div>
+                            {bestSellingProducts.length > 0 ? <div className="home-product-grid">{bestSellingProducts.map((product) => <ProductCard product={product} key={product.id} />)}</div> : <div className="top-selling-empty"><Icon name="trophy" size={28} /><div><h3>No best sellers yet</h3><p>Products with delivered orders will appear here.</p></div></div>}
                         </section>
                         <ProductSection id="popular-heading" title={hasSellerProducts ? 'Fresh from local sellers' : 'Popular Products'} description={hasSellerProducts ? 'Real harvests listed by AgriFarm growers.' : 'Everyday favorites from neighborhood growers.'} products={popularProducts} />
                         {newProducts.length > 0 && <ProductSection id="fresh-heading" title={hasSellerProducts ? 'More to explore' : 'Fresh New Products'} description={hasSellerProducts ? 'Find more produce from local sellers.' : 'A fresh selection for your next meal.'} products={newProducts} />}

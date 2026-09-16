@@ -2,21 +2,23 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\CustomerCheckoutController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
+use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
+use App\Http\Controllers\CustomerCheckoutController;
 use App\Http\Controllers\LegalPageController;
+use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\ProfileController;
 use App\Http\Controllers\Seller\WalkInOrderController;
-use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\StorefrontController;
 use App\Http\Controllers\StorefrontProductPhotoController;
+use App\Http\Controllers\StorefrontSellerPhotoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StorefrontController::class, 'index'])->name('home');
 Route::get('/marketplace/products/{product}/photo', StorefrontProductPhotoController::class)->name('marketplace.products.photo');
-Route::get('/marketplace/sellers/{user}/photo', \App\Http\Controllers\StorefrontSellerPhotoController::class)->name('marketplace.sellers.photo');
+Route::get('/marketplace/sellers/{user}/photo', StorefrontSellerPhotoController::class)->name('marketplace.sellers.photo');
 
 Route::get('/terms', [LegalPageController::class, 'terms'])->name('terms');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
@@ -43,6 +45,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/customer', CustomerHomeController::class)
         ->middleware('role:customer')
         ->name('customer.home');
+
+    Route::middleware('role:customer')->group(function () {
+        Route::patch('/customer/profile', [CustomerProfileController::class, 'update'])->middleware('throttle:6,1')->name('customer.profile.update');
+        Route::put('/customer/password', [CustomerProfileController::class, 'password'])->middleware('throttle:6,1')->name('customer.password.update');
+        Route::post('/customer/profile/photo', [CustomerProfileController::class, 'photo'])->middleware('throttle:10,1')->name('customer.profile.photo');
+        Route::get('/customer/profile/photo', [CustomerProfileController::class, 'showPhoto'])->name('customer.profile.photo.show');
+        Route::delete('/customer/profile/photo', [CustomerProfileController::class, 'removePhoto'])->name('customer.profile.photo.remove');
+    });
 
     Route::get('/seller/dashboard', SellerDashboardController::class)
         ->middleware('role:seller')

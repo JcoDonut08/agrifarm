@@ -46,6 +46,20 @@ class SellerProductTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => UserRole::Customer]))->post('/seller/products', $this->payload())->assertForbidden();
     }
 
+    public function test_product_photo_limit_is_ten_megabytes(): void
+    {
+        Storage::fake('local');
+        $this->actingAs(User::factory()->seller()->create());
+
+        $this->post('/seller/products', $this->payload(['photo' => $this->photo()->size(10240)]))
+            ->assertSessionHasNoErrors();
+        $this->assertDatabaseCount('products', 1);
+
+        $this->post('/seller/products', $this->payload(['photo' => $this->photo()->size(10241)]))
+            ->assertSessionHasErrors('photo');
+        $this->assertDatabaseCount('products', 1);
+    }
+
     public function test_enabled_image_driver_resizes_and_encodes_seller_photos(): void
     {
         if (! extension_loaded('gd')) {
@@ -81,6 +95,7 @@ class SellerProductTest extends TestCase
         $this->actingAs($seller)->post('/seller/products', $this->payload())->assertSessionHasNoErrors();
         $product = Product::firstOrFail();
         $originalPath = $product->photo_path;
+        $originalUrl = $product->photo_url;
 
         $this->post("/seller/products/{$product->id}", [...$this->payload([
             'name' => 'Premium Pechay',
@@ -96,6 +111,7 @@ class SellerProductTest extends TestCase
             ->assertSessionHasNoErrors();
         $replacementPath = $product->fresh()->photo_path;
         $this->assertNotSame($originalPath, $replacementPath);
+        $this->assertNotSame($originalUrl, $product->fresh()->photo_url);
         Storage::disk('local')->assertMissing($originalPath);
         Storage::disk('local')->assertExists($replacementPath);
 

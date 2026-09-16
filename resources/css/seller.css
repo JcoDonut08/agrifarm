@@ -532,7 +532,7 @@
 .seller-weather-footer > div { display: flex; min-width: 0; flex-direction: column; }
 .seller-weather-footer > div > small { margin-top: 2px; color: #876f31; font-size: 9px; }
 .seller-weather-footer > div > a,.gmp-weather-attribution { color: #607268; font-size: 10px; }
-.gmp-weather-attribution { font-family: Roboto, Arial, sans-serif; font-weight: 400; letter-spacing: normal; }
+.gmp-weather-attribution { font-family: var(--font-sans); font-weight: 400; letter-spacing: normal; }
 .gmp-weather-attribution { font-size: 12px; }
 .dark .seller-weather { background: #202722; }
 .dark .seller-weather-header h2 > svg { color: #b3d7a1; background: #2b4030; }

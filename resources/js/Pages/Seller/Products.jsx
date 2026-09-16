@@ -82,12 +82,23 @@ export default function Products({ filipino = false }) {
     function choosePhoto(file) {
 
         if (!file) return;
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
-            setErrors(current => ({ ...current, photo: filipino ? 'Pumili ng JPG, PNG, o WebP na larawang mas maliit sa 5 MB.' : 'Choose a JPG, PNG or WebP image smaller than 5 MB.' }));
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+            setErrors(current => ({ ...current, photo: filipino ? 'Pumili ng JPG, PNG, o WebP na larawang hanggang 10 MB.' : 'Choose a JPG, PNG or WebP image up to 10 MB.' }));
             return;
         }
         setPhoto(file);
         setErrors(current => ({ ...current, photo: undefined }));
+    }
+    function pastePhoto(event) {
+        if (processing) return;
+        const image = Array.from(event.clipboardData?.items || [])
+            .find(item => item.kind === 'file' && item.type.startsWith('image/'))
+            ?.getAsFile()
+            || Array.from(event.clipboardData?.files || []).find(file => file.type.startsWith('image/'));
+        if (!image) return;
+        event.preventDefault();
+        if (fileInput.current) fileInput.current.value = '';
+        choosePhoto(image);
     }
     function review(event) {
         event.preventDefault();
@@ -205,7 +216,7 @@ export default function Products({ filipino = false }) {
             onCancel={() => setConfirmation(null)}
             onConfirm={confirmDeletion}
         />
-        <dialog ref={modal} className="product-modal" aria-labelledby="add-product-title" aria-describedby="add-product-description" onCancel={event => { event.preventDefault(); closeEditor(); }} onClick={event => {
+        <dialog ref={modal} className="product-modal" aria-labelledby="add-product-title" aria-describedby="add-product-description" onPaste={pastePhoto} onCancel={event => { event.preventDefault(); closeEditor(); }} onClick={event => {
             if (processing || event.target !== modal.current) return;
             const bounds = modal.current.getBoundingClientRect();
             if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeEditor();
@@ -229,7 +240,7 @@ export default function Products({ filipino = false }) {
                 <section className="seller-panel product-section"><div className="product-section-title"><Icon name="sprout" /><div><h2>{filipino ? 'Larawan ng produkto' : 'Product photo'}</h2><p>{filipino ? 'Mas madaling pumili ang customer kapag malinaw ang larawan.' : 'A clear photo helps customers choose.'}</p></div></div>
                     <div className={`product-upload ${preview ? 'has-photo' : ''}`} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); choosePhoto(event.dataTransfer.files[0]); }}>
                         {preview ? <img src={preview} alt={filipino ? 'Napiling produkto' : 'Selected product'} /> : <Icon name="leaf" size={38} />}
-                        <div><label htmlFor="product-photo">{filipino ? (preview ? 'Palitan ang larawan' : 'Pumili ng larawan o i-drop ito rito') : (preview ? 'Change photo' : 'Choose a photo or drop it here')}</label><p>JPG, PNG o WebP · {filipino ? 'Hanggang 5 MB' : 'Up to 5 MB'}</p><input ref={fileInput} id="product-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => choosePhoto(event.target.files?.[0])} aria-invalid={Boolean(errors.photo)} aria-describedby={errors.photo ? 'photo-error' : undefined} /></div>
+                        <div><label htmlFor="product-photo">{filipino ? (preview ? 'Palitan ang larawan' : 'Pumili ng larawan o i-drop ito rito') : (preview ? 'Change photo' : 'Choose a photo or drop it here')}</label><p>JPG, PNG o WebP · {filipino ? 'Hanggang 10 MB · Idikit gamit ang Ctrl+V' : 'Up to 10 MB · Paste with Ctrl+V'}</p><input ref={fileInput} id="product-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => choosePhoto(event.target.files?.[0])} aria-invalid={Boolean(errors.photo)} aria-describedby={errors.photo ? 'photo-error' : undefined} /></div>
                     </div>{errors.photo && <p className="product-error" id="photo-error" role="alert">{localizeMessage(errors.photo, filipino)}</p>}{photo && <button type="button" className="product-remove" onClick={() => { setPhoto(null); fileInput.current.value = ''; }}>{filipino ? 'Alisin ang larawan' : 'Remove photo'}</button>}
                 </section>
             </fieldset>

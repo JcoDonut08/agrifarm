@@ -43,11 +43,13 @@ class StorefrontRankingTest extends TestCase
             ->where('communityStats.0.listingCount', 1)
             ->where('communityStats.1.deliveredOrderCount', 2)
             ->where('sellerProducts.0.barangay', null)
+            ->where('sellerProducts.0.isBestSeller', true)
             ->where('sellerProducts.1.barangay', 'Maybunga')
             ->where('sellerProducts.1.isBestSeller', true)
             ->where('sellerProducts.1.isTrending', true)
             ->where('sellerProducts.1.isNew', true)
             ->where('sellerProducts.2.barangay', 'Rosario')
+            ->where('sellerProducts.2.isBestSeller', true)
             ->where('sellerProducts.2.isTrending', false)
             ->where('bestSellingProducts.0.id', 'seller-'.$maybungaProduct->id)
             ->where('bestSellingProducts.0.orderCount', 2)
@@ -147,6 +149,24 @@ class StorefrontRankingTest extends TestCase
             ->where('sellerProducts.1.name', 'Trending Kangkong')
             ->where('sellerProducts.1.isNew', false)
             ->where('sellerProducts.1.isTrending', true)
+            ->etc());
+    }
+
+    public function test_best_seller_badge_matches_the_top_four_delivered_products(): void
+    {
+        $seller = User::factory()->seller()->create(['name' => 'Barangay Rosario']);
+        foreach (range(1, 5) as $rank) {
+            $product = $this->product($seller, 'Product '.$rank, 'piece');
+            $this->order($seller, $product, 1, (string) (60 - $rank * 10).'.00', 'delivered');
+        }
+
+        $this->get('/')->assertInertia(fn (Assert $page) => $page
+            ->where('sellerProducts.0.isBestSeller', false)
+            ->where('sellerProducts.1.isBestSeller', true)
+            ->where('sellerProducts.2.isBestSeller', true)
+            ->where('sellerProducts.3.isBestSeller', true)
+            ->where('sellerProducts.4.isBestSeller', true)
+            ->has('bestSellingProducts', 4)
             ->etc());
     }
 

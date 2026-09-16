@@ -10,6 +10,7 @@ use App\Models\WalkInOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -20,9 +21,9 @@ class CustomerCheckoutController extends Controller
         $data = $request->validate([
             'checkout_id' => ['required', 'uuid'],
             'recipient_name' => ['required', 'string', 'min:2', 'max:120'],
+            'contact_email' => ['nullable', 'email', 'max:255'],
             'phone' => ['required', 'regex:/^\+?[0-9][0-9\s-]{8,22}$/'],
             'address' => ['required', 'string', 'min:10', 'max:500'],
-            'barangay' => ['required', 'string', 'min:2', 'max:100'],
             'notes' => ['nullable', 'string', 'max:500'],
             'payment_method' => ['required', Rule::in(['cod'])],
             'items' => ['required', 'array', 'min:1', 'max:20'],
@@ -35,7 +36,7 @@ class CustomerCheckoutController extends Controller
         if ($existing) {
             abort_unless($existing->user_id === $request->user()->id, 404);
 
-            return redirect('/?page=checkout&order='.$existing->id);
+            return redirect('/?page=order-success&order='.$existing->id);
         }
 
         DB::transaction(function () use ($data, $request): void {
@@ -65,10 +66,16 @@ class CustomerCheckoutController extends Controller
             $checkout = CustomerCheckout::create([
                 'id' => $data['checkout_id'], 'user_id' => $request->user()->id,
                 'recipient_name' => $data['recipient_name'], 'phone' => $data['phone'],
-                'address' => $data['address'], 'barangay' => $data['barangay'],
+                'contact_email' => $data['contact_email'] ?? $request->user()->email,
+                'address' => $data['address'],
                 'notes' => $data['notes'] ?? null, 'payment_method' => 'cod',
                 'goods_total' => number_format($goodsTotal / 100, 2, '.', ''),
             ]);
+
+            $letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            do {
+                $reference = 'AgFrm-'.$letters[random_int(0, strlen($letters) - 1)].random_int(0, 9).Str::upper(Str::random(10));
+            } while (CustomerCheckout::where('reference_number', $reference)->exists());
 
             foreach ($products as $product) {
                 $quantity = $quantities->get($product->id)['quantity'];
@@ -87,8 +94,9 @@ class CustomerCheckoutController extends Controller
                 $order->save();
                 $product->decrement('stock', $quantity);
             }
+            $checkout->update(['reference_number' => $reference]);
         });
 
-        return redirect('/?page=checkout&order='.$data['checkout_id']);
+        return redirect('/?page=order-success&order='.$data['checkout_id']);
     }
 }

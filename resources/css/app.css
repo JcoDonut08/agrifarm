@@ -79,9 +79,7 @@
 @source '../js/**/*.jsx';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-serif: Georgia, 'Times New Roman', serif;
+    --font-sans: system-ui, 'Segoe UI', sans-serif;
 
     --color-forest-50: #effbef;
     --color-forest-100: #d9f5dc;
@@ -120,7 +118,7 @@
     }
 
     body {
-        @apply min-w-80 bg-cream-50 text-stone-900 antialiased transition-colors duration-200 dark:bg-night-950 dark:text-stone-100;
+        @apply min-w-80 bg-cream-50 font-sans text-stone-900 antialiased transition-colors duration-200 dark:bg-night-950 dark:text-stone-100;
     }
 
     button,
@@ -130,11 +128,5 @@
 
     ::selection {
         @apply bg-harvest-400 text-forest-950;
-    }
-}
-
-@layer components {
-    .auth-title {
-        font-family: Georgia, 'Times New Roman', serif;
     }
 }

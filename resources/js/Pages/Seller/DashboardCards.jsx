@@ -188,7 +188,7 @@ export function SalesOverview({ orders = [], SellerIcon, filipino = false }) {
 }
 
 function orderNumber(order) {
-    return `#WALK-${String(order.id).padStart(5, '0')}`;
+    return order.checkout?.reference_number || `#WALK-${String(order.id).padStart(5, '0')}`;
 }
 
 export function RecentOrders({ orders = [], products = [], navigate, SellerIcon, EmptyState, filipino = false }) {

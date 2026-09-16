@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<body style="font-family:Arial,sans-serif;color:#17382b;line-height:1.6">
+<body style="font-family:system-ui,'Segoe UI',Arial,sans-serif;color:#17382b;line-height:1.6">
     <h1>AgriFarm contact submission</h1>
     <p><strong>Reference:</strong> {{ $referenceId }}</p>
     <p><strong>Type:</strong> {{ ucfirst($submission['category']) }}</p>

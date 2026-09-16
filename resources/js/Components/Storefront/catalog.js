@@ -28,7 +28,7 @@ export const money = (value) => `₱${value.toLocaleString('en-PH', { minimumFra
 export const stockUnit = (unit, count) => unit === 'kg' ? 'kg' : count === 1 ? unit : ({ bunch: 'bunches', piece: 'pieces', head: 'heads', pack: 'packs' }[unit] || unit);
 
 export function getProductBadge(product) {
-    if (product.isBestSeller) return { label: 'Best Seller', style: 'bestseller', icon: 'trophy', description: 'Most delivered walk-in orders' };
+    if (product.isBestSeller) return { label: 'Best Seller', style: 'bestseller', icon: 'trophy', description: 'Among the most ordered products from delivered sales' };
     if (product.isTrending) return { label: 'Trending', style: 'trending', icon: 'trend', description: 'Delivered walk-in orders rose this week' };
     if (product.isNew) return { label: 'New', style: 'new', icon: 'sprout', description: 'Listed within the last 7 days' };
     return null;

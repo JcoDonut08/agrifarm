@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import ThemeToggle from '../ThemeToggle';
 
-export default function AccountMenu({ user, destination, onFavorites, onOpen }) {
+export default function AccountMenu({ user, destination, current = false, onFavorites, onOpen }) {
     const [open, setOpen] = useState(false);
     const [settings, setSettings] = useState(false);
     const container = useRef(null);
@@ -38,7 +38,7 @@ export default function AccountMenu({ user, destination, onFavorites, onOpen }) 
             <button
                 ref={trigger}
                 type="button"
-                className={`account-trigger ${open ? 'is-open' : ''}`}
+                className={`account-trigger ${open ? 'is-open' : ''} ${current ? 'is-current' : ''}`}
                 aria-label="Open account menu"
                 aria-expanded={open}
                 aria-controls="account-options"
@@ -50,7 +50,7 @@ export default function AccountMenu({ user, destination, onFavorites, onOpen }) 
                 <div id="account-options" className="account-dropdown" role="region" aria-label="Account options">
                     <div className="account-identity">
                         <AccountAvatar user={user} />
-                        <div><strong>{user?.name || 'Your account'}</strong><span>{user?.email || 'Welcome to AgriFarm'}</span></div>
+                        <div><strong>{user?.name || 'Your account'}</strong><span>{user?.username ? `@${user.username} · ${user.email}` : user?.email || 'Welcome to AgriFarm'}</span></div>
                     </div>
                     <div className="account-links">
                         <Link href={destination} onClick={() => setOpen(false)}>

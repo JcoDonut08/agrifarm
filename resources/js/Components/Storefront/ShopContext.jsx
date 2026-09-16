@@ -4,21 +4,21 @@ import { products as previewProducts } from './catalog';
 const ShopContext = createContext(null);
 const storageKey = 'agrifarm-marketplace-preview-v1';
 
-function readSaved(products) {
+function readSaved(products, preserveUnknown = false) {
     try {
         const saved = JSON.parse(localStorage.getItem(storageKey)) || {};
         const ids = new Set(products.map((product) => product.id));
         return {
-            favorites: Array.isArray(saved.favorites) ? [...new Set(saved.favorites.filter((id) => ids.has(id)))] : [],
-            cart: Object.fromEntries(Object.entries(saved.cart || {}).filter(([id, quantity]) => ids.has(id) && Number.isInteger(quantity) && quantity > 0).map(([id, quantity]) => [id, Math.min(quantity, products.find((product) => product.id === id).stock)])),
+            favorites: Array.isArray(saved.favorites) ? [...new Set(saved.favorites.filter((id) => preserveUnknown || ids.has(id)))] : [],
+            cart: Object.fromEntries(Object.entries(saved.cart || {}).filter(([id, quantity]) => (preserveUnknown || ids.has(id)) && Number.isInteger(quantity) && quantity > 0).map(([id, quantity]) => [id, preserveUnknown ? quantity : Math.min(quantity, products.find((product) => product.id === id).stock)])),
         };
     } catch {
         return { favorites: [], cart: {} };
     }
 }
 
-export function ShopProvider({ children, products = previewProducts }) {
-    const [saved, setSaved] = useState(() => readSaved(products));
+export function ShopProvider({ children, products = previewProducts, persist = true }) {
+    const [saved, setSaved] = useState(() => readSaved(products, !persist));
     const [panel, setPanel] = useState(null);
     const [notice, setNotice] = useState('');
     const [noticeId, setNoticeId] = useState(0);
@@ -32,17 +32,19 @@ export function ShopProvider({ children, products = previewProducts }) {
     }
 
     useEffect(() => {
+        if (!persist) return;
         try { localStorage.setItem(storageKey, JSON.stringify(saved)); } catch { /* The preview still works when browser storage is unavailable. */ }
-    }, [saved]);
+    }, [saved, persist]);
 
     useEffect(() => {
+        if (!persist) return;
         const available = new Map(products.map((product) => [product.id, product]));
         setSaved((previous) => {
             const favorites = previous.favorites.filter((id) => available.has(id));
             const cart = Object.fromEntries(Object.entries(previous.cart).map(([id, quantity]) => [id, Math.min(quantity, available.get(id)?.stock || 0)]).filter(([, quantity]) => quantity > 0));
             return favorites.length === previous.favorites.length && JSON.stringify(cart) === JSON.stringify(previous.cart) ? previous : { favorites, cart };
         });
-    }, [products]);
+    }, [products, persist]);
 
     useEffect(() => {
         if (!notice || noticePaused) return;

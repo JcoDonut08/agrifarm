@@ -24,7 +24,12 @@ class Product extends Model
 
     public function getPhotoUrlAttribute(): string
     {
-        return '/seller/products/'.$this->id.'/photo';
+        return '/seller/products/'.$this->id.'/photo?v='.$this->photoVersion();
+    }
+
+    public function photoVersion(): string
+    {
+        return substr(sha1($this->photo_path), 0, 12);
     }
 
     public function seller(): BelongsTo

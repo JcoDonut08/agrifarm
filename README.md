@@ -8,14 +8,29 @@ AgriFarm is a Laravel 12 + React 19/Inertia marketplace for Pasig barangay selle
 - React 19, Inertia.js 3, Tailwind CSS 4, Vite 8
 - PHPUnit feature tests and Playwright browser tests
 
+## UI Library Attribution
+
+This project uses shadcn/ui as an open-source component library for reusable interface components.
+
+shadcn/ui is released under the MIT License.
+
+Official Repository:
+[https://github.com/shadcn-ui/ui](https://github.com/shadcn-ui/ui)
+
+License:
+[https://github.com/shadcn-ui/ui/blob/main/LICENSE.md](https://github.com/shadcn-ui/ui/blob/main/LICENSE.md)
+
+shadcn/ui components used in AgriFarm are customized through Tailwind CSS and the project's design system to support its agricultural visual identity, responsive layouts, accessibility requirements, and consistent interaction patterns.
+
 ## Implemented behavior
 
 - Customer registration, email verification, password recovery, and role-aware login for customers, sellers, and CENRO admins
-- Seller profiles, private product/photo management, inventory, walk-in orders, and public-safe image routes
+- Seller profiles, private product/photo management (JPG/PNG/WebP up to 10 MB, including clipboard paste), inventory, walk-in orders, and public-safe image routes
+- Customer profile photo, contact and delivery details, and password management; saved details can prefill checkout
 - Customer marketplace search/filter/sort, product detail, favorites, and a device-local cart
 - Public seller shop at `/?page=seller&seller={id}` using the seller's real name, photo, barangay, and live listings
 - Multiple customer reviews per product, with owner-only edit/delete, anonymous display, rating filters, and five reviews per page
-- Three-step COD checkout for real seller listings: delivery details, order review, confirmation. Prices and stock are verified and reserved server-side; sellers receive the order in their Orders workspace.
+- Three pre-submit COD steps for real seller listings: shipping details with optional address suggestions, payment method (GCash/Maya shown as coming soon), and full order confirmation with product photos. Placing the order opens a separate mascot-led success page with a random alphanumeric `AgFrm-` reference and icon actions for printable/downloadable unpaid order slips. Prices and stock are verified and reserved server-side; sellers receive the order in their Orders workspace.
 - Light/dark themes; light mode uses a `#f5f5f5` page canvas with white cards
 
 The cart itself is stored on the device and does not reserve stock. Only real seller listings can be submitted as COD orders; sample catalog products remain previews. Delivery charges are not configured and must be agreed with the seller before fulfillment.
