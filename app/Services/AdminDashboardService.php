@@ -83,7 +83,7 @@ class AdminDashboardService
     /** @return array{months: array<int, array{key: string, label: string}>, series: array<int, array{name: string, sales: array<int, float>}>} */
     private function monthlySales(Collection $sellers): array
     {
-        $months = collect(range(5, 0))->map(function (int $monthsAgo): array {
+        $months = collect(range(11, 0))->map(function (int $monthsAgo): array {
             $month = now()->startOfMonth()->subMonths($monthsAgo);
 
             return ['key' => $month->format('Y-m'), 'label' => $month->format('M')];

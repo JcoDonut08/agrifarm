@@ -12,6 +12,7 @@ import WeatherCard from "./WeatherCard";
 import Settings from "./Settings";
 import Analytics from "./Analytics";
 import Reports from "./Reports";
+import HarvestRecords from "./HarvestRecords";
 import {
     formatMoney,
     getDashboardMetrics,
@@ -24,6 +25,7 @@ const sections = [
     ["Dashboard", "home"],
     ["Products", "box"],
     ["Orders", "cart"],
+    ["Harvest Records", "sprout"],
     ["Forecasting", "trend"],
     ["Analytics", "chart"],
     ["Reports", "receipt"],
@@ -33,6 +35,7 @@ const sections = [
 const sectionParams = {
     Products: "products",
     Orders: "orders",
+    "Harvest Records": "harvest-records",
     Forecasting: "forecasting",
     Analytics: "analytics",
     Reports: "reports",
@@ -43,6 +46,7 @@ const sectionLabels = {
     Dashboard: "Dashboard",
     Products: "Mga Produkto",
     Orders: "Mga Order",
+    "Harvest Records": "Mga Talaan ng Ani",
     Forecasting: "Taya ng Panahon",
     Analytics: "Pagsusuri",
     Reports: "Mga Ulat",
@@ -173,6 +177,7 @@ export default function Dashboard() {
         auth,
         products = [],
         orders = [],
+        harvestRecords = [],
         reviewSummary = { count: 0, average: null },
         weather = null,
     } = usePage().props;
@@ -517,6 +522,12 @@ export default function Dashboard() {
                         <Orders
                             products={products}
                             orders={orders}
+                            filipino={filipino}
+                        />
+                    ) : section === "Harvest Records" ? (
+                        <HarvestRecords
+                            products={products}
+                            harvestRecords={harvestRecords}
                             filipino={filipino}
                         />
                     ) : section === "Analytics" ? (

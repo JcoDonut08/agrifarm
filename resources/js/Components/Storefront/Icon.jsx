@@ -23,6 +23,7 @@ export default function Icon({ name, size = 20, ...props }) {
         cart: <><path d="M2 3h3l2.5 12h11L21 7H6M8 15l-1 3h12" /><circle cx="9" cy="21" r="1" /><circle cx="18" cy="21" r="1" /></>,
         bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 10h18c0-3-3-3-3-10M10 21h4" /></>,
         search: <><circle cx="10.5" cy="10.5" r="7.5" /><path d="m16 16 5 5" /></>,
+        eye: <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
         pin: <><path d="M19 10c0 5-7 12-7 12S5 15 5 10a7 7 0 0 1 14 0Z" /><circle cx="12" cy="9" r="2.5" /></>,
         tag: <><path d="m21 12-9 9-10-10V2h9Z" /><circle cx="7" cy="7" r="1" /></>,
         sort: <path d="M7 3v18m-4-4 4 4 4-4M17 21V3m-4 4 4-4 4 4" />,

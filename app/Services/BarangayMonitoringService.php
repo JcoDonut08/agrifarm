@@ -33,7 +33,8 @@ class BarangayMonitoringService
         $reports = collect();
         $months = $this->months();
 
-        $statusTable = $barangays->map(function (string $barangay) use ($sellers, $products, $orders, $deliveredOrders): array {
+        $harvestRecords = \App\Models\HarvestRecord::query()->whereIn('user_id', $sellerIds)->get();
+        $statusTable = $barangays->map(function (string $barangay) use ($sellers, $products, $orders, $deliveredOrders, $harvestRecords): array {
             $barangaySellers = $sellers->where('barangay', $barangay)->sortBy('name')->values();
             $sellerIds = $barangaySellers->pluck('id');
             $primarySeller = $barangaySellers->first();
@@ -47,23 +48,25 @@ class BarangayMonitoringService
                         : null,
                 ] : null,
                 'products' => $products->whereIn('user_id', $sellerIds)->count(),
-                'harvest' => null,
+                'harvest' => $harvestRecords->whereIn('user_id', $sellerIds)->count(),
                 'sales' => (float) $deliveredOrders->whereIn('user_id', $sellerIds)->sum('total'),
                 'demand' => (int) $orders->whereIn('user_id', $sellerIds)->sum('quantity'),
             ];
         })->values();
 
-        $specificBarangayData = $barangays->mapWithKeys(function (string $barangay) use ($sellers, $products, $deliveredOrders, $months): array {
+        $specificBarangayData = $barangays->mapWithKeys(function (string $barangay) use ($sellers, $products, $deliveredOrders, $months, $harvestRecords): array {
             $sellerIds = $sellers->where('barangay', $barangay)->pluck('id');
             $barangayProducts = $products->whereIn('user_id', $sellerIds);
             $barangayDeliveredOrders = $deliveredOrders->whereIn('user_id', $sellerIds);
-            $productRows = $barangayProducts->map(function (Product $product) use ($barangayDeliveredOrders): array {
+            $barangayHarvestRecords = $harvestRecords->whereIn('user_id', $sellerIds);
+            $productRows = $barangayProducts->map(function (Product $product) use ($barangayDeliveredOrders, $barangayHarvestRecords): array {
                 $sold = (int) $barangayDeliveredOrders->where('product_id', $product->id)->sum('quantity');
+                $harvested = (int) $barangayHarvestRecords->where('product_id', $product->id)->sum('quantity');
 
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
-                    'harvested' => null,
+                    'harvested' => $harvested,
                     'available' => (int) $product->stock,
                     'sold' => $sold,
                     'status' => $this->stockStatus($product),
@@ -74,7 +77,7 @@ class BarangayMonitoringService
             return [$barangay => [
                 'overview' => [
                     'totalProducts' => $barangayProducts->count(),
-                    'totalHarvest' => null,
+                    'totalHarvest' => $barangayHarvestRecords->count(),
                     'totalSales' => (float) $barangayDeliveredOrders->sum('total'),
                     'activeReports' => 0,
                 ],
@@ -88,8 +91,10 @@ class BarangayMonitoringService
                 ],
                 'harvestTrend' => [
                     'labels' => $months->pluck('label')->all(),
-                    'data' => [],
-                    'available' => false,
+                    'data' => $months->map(fn (array $month): int => (int) $barangayHarvestRecords
+                        ->filter(fn (\App\Models\HarvestRecord $record) => $record->harvest_date->format('Y-m') === $month['key'])
+                        ->count())->all(),
+                    'available' => $barangayHarvestRecords->isNotEmpty(),
                 ],
                 'reports' => [],
             ]];
@@ -113,14 +118,14 @@ class BarangayMonitoringService
                 'reports' => $reports->all(),
             ],
             'specificBarangayData' => $specificBarangayData,
-            'dataAvailability' => ['harvest' => false, 'reports' => false],
+            'dataAvailability' => ['harvest' => $harvestRecords->isNotEmpty(), 'reports' => false],
         ];
     }
 
     private function months(): Collection
     {
-        return collect(range(5, 0))->map(function (int $monthsAgo): array {
-            $month = now()->startOfMonth()->subMonths($monthsAgo);
+        return collect(range(1, 12))->map(function (int $monthNum): array {
+            $month = now()->startOfYear()->addMonths($monthNum - 1);
 
             return ['key' => $month->format('Y-m'), 'label' => $month->format('M')];
         });

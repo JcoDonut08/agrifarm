@@ -72,6 +72,12 @@ class User extends Authenticatable implements MustVerifyEmailContract
         return $this->hasMany(WalkInOrder::class);
     }
 
+    /** @return HasMany<HarvestRecord, $this> */
+    public function harvestRecords(): HasMany
+    {
+        return $this->hasMany(HarvestRecord::class);
+    }
+
     /**
      * @return HasMany<AdminTask, $this>
      */

@@ -120,13 +120,13 @@ function AllBarangays({ data, rows, currentPage, setPage, compareBy, setCompareB
                                         </span>
                                     </td>
                                     <td data-label="Products">{integer(row.products)}</td>
-                                    <td data-label="Harvest">—</td>
+                                    <td data-label="Harvest">{integer(row.harvest)}</td>
                                     <td data-label="Sales">{money(row.sales)}</td>
                                     <td><button type="button" className="admin-action-btn admin-action-btn--view barangay-monitoring__view" onClick={() => onView(row.name)}><Eye />View</button></td>
                                 </tr>)}</tbody>
                             </table>
                         </div>
-                        <DataNote text="A recorded-harvest data source is not available in the database yet." />
+                        {!data.comparisonData?.harvest?.some(h => h > 0) && <DataNote text="A recorded-harvest data source is not available in the database yet." />}
                         <Pager pagination={rows} setPage={setPage} label="barangays" />
                     </>}
                 </article>
@@ -152,13 +152,13 @@ function BarangayDetails({ data, filipino }) {
         <>
             <Metrics items={[
                 ["Total Products", integer(summary.totalProducts), "Listed products", Package],
-                ["Total Harvest", "—", "No harvest records yet", Sprout],
+                ["Total Harvest", integer(summary.totalHarvest), "Recorded harvests", Sprout],
                 ["Total Sales", money(summary.totalSales), "Completed orders", TrendingUp],
                 ["Active Reports", integer(summary.activeReports), "Requiring action", AlertCircle],
             ]} />
             <section className="barangay-monitoring__grid">
                 <Trend title="Sales Performance" description="Monthly completed sales" chart={data.salesTrend} formatter={money} color="#2e7d56" />
-                <Trend title="Harvest Trend" description="Monthly recorded harvest" chart={data.harvestTrend} formatter={integer} color="#b7791f" line />
+                <Trend title="Harvest Trend" description="Monthly recorded harvest" chart={data.harvestTrend} formatter={integer} color="#b7791f" />
             </section>
             <section className="admin-panel">
                 <Title icon={Package} title="Product & Harvest Monitoring" description="Available and sold quantities come from actual inventory and order records." />
@@ -183,13 +183,13 @@ function Products({ rows }) {
         <table className="barangay-monitoring__table">
             <thead><tr><th>Product</th><th>Harvested</th><th>Available</th><th>Sold</th><th>Status</th></tr></thead>
             <tbody>{rows.map((row) => <tr key={row.id}>
-                <td data-label="Product"><strong>{row.name}</strong></td><td data-label="Harvested">—</td>
+                <td data-label="Product"><strong>{row.name}</strong></td><td data-label="Harvested">{integer(row.harvested) + " " + row.unit}</td>
                 <td data-label="Available">{integer(row.available) + " " + row.unit}</td>
                 <td data-label="Sold">{integer(row.sold) + " " + row.unit}</td>
                 <td data-label="Status"><Badge value={row.status} /></td>
             </tr>)}</tbody>
         </table>
-        <DataNote text="Harvested will appear once harvest records are available in the system." />
+        
     </div>;
 }
 

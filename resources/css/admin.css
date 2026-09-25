@@ -543,9 +543,11 @@
 .barangay-monitoring__bar-track i { display: block; height: 100%; min-width: 2px; border-radius: inherit; background: #347d58; }
 .barangay-monitoring__trend { display: flex; flex-direction: column; }
 .barangay-monitoring__trend-plot { display: flex; align-items: end; gap: 12px; min-height: 205px; padding: 10px 4px 0; border-bottom: 1px solid #dce6df; }
-.barangay-monitoring__trend-point { display: grid; flex: 1; height: 190px; align-items: end; justify-items: center; gap: 8px; }
-.barangay-monitoring__trend-point span { display: block; width: min(38px, 100%); height: var(--chart-height); border-radius: 5px 5px 0 0; background: var(--chart-color); }
-.barangay-monitoring__trend-plot--line .barangay-monitoring__trend-point span { width: 12px; height: 12px; transform: translateY(calc((100% - var(--chart-height)) * -1)); border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 2px var(--chart-color); }
+.barangay-monitoring__trend-point { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; flex: 1; height: 190px; gap: 8px; }
+.barangay-monitoring__trend-point span { display: block; width: min(38px, 100%); height: calc(var(--chart-height) * 0.9); border-radius: 5px 5px 0 0; background: var(--chart-color); position: relative; }
+.barangay-monitoring__trend-plot--line .barangay-monitoring__trend-point span { width: 12px; background: transparent; }
+.barangay-monitoring__trend-plot--line .barangay-monitoring__trend-point span::after { content: ''; position: absolute; top: 0; left: 0; right: 0; width: 12px; height: 12px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 2px var(--chart-color); background: #fff; transform: translateY(-50%); box-sizing: border-box; }
+.dark .barangay-monitoring__trend-plot--line .barangay-monitoring__trend-point span::after { background: #1c211a; border-color: #1c211a; }
 .barangay-monitoring__trend-point small { color: #758177; font-size: 11px; }
 .barangay-monitoring__reports { margin-top: 20px; }
 .barangay-monitoring__badge { display: inline-flex; border-radius: 999px; padding: 4px 8px; font-size: 11px; font-weight: 750; line-height: 1; white-space: nowrap; }

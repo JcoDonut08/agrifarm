@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
-use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\Admin\SellerController as AdminSellerController;
+use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
@@ -11,6 +11,7 @@ use App\Http\Controllers\CustomerCheckoutController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
+use App\Http\Controllers\Seller\HarvestRecordController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\ProfileController;
 use App\Http\Controllers\Seller\TemporaryPasswordController;
@@ -70,6 +71,9 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         ->name('seller.dashboard');
 
     Route::middleware(['role:seller', 'seller.password-change'])->group(function () {
+        Route::post('/seller/crop-yields', [HarvestRecordController::class, 'store'])->middleware('throttle:30,1')->name('seller.harvest-records.store');
+        Route::patch('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'update'])->middleware('throttle:30,1')->name('seller.harvest-records.update');
+        Route::delete('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'destroy'])->middleware('throttle:30,1')->name('seller.harvest-records.destroy');
         Route::post('/seller/products', [ProductController::class, 'store'])->middleware('throttle:seller-product-management')->name('seller.products.store');
         Route::patch('/seller/products/{product}', [ProductController::class, 'update'])->middleware('throttle:seller-product-management')->name('seller.products.update');
         Route::delete('/seller/products', [ProductController::class, 'bulkDestroy'])->middleware('throttle:seller-product-management')->name('seller.products.bulk-destroy');
