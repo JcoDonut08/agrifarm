@@ -117,10 +117,11 @@ for (const viewport of viewports) {
         if (viewport.width <= 800) await page.getByRole('button', { name: 'Toggle seller navigation' }).click();
         await page.getByRole('button', { name: 'Sign out' }).click();
 
-        await completeLogin(page, 'admin@agrifarm.test', '/admin/dashboard');
-        await expect(page.getByRole('heading', { name: 'CENRO admin workspace' })).toBeVisible();
-        await expect(page.getByText('Your administrator workspace is ready')).toBeVisible();
-        await page.getByRole('button', { name: 'Sign out' }).click();
+        await completeLogin(page, 'pasigcenro@gmail.com', '/admin/dashboard');
+        await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+        await expect(page.locator('.admin-performance-item')).toHaveCount(3);
+        if (viewport.width <= 800) await page.getByRole('button', { name: 'Open admin navigation' }).click();
+        await page.getByRole('button', { name: 'Logout' }).click();
 
         await page.goto('/forgot-password');
         await expect(page.getByRole('heading', { name: 'Forgot your password?' })).toBeVisible();

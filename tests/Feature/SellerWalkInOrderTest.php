@@ -116,6 +116,65 @@ class SellerWalkInOrderTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_seller_dashboard_resolves_customer_avatar_for_orders(): void
+    {
+        $this->withoutVite();
+        $seller = User::factory()->create(['role' => UserRole::Seller]);
+        $customer = User::factory()->create([
+            'name' => 'Jco Salvador',
+            'role' => UserRole::Customer,
+            'avatar_url' => 'https://example.com/jco-avatar.jpg',
+        ]);
+        $product = $this->product($seller, 10);
+
+        // Walk-in order with matching customer name
+        $this->actingAs($seller)->post('/seller/orders/walk-in', [
+            'customer_name' => 'jco salvador',
+            'product_id' => $product->id,
+            'quantity' => 1,
+        ])->assertSessionHasNoErrors();
+
+        $this->get('/seller/dashboard')->assertInertia(fn (Assert $page) => $page
+            ->has('orders', 1)
+            ->where('orders.0.customer_name', 'jco salvador')
+            ->where('orders.0.customer_id', $customer->id)
+            ->where('orders.0.customer_avatar_url', 'https://example.com/jco-avatar.jpg'));
+    }
+
+    public function test_updating_product_updates_associated_walk_in_orders(): void
+    {
+        $this->withoutVite();
+        $seller = User::factory()->create(['role' => UserRole::Seller]);
+        $product = $this->product($seller, 10);
+
+        $this->actingAs($seller)->post('/seller/orders/walk-in', [
+            'customer_name' => 'Walk-in buyer',
+            'product_id' => $product->id,
+            'quantity' => 2,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('walk_in_orders', [
+            'product_id' => $product->id,
+            'product_name' => 'Fresh Pechay',
+        ]);
+
+        $this->patch("/seller/products/{$product->id}", [
+            'name' => 'Strawberry',
+            'category' => 'Fruits',
+            'description' => 'Sweet strawberries',
+            'price' => '120.00',
+            'unit' => 'kg',
+            'stock' => 8,
+            'threshold' => 2,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('walk_in_orders', [
+            'product_id' => $product->id,
+            'product_name' => 'Strawberry',
+            'unit' => 'kg',
+        ]);
+    }
+
     private function product(User $seller, int $stock): Product
     {
         $product = new Product([

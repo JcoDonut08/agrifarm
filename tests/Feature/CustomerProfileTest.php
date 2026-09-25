@@ -54,5 +54,6 @@ class CustomerProfileTest extends TestCase
         $this->assertStringStartsWith('/customer/profile/photo?image=', $photoUrl);
         $this->get($photoUrl)->assertOk();
         $this->actingAs(User::factory()->create())->get($photoUrl)->assertNotFound();
+        $this->get("/marketplace/customers/{$customer->id}/photo")->assertOk();
     }
 }

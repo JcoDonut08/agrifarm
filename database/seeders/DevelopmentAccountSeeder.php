@@ -18,17 +18,18 @@ class DevelopmentAccountSeeder extends Seeder
         }
 
         $this->createAccount('AgriFarm Customer', 'customer@agrifarm.test', UserRole::Customer, true);
-        $this->createAccount('AgriFarm Urban Farmer', 'seller@agrifarm.test', UserRole::Seller);
-        $this->createAccount('Pasig CENRO Administrator', 'admin@agrifarm.test', UserRole::CenroAdmin);
+        $this->createAccount('AgriFarm Urban Farmer', 'seller@agrifarm.test', UserRole::Seller, false, 'Rosario');
+        $this->createAccount('Pasig CENRO Administrator', 'pasigcenro@gmail.com', UserRole::CenroAdmin);
     }
 
-    private function createAccount(string $name, string $email, UserRole $role, bool $acceptedLegalTerms = false): void
+    private function createAccount(string $name, string $email, UserRole $role, bool $acceptedLegalTerms = false, ?string $barangay = null): void
     {
         $user = User::query()->firstOrNew(['email' => $email]);
 
         $user->forceFill([
             'name' => $name,
             'role' => $role,
+            'barangay' => $barangay,
             'password' => Hash::make(self::PASSWORD),
             'email_verified_at' => now(),
             'terms_accepted_at' => $acceptedLegalTerms ? now() : null,

@@ -111,12 +111,12 @@ function ForecastChart({ hours, metric, filipino }) {
     </div>;
 }
 
-function DailyForecast({ days, selectedIndex, onSelect, todayKey, filipino }) {
+function DailyForecast({ days, selectedIndex, onSelect, todayKey, filipino, limit = 8 }) {
     if (!days.length) return null;
 
-    const visibleDays = days.slice(0, 8);
+    const visibleDays = days.slice(0, limit);
 
-    return <section className="seller-weather-daily" aria-label={filipino ? 'Taya para sa walong araw' : 'Eight-day forecast'}>
+    return <section className="seller-weather-daily" aria-label={filipino ? `Taya para sa ${limit} araw` : `${limit}-day forecast`}>
         <div className="seller-weather-days">
             {visibleDays.map((day, index) => {
                 const dayLabel = formatDay(day.date, todayKey, filipino);
@@ -144,7 +144,7 @@ function DailyForecast({ days, selectedIndex, onSelect, todayKey, filipino }) {
     </section>;
 }
 
-export default function WeatherCard({ weather, onViewForecast, filipino = false }) {
+export default function WeatherCard({ weather, onViewForecast, filipino = false, title = null, compact = false }) {
     const [metric, setMetric] = useState('temperature');
     const [todayKey, setTodayKey] = useState(() => manilaDateKey());
     const [selectedDayIndex, setSelectedDayIndex] = useState(null);
@@ -188,10 +188,10 @@ export default function WeatherCard({ weather, onViewForecast, filipino = false 
         };
     }, []);
 
-    return <section className="seller-panel seller-weather" aria-labelledby="weather-card-title">
+    return <section className={`seller-panel seller-weather ${compact ? 'seller-weather--compact' : ''}`} aria-labelledby="weather-card-title">
         <header className="seller-weather-header">
             <div>
-                <h2 id="weather-card-title"><Icon name="sprout" size={25} />{filipino ? 'Panahon at lagay ng sakahan' : 'Weather & farm outlook'}</h2>
+                <h2 id="weather-card-title"><Icon name="sprout" size={25} />{title || (filipino ? 'Panahon at lagay ng sakahan' : 'Weather & farm outlook')}</h2>
                 <p><Icon name="pin" size={16} />{weather?.location || 'Pasig City'}</p>
             </div>
             {hasWeather && <div className="seller-weather-condition">
@@ -200,7 +200,28 @@ export default function WeatherCard({ weather, onViewForecast, filipino = false 
             </div>}
         </header>
 
-        {hasWeather ? <>
+        {hasWeather ? (compact ? <div className="seller-weather-compact-body">
+                <div className="seller-weather-compact-summary">
+                    <div className="seller-weather-compact-reading">
+                        <span className="seller-weather-kicker">{selectedLabel}</span>
+                        <div>
+                            <WeatherSymbol weather={selectedWeather} size={54} />
+                            <strong>{selectedTemperature}<sup>&deg;C</sup></strong>
+                        </div>
+                    </div>
+                    {isCurrentSelection ? <dl>
+                        <div><dt>{filipino ? 'Pakiramdam' : 'Feels like'}</dt><dd>{Number.isFinite(Number(weather.feels_like_c)) ? `${Math.round(Number(weather.feels_like_c))}\u00B0C` : '\u2014'}</dd></div>
+                        <div><dt>{filipino ? 'Ulan' : 'Rain'}</dt><dd>{Math.round(Number(weather.rain_chance_percent))}%</dd></div>
+                        <div><dt>{filipino ? 'Halumigmig' : 'Humidity'}</dt><dd>{Math.round(Number(weather.humidity_percent))}%</dd></div>
+                        <div><dt>{filipino ? 'Hangin' : 'Wind'}</dt><dd>{Number.isFinite(Number(weather.wind_kph)) ? `${Math.round(Number(weather.wind_kph))} km/h` : '\u2014'}</dd></div>
+                    </dl> : <dl>
+                        <div><dt>{filipino ? 'Pinakamataas' : 'High'}</dt><dd>{Math.round(Number(selectedDay.max_temperature_c))}&deg;C</dd></div>
+                        <div><dt>{filipino ? 'Pinakamababa' : 'Low'}</dt><dd>{Math.round(Number(selectedDay.min_temperature_c))}&deg;C</dd></div>
+                        <div><dt>{filipino ? 'Ulan' : 'Rain'}</dt><dd>{Math.round(Number(selectedDay.rain_chance_percent))}%</dd></div>
+                    </dl>}
+                </div>
+                <DailyForecast days={days} selectedIndex={selectedDayIndex} onSelect={setSelectedDayIndex} todayKey={todayKey} filipino={filipino} limit={5} />
+            </div> : <>
             <div className="seller-weather-hero">
                 <div className="seller-weather-summary">
                     <span className="seller-weather-kicker">{selectedLabel}</span>
@@ -234,7 +255,7 @@ export default function WeatherCard({ weather, onViewForecast, filipino = false 
             </div>
             <ForecastChart hours={hours} metric={metric} filipino={filipino} />
             <DailyForecast days={days} selectedIndex={selectedDayIndex} onSelect={setSelectedDayIndex} todayKey={todayKey} filipino={filipino} />
-        </> : <div className="seller-weather-unavailable">
+        </>) : <div className="seller-weather-unavailable">
             <WeatherSymbol weather={{ condition_key: 'cloudy' }} size={46} />
             <strong>{filipino ? 'Hindi available ang datos ng panahon' : 'Weather data unavailable'}</strong>
             <p>{filipino ? 'Subukan muli maya-maya. Available pa rin ang mga tool para sa sakahan at order.' : 'Try again shortly. Farm and order tools remain available.'}</p>
@@ -247,7 +268,7 @@ export default function WeatherCard({ weather, onViewForecast, filipino = false 
                     : <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">{filipino ? 'Datos ng panahon mula sa Open-Meteo' : 'Weather data by Open-Meteo'}</a>}
                 {hasWeather && weather.is_stale && <small>{filipino ? 'Ipinapakita ang pinakahuling naka-save na pagbasa' : 'Showing the latest cached reading'}</small>}
             </div>
-            <button className="seller-text-link" onClick={onViewForecast}>{filipino ? 'Tingnan ang taya ng panahon' : 'View forecasting'} <Icon name="arrow" size={17} /></button>
+            {onViewForecast && <button className="seller-text-link" onClick={onViewForecast}>{filipino ? 'Tingnan ang taya ng panahon' : 'View forecasting'} <Icon name="arrow" size={17} /></button>}
         </footer>
     </section>;
 }

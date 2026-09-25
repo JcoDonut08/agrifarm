@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\WalkInOrder;
 use App\Services\ProductPhotoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -50,6 +51,10 @@ class ProductController extends Controller
 
         try {
             $product->update($data);
+            WalkInOrder::where('product_id', $product->id)->update([
+                'product_name' => $product->name,
+                'unit' => $product->unit,
+            ]);
         } catch (\Throwable $exception) {
             if ($replacementPath) {
                 Storage::disk('local')->delete($replacementPath);
