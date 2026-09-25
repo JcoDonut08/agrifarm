@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\WalkInOrder;
+use App\Models\Report;
 use Illuminate\Support\Collection;
 
 class BarangayMonitoringService
@@ -30,11 +31,11 @@ class BarangayMonitoringService
         $products = Product::query()->whereIn('user_id', $sellerIds)->get();
         $orders = WalkInOrder::query()->whereIn('user_id', $sellerIds)->get();
         $deliveredOrders = $orders->where('status', 'delivered');
-        $reports = collect();
+        $reports = Report::all();
         $months = $this->months();
 
         $harvestRecords = \App\Models\HarvestRecord::query()->whereIn('user_id', $sellerIds)->get();
-        $statusTable = $barangays->map(function (string $barangay) use ($sellers, $products, $orders, $deliveredOrders, $harvestRecords): array {
+        $statusTable = $barangays->map(function (string $barangay) use ($sellers, $products, $orders, $deliveredOrders, $harvestRecords, $reports): array {
             $barangaySellers = $sellers->where('barangay', $barangay)->sortBy('name')->values();
             $sellerIds = $barangaySellers->pluck('id');
             $primarySeller = $barangaySellers->first();
@@ -54,7 +55,7 @@ class BarangayMonitoringService
             ];
         })->values();
 
-        $specificBarangayData = $barangays->mapWithKeys(function (string $barangay) use ($sellers, $products, $deliveredOrders, $months, $harvestRecords): array {
+        $specificBarangayData = $barangays->mapWithKeys(function (string $barangay) use ($sellers, $products, $deliveredOrders, $months, $harvestRecords, $reports): array {
             $sellerIds = $sellers->where('barangay', $barangay)->pluck('id');
             $barangayProducts = $products->whereIn('user_id', $sellerIds);
             $barangayDeliveredOrders = $deliveredOrders->whereIn('user_id', $sellerIds);
@@ -79,7 +80,7 @@ class BarangayMonitoringService
                     'totalProducts' => $barangayProducts->count(),
                     'totalHarvest' => $barangayHarvestRecords->count(),
                     'totalSales' => (float) $barangayDeliveredOrders->sum('total'),
-                    'activeReports' => 0,
+                    'activeReports' => $reports->where('barangay', $barangay)->where('status', 'Pending')->count(),
                 ],
                 'products' => $productRows->all(),
                 'salesTrend' => [
@@ -96,7 +97,21 @@ class BarangayMonitoringService
                         ->count())->all(),
                     'available' => $barangayHarvestRecords->isNotEmpty(),
                 ],
-                'reports' => [],
+                                'reports' => $reports->where('barangay', $barangay)->map(function (Report $report) {
+                    return [
+                        'id' => $report->id,
+                        'barangay' => $report->barangay,
+                        'type' => $report->type,
+                        'date' => $report->created_at->toISOString(),
+                        'reportedBy' => $report->reporter_name,
+                        'product' => $report->product_name,
+                        'description' => $report->description,
+                        'attachment' => $report->attachment_path ? asset('storage/' . $report->attachment_path) : null,
+                        'remarks' => $report->remarks,
+                        'status' => $report->status,
+                        'resolution' => $report->resolution,
+                    ];
+                })->values()->all(),
             ]];
         })->all();
 
@@ -115,10 +130,24 @@ class BarangayMonitoringService
                     'sales' => $statusTable->pluck('sales')->all(),
                     'demand' => $statusTable->pluck('demand')->all(),
                 ],
-                'reports' => $reports->all(),
+                                'reports' => $reports->map(function (Report $report) {
+                    return [
+                        'id' => $report->id,
+                        'barangay' => $report->barangay,
+                        'type' => $report->type,
+                        'date' => $report->created_at->toISOString(),
+                        'reportedBy' => $report->reporter_name,
+                        'product' => $report->product_name,
+                        'description' => $report->description,
+                        'attachment' => $report->attachment_path ? asset('storage/' . $report->attachment_path) : null,
+                        'remarks' => $report->remarks,
+                        'status' => $report->status,
+                        'resolution' => $report->resolution,
+                    ];
+                })->values()->all(),
             ],
             'specificBarangayData' => $specificBarangayData,
-            'dataAvailability' => ['harvest' => $harvestRecords->isNotEmpty(), 'reports' => false],
+            'dataAvailability' => ['harvest' => $harvestRecords->isNotEmpty(), 'reports' => $reports->isNotEmpty()],
         ];
     }
 

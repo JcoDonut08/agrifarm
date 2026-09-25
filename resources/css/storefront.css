@@ -37,12 +37,11 @@
 .store-nav-inner { display: flex; align-items: center; justify-content: space-between; min-height: 88px; gap: 24px; }
 .store-brand { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; color: var(--store-ink); font-size: 27px; font-weight: 750; letter-spacing: -1px; }
 .store-desktop-nav { display: flex; align-items: center; gap: 8px; }
-.store-desktop-nav a, .store-desktop-nav button { position: relative; min-height: 44px; padding: 10px 14px; border-radius: 8px; color: var(--store-muted); font-size: 14px; font-weight: 600; transition: color .18s, background .18s; }
-.store-desktop-nav a::after, .store-desktop-nav button::after { content: ''; position: absolute; bottom: 3px; left: 14px; right: 14px; height: 2px; border-radius: 2px; background: var(--store-green); transform: scaleX(0); transform-origin: center; transition: transform .18s; }
-.store-desktop-nav :is(a, button):hover { color: var(--store-green-dark); background: var(--store-soft); }
-.store-desktop-nav :is(a, button):hover::after { transform: scaleX(.55); }
-.store-desktop-nav :is(.active, [aria-expanded='true']) { color: var(--store-green-dark); background: color-mix(in srgb, var(--store-green) 8%, var(--store-bg)); font-weight: 700; }
-.store-desktop-nav :is(.active, [aria-expanded='true'])::after, .store-desktop-nav :is(.active, [aria-expanded='true']):hover::after { transform: scaleX(1); }
+.store-desktop-nav a, .store-desktop-nav button { position: relative; min-height: 44px; padding: 10px 14px; border-radius: 8px; color: var(--store-muted); font-size: 14px; font-weight: 600; transition: color .2s ease; background: transparent; }
+.store-desktop-nav a::after, .store-desktop-nav button::after { content: ''; position: absolute; bottom: 4px; left: 14px; right: 14px; height: 2.5px; border-radius: 2px; background: var(--store-green); transform: scaleX(0); transform-origin: center; transition: transform .3s cubic-bezier(0.2, 1, 0.2, 1); }
+.store-desktop-nav :is(a, button):hover { color: var(--store-green-dark); background: transparent; }
+.store-desktop-nav :is(.active, [aria-expanded='true']) { color: var(--store-green-dark); font-weight: 700; background: transparent; }
+.store-desktop-nav :is(.active, [aria-expanded='true'])::after { transform: scaleX(1); }
 .store-header-actions { display: flex; align-items: center; gap: 8px; }
 .store-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; position: relative; color: var(--store-ink); flex-shrink: 0; transition: background .18s, color .18s; }
 .store-icon-button:hover { background: var(--store-soft); color: var(--store-green); }
@@ -579,7 +578,7 @@
 .collection-nav { display: flex; gap: 28px; border-bottom: 1px solid var(--store-border); margin-block: 28px 32px; }
 .collection-nav a { display: flex; align-items: center; gap: 8px; padding: 14px 0; border-bottom: 2px solid transparent; font-weight: 600; font-size: 14px; color: var(--store-muted); }
 .collection-nav a:hover, .collection-nav a[aria-current] { color: var(--store-ink); border-bottom-color: var(--store-green); }
-.store-icon-button[aria-current] { background: var(--store-soft); color: var(--store-green-dark); box-shadow: inset 0 0 0 2px var(--store-green); }
+.store-icon-button[aria-current] { background: color-mix(in srgb, var(--store-green) 12%, var(--store-bg)); color: var(--store-green-dark); box-shadow: none; }
 .collection-count { font-size: 14px; color: var(--store-muted); margin-bottom: 22px; }
 .collection-footnote { text-align: center; font-size: 12px; color: var(--store-muted); margin-top: 24px; line-height: 1.6; }
 .collection-empty { display: flex; align-items: center; flex-direction: column; text-align: center; padding: 60px 24px; background: var(--store-bg); border: 1px solid var(--store-border); border-radius: var(--store-radius); }
@@ -827,11 +826,11 @@
 
 /* Product detail uses the preview catalog's one photo and existing listing facts. */
 .product-detail-page { padding-block: 28px 72px; }
-.product-detail-main { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 32px; align-items: start; }
+.product-detail-main { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); align-items: stretch; border: 1px solid var(--store-border); border-radius: var(--store-radius); background: var(--store-bg); }
 .product-detail-gallery-column { min-width: 0; }
-.product-detail-gallery { min-width: 0; padding: 16px; border: 1px solid var(--store-border); border-radius: var(--store-radius); background: var(--store-bg); }
-.product-detail-photo { aspect-ratio: 1; border-radius: 12px; }
-.product-seller-card { grid-column: 1 / -1; display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 18px; border: 1px solid var(--store-border); border-radius: var(--store-radius); background: var(--store-bg); }
+.product-detail-gallery { min-width: 0; padding: 16px; height: 100%; display: flex; align-items: center; }
+.product-detail-photo { aspect-ratio: 1; border-radius: 12px; width: 100%; }
+.product-seller-card { margin-top: 32px; display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 18px; border: 1px solid var(--store-border); border-radius: var(--store-radius); background: var(--store-bg); }
 .product-seller-avatar { display: grid; width: 58px; height: 58px; place-items: center; overflow: hidden; border: 1px solid var(--store-border); border-radius: 50%; background: var(--store-soft); color: var(--store-green-dark); font-size: 20px; font-weight: 750; }
 .product-seller-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .product-seller-identity { display: grid; min-width: 0; }
@@ -841,7 +840,9 @@
 .product-seller-identity small svg { flex-shrink: 0; color: var(--store-green); }
 .product-seller-shop-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 9px 13px; border: 1px solid var(--store-green); border-radius: 8px; color: var(--store-green-dark); font-size: 12px; font-weight: 700; white-space: nowrap; }
 .product-seller-shop-button:hover { background: var(--store-soft); }
-.product-detail-info { min-width: 0; padding: 30px; border: 1px solid var(--store-border); border-radius: var(--store-radius); background: var(--store-bg); }
+.product-detail-info { min-width: 0; padding: 30px; position: relative; }
+.product-report-btn { position: absolute; top: 20px; right: 20px; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; color: var(--store-muted); cursor: pointer; transition: all 0.2s; }
+.product-report-btn:hover { background: var(--store-soft); color: var(--store-green-dark); }
 .product-detail-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border-radius: 6px; background: var(--store-soft); color: var(--store-green-dark); font-size: 12px; font-weight: 700; }
 .product-detail-info h1 { margin-top: 10px; font-size: clamp(27px, 2.6vw, 38px); line-height: 1.16; letter-spacing: -.035em; font-weight: 750; }
 .product-detail-rating { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: fit-content; margin-top: 16px; font-size: 13px; }
@@ -963,7 +964,8 @@
 .dark .review-item-actions button.is-delete:hover { border-color: #a95b54; background: #412d2a; }
 .dark .seller-confirmation-icon { color: #ffb5ad; background: #492e2b; }
 @media (max-width: 900px) {
-    .product-detail-main { grid-template-columns: 1fr; gap: 20px; }
+    .product-detail-main { grid-template-columns: 1fr; }
+    .product-detail-gallery-column { border-right: none; } /* removed border-bottom */
     .product-detail-gallery-column { max-width: 660px; }
     .product-seller-card { order: 1; max-width: 660px; }
     .product-detail-info { order: 2; }
@@ -1291,4 +1293,102 @@
     .checkout-print-receipt .receipt-totals { padding: 3mm 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; font-size: 11px; }
     .checkout-print-receipt p { margin: 3mm 0; font-size: 8px; }
     .checkout-print-receipt footer { display: grid; gap: 1mm; padding-top: 4mm; text-align: center; }
+}
+
+/* Report Modal Styles */
+.modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+.modal-container {
+    background: var(--store-bg);
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--store-border);
+}
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--store-ink);
+}
+.modal-close {
+    background: transparent;
+    border: none;
+    color: var(--store-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+}
+.modal-close:hover {
+    background: var(--store-soft);
+}
+.modal-body {
+    padding: 24px;
+}
+.report-intro {
+    font-size: 14px;
+    color: var(--store-muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+.modal-body .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.modal-body .form-field span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--store-ink);
+}
+.modal-body .form-field select,
+.modal-body .form-field textarea {
+    padding: 12px;
+    border: 1px solid var(--store-border);
+    border-radius: 8px;
+    background: var(--store-bg);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--store-ink);
+    resize: vertical;
+}
+.modal-body .form-field select:focus,
+.modal-body .form-field textarea:focus {
+    outline: none;
+    border-color: var(--store-green);
+    box-shadow: 0 0 0 3px rgba(52, 125, 88, 0.15);
+}
+.modal-body .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+.store-button--ghost {
+    background: transparent;
+    border: 1px solid var(--store-border);
+    color: var(--store-ink);
+}
+.store-button--ghost:hover {
+    background: var(--store-soft);
+    border-color: var(--store-soft);
 }

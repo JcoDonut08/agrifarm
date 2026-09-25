@@ -11,7 +11,10 @@ import {
     Package,
     Sprout,
     TrendingUp,
+    Trash2,
 } from "lucide-react";
+import { router } from "@inertiajs/react";
+import ConfirmationDialog from "../../Components/ConfirmationDialog";
 
 const PAGE_SIZE = 6;
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 2 });
@@ -43,7 +46,7 @@ export default function BarangayMonitoring({ monitoringData, filipino }) {
         <div className="barangay-monitoring">
             <header className="barangay-monitoring__header">
                 <div>
-                    <p className="barangay-monitoring__eyebrow">CENRO workspace</p>
+                    
                     <h1 className="admin-page-title">{filipino ? "Pagbabantay sa Barangay" : "Barangay Monitoring"}</h1>
                     <p className="barangay-monitoring__intro">
                         {selected
@@ -228,27 +231,85 @@ function Trend({ title, description, chart = {}, formatter, color, line }) {
 }
 
 function Reports({ rows, allCount, pageNumber, setPage, selected, onView }) {
+    const [successModalMessage, setSuccessModalMessage] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+
+    function deleteReport() {
+        if (!deleteTarget) return;
+        setDeleting(true);
+        router.delete('/admin/reports/' + deleteTarget.id, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setSuccessModalMessage('deleted');
+                setDeleteTarget(null);
+            },
+            onFinish: () => setDeleting(false)
+        });
+    }
+
     return <section className="admin-panel barangay-monitoring__reports">
         <Title icon={FileText} title="Barangay Reports" description={selected ? "Reports from all barangays." : "Reports for the selected barangay."} />
         {!rows.items.length ? <Empty icon={FileText} text="No reports have been recorded yet. They will appear when CENRO reporting records are connected." /> :
             <><div className="barangay-monitoring__table-wrap"><table className="barangay-monitoring__table">
-                <thead><tr><th>Date</th>{selected && <th>Barangay</th>}<th>Report Type</th><th>Reported By</th><th>Status</th><th><span className="sr-only">Action</span></th></tr></thead>
+                <thead><tr><th>Date</th>{selected && <th>Barangay</th>}<th>Report Type</th><th>Reported By</th><th style={{ textAlign: 'right' }}>Action</th></tr></thead>
                 <tbody>{rows.items.map((entry) => <tr key={entry.id}>
                     <td data-label="Date">{date(entry.date)}</td>{selected && <td data-label="Barangay">{entry.barangay}</td>}
                     <td data-label="Report Type">{entry.type}</td><td data-label="Reported By">{entry.reportedBy}</td>
-                    <td data-label="Status"><Badge value={entry.status} /></td>
-                    <td><button type="button" className="admin-action-btn admin-action-btn--view barangay-monitoring__view" onClick={() => onView(entry)}><Eye />View</button></td>
+                    <td data-label="Action" style={{ textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                        <button type="button" className="admin-action-btn admin-action-btn--view barangay-monitoring__view" onClick={() => onView(entry)} title="View"><Eye size={16} /></button>
+                        <button type="button" className="admin-action-btn admin-action-btn--view barangay-monitoring__view" onClick={() => setDeleteTarget(entry)} title="Delete" style={{ color: '#d32f2f' }}><Trash2 size={16} /></button>
+                    </td>
                 </tr>)}</tbody>
             </table></div><Pager pagination={{ ...rows, total: allCount, page: pageNumber }} setPage={setPage} label="reports" /></>}
+            
+            <ConfirmationDialog 
+                open={Boolean(deleteTarget)} 
+                title="Delete report?" 
+                description={deleteTarget ? `Are you sure you want to delete the report for ${deleteTarget.product || 'this product'}? This action cannot be undone.` : ''} 
+                confirmLabel="Delete report" 
+                cancelLabel="Cancel" 
+                workingLabel="Deleting..." 
+                busy={deleting} 
+                onConfirm={deleteReport} 
+                onCancel={() => setDeleteTarget(null)} 
+            />
+            {successModalMessage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity" style={{ zIndex: 100 }}>
+                    <div className="bg-white dark:bg-[#1C211A] border border-gray-200 dark:border-[#2D3629] rounded-2xl p-8 max-w-sm w-full mx-4 shadow-xl transform scale-100 transition-all text-center animate-modal-pop">
+                        
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100/50 dark:bg-[#1b5e20]/30 mb-6 border border-green-500/30 dark:border-[#4caf50]/40">
+                            <svg className="h-8 w-8 text-green-600 dark:text-[#4caf50] checkmark-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" className="checkmark-path" />
+                            </svg>
+                        </div>
+                        
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Success!</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-8 font-medium">
+                            The report has been successfully deleted.
+                        </p>
+                        
+                        <button 
+                            type="button"
+                            onClick={() => setSuccessModalMessage(null)}
+                            className="w-full py-2.5 px-4 bg-green-600 hover:bg-green-700 dark:bg-[#239920] dark:hover:bg-[#1D821A] text-white rounded-lg font-medium transition-colors"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
     </section>;
 }
 
 function ReportDialog({ report, onClose }) {
     const fields = [
-        ["Report ID", report.id], ["Barangay", report.barangay], ["Report Type", report.type],
-        ["Date/Time", date(report.date)], ["Reported By", report.reportedBy], ["Product", report.product || "—"],
-        ["Description", report.description || "—"], ["Supporting attachment", report.attachment || "None"],
-        ["CENRO remarks", report.remarks || "—"], ["Status", report.status], ["Resolution / Action Taken", report.resolution || "—"],
+        ["Reported By", report.reportedBy || "—"],
+        ["Report Type", report.type || "—"],
+        ["Product", report.product || "—"],
+        ["Description", report.description || "—"],
+        ["Barangay", report.barangay || "—"],
+        ["Date/Time", date(report.date)],
     ];
     return <div className="barangay-monitoring__dialog-backdrop" onMouseDown={onClose}>
         <section className="barangay-monitoring__dialog" role="dialog" aria-modal="true" aria-labelledby="report-details-title" onMouseDown={(event) => event.stopPropagation()}>

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\SellerController as AdminSellerController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
@@ -54,6 +55,7 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         ->name('customer.home');
 
     Route::middleware('role:customer')->group(function () {
+        Route::post('/customer/reports', [\App\Http\Controllers\Customer\ReportController::class, 'store'])->middleware('throttle:10,1')->name('customer.reports.store');
         Route::patch('/customer/profile', [CustomerProfileController::class, 'update'])->middleware('throttle:6,1')->name('customer.profile.update');
         Route::put('/customer/password', [CustomerProfileController::class, 'password'])->middleware('throttle:6,1')->name('customer.password.update');
         Route::post('/customer/profile/photo', [CustomerProfileController::class, 'photo'])->middleware('throttle:10,1')->name('customer.profile.photo');
@@ -102,5 +104,6 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         Route::post('/admin/tasks', [AdminTaskController::class, 'store'])->name('admin.tasks.store');
         Route::patch('/admin/tasks/{adminTask}', [AdminTaskController::class, 'update'])->name('admin.tasks.update');
         Route::delete('/admin/tasks/{adminTask}', [AdminTaskController::class, 'destroy'])->name('admin.tasks.destroy');
+        Route::delete('/admin/reports/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
     });
 });
