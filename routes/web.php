@@ -45,6 +45,10 @@ Route::delete('/product-reviews/{productReview}', [ProductReviewController::clas
     ->middleware(['auth', 'role:customer', 'throttle:10,1'])
     ->name('product-reviews.destroy');
 
+Route::post('/product-reviews/{productReview}/react', [\App\Http\Controllers\ReviewReactionController::class, 'toggle'])
+    ->middleware(['auth', 'throttle:20,1'])
+    ->name('product-reviews.react');
+
 Route::post('/checkout', [CustomerCheckoutController::class, 'store'])
     ->middleware(['auth', 'role:customer', 'throttle:10,1'])
     ->name('checkout.store');

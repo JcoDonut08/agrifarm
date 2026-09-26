@@ -342,7 +342,12 @@ class StorefrontController extends Controller
         $reviews = ProductReview::query()
             ->where('product_key', $productKey)
             ->when($filter, fn ($query) => $query->where('rating', $filter))
-            ->with('user:id,name')
+            ->with('user:id,name,avatar_url')
+            ->withCount([
+                'reactions as likes_count' => fn ($q) => $q->where('type', 'like'),
+                'reactions as dislikes_count' => fn ($q) => $q->where('type', 'dislike'),
+            ])
+            ->with(['reactions' => fn ($q) => $q->where('user_id', $request->user()?->id ?: -1)])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(5, ['*'], 'review_page');
@@ -359,7 +364,12 @@ class StorefrontController extends Controller
                 'comment' => $review->comment,
                 'anonymous' => $review->anonymous,
                 'displayName' => $review->anonymous ? 'Anonymous customer' : $review->user?->name,
+                'avatar' => $review->anonymous ? null : $review->user?->avatar_url,
                 'createdAt' => $review->created_at->toIso8601String(),
+                'attachment' => $review->attachment_path ? asset('storage/' . $review->attachment_path) : null,
+                'likes' => $review->likes_count ?? 0,
+                'dislikes' => $review->dislikes_count ?? 0,
+                'myReaction' => $review->reactions->first()?->type,
                 'isMine' => $review->user_id === $viewerId,
             ])->all(),
             'currentPage' => $reviews->currentPage(),

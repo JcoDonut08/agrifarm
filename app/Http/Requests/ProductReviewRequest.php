@@ -32,6 +32,7 @@ class ProductReviewRequest extends FormRequest
             'rating' => ['required', 'integer', 'between:1,5'],
             'comment' => ['required', 'string', 'min:10', 'max:2000'],
             'anonymous' => ['required', 'boolean'],
+            'attachment' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,mp4,mov,avi', 'max:10240'],
         ];
     }
 }
