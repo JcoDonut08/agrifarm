@@ -1,9 +1,11 @@
 import { Link } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+import { useShop } from './ShopContext';
 import Icon from './Icon';
 import ThemeToggle from '../ThemeToggle';
 
-export default function AccountMenu({ user, destination, current = false, onFavorites, onOpen }) {
+export default function AccountMenu({ user, destination, current = false, onOpen }) {
+    const { filipino } = useShop();
     const [open, setOpen] = useState(false);
     const [settings, setSettings] = useState(false);
     const container = useRef(null);
@@ -50,22 +52,21 @@ export default function AccountMenu({ user, destination, current = false, onFavo
                 <div id="account-options" className="account-dropdown" role="region" aria-label="Account options">
                     <div className="account-identity">
                         <AccountAvatar user={user} />
-                        <div><strong>{user?.name || 'Your account'}</strong><span>{user?.username ? `@${user.username} · ${user.email}` : user?.email || 'Welcome to AgriFarm'}</span></div>
+                        <div><strong>{user?.name || (filipino ? 'Iyong account' : 'Your account')}</strong><span>{user?.username ? `@${user.username} · ${user.email}` : (user?.email || (filipino ? 'Maligayang pagdating sa AgriFarm' : 'Welcome to AgriFarm'))}</span></div>
                     </div>
                     <div className="account-links">
                         <Link href={destination} onClick={() => setOpen(false)}>
-                            <Icon name="user" />{!user ? 'Log in' : user.role === 'customer' ? 'My profile' : 'My workspace'}<Icon name="arrow" size={16} />
+                            <Icon name="user" />{!user ? (filipino ? 'Mag-log in' : 'Log in') : user.role === 'customer' ? (filipino ? 'Aking profile' : 'My profile') : (filipino ? 'Aking workspace' : 'My workspace')}<Icon name="arrow" size={16} />
                         </Link>
-                        <button type="button" onClick={() => { setOpen(false); trigger.current?.focus(); onFavorites(); }}>
-                            <Icon name="heart" />Saved favorites
-                        </button>
-                        <button type="button" aria-expanded={settings} aria-controls="profile-settings" onClick={() => setSettings(!settings)}>
-                            <Icon name="settings" />Settings<Icon name="chevron" size={16} />
-                        </button>
+                        <Link href="/customer/orders" onClick={() => setOpen(false)}>
+                            <Icon name="receipt" />{filipino ? 'Mga order ko' : 'My orders'}<Icon name="arrow" size={16} />
+                        </Link>
+                        <Link href="/customer/settings" onClick={() => setOpen(false)}>
+                            <Icon name="settings" />{filipino ? 'Mga Setting' : 'Settings'}<Icon name="arrow" size={16} />
+                        </Link>
                     </div>
-                    {settings && <div id="profile-settings"><ThemeToggle settings /></div>}
                     {user && <Link href="/logout" method="post" as="button" className="account-signout">
-                        <Icon name="logout" />Sign out
+                        <Icon name="logout" />{filipino ? 'Mag-sign out' : 'Sign out'}
                     </Link>}
                 </div>
             )}

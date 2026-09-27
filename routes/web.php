@@ -58,6 +58,14 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         ->middleware('role:customer')
         ->name('customer.home');
 
+    Route::get('/customer/settings', function () {
+        return \Inertia\Inertia::render('Customer/Settings');
+    })->name('customer.settings');
+
+    Route::get('/customer/orders', [\App\Http\Controllers\Customer\OrderController::class, 'index'])
+        ->middleware('role:customer')
+        ->name('customer.orders');
+
     Route::middleware('role:customer')->group(function () {
         Route::post('/customer/reports', [\App\Http\Controllers\Customer\ReportController::class, 'store'])->middleware('throttle:10,1')->name('customer.reports.store');
         Route::patch('/customer/profile', [CustomerProfileController::class, 'update'])->middleware('throttle:6,1')->name('customer.profile.update');

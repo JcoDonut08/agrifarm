@@ -12,7 +12,7 @@ const siteLinks = [
     { label: 'Contact', href: '/#contact' },
 ];
 
-export default function GuestLayout({ children, authPage = false, storefront = false, market = false }) {
+export default function GuestLayout({ children, authPage = false, storefront = false, market = false, legalPage = false }) {
     const user = usePage().props.auth?.user;
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -20,7 +20,7 @@ export default function GuestLayout({ children, authPage = false, storefront = f
 
     if (authPage) {
         return (
-            <div className="dark relative isolate flex min-h-dvh flex-col overflow-hidden bg-night-950">
+            <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-night-950">
                 <img src="/images/agrifarm-auth-produce-realistic.png" alt="" aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20 size-full object-cover" />
                 <div className="pointer-events-none fixed inset-0 -z-10 bg-black/55" aria-hidden="true" />
 
@@ -35,11 +35,24 @@ export default function GuestLayout({ children, authPage = false, storefront = f
 
     const destination = user ? rolePath(user.role) : '/login';
 
+    if (legalPage) {
+        return (
+            <div className="flex min-h-screen flex-col bg-cream-50 transition-colors dark:bg-night-950">
+                <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
+                    <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-forest-700 hover:text-forest-950 dark:text-forest-300 dark:hover:text-white">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        Return to Store
+                    </Link>
+                    <ThemeToggle />
+                </div>
+                <main className="flex-1">{children}</main>
+            </div>
+        );
+    }
+
     return (
         <div className="flex min-h-screen flex-col bg-cream-50 transition-colors dark:bg-night-950">
-            <div className="bg-forest-900 px-4 py-2 text-center text-xs font-semibold tracking-wide text-white">
-                Connecting Pasig communities with local urban growers
-            </div>
+            
             <header className="sticky top-0 z-50 border-b border-forest-950/10 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-night-950/95">
                 <div className="mx-auto grid min-h-20 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-6 px-4 sm:px-8 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-10 lg:px-10 xl:px-12">
                     <div className="justify-self-start">
@@ -135,7 +148,7 @@ function CartIcon() {
 }
 
 function BellIcon() {
-    return <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+    return <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8"><g transform="translate(0, 1.5)"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" strokeLinecap="round" strokeLinejoin="round" /></g></svg>;
 }
 
 function ProfileIcon() {

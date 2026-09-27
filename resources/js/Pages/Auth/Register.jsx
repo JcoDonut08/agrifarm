@@ -33,25 +33,14 @@ export default function Register() {
                     <PasswordField id="password" label="Password" autoComplete="new-password" hint="Use at least 8 characters that are difficult to guess." value={data.password} onChange={(event) => setData('password', event.target.value)} error={errors.password} required />
                 </div>
 
-                <fieldset className="rounded-2xl border border-forest-200 bg-forest-50/80 p-4 shadow-sm dark:border-white/15 dark:bg-night-800">
-                    <legend className="sr-only">Legal acceptance</legend>
-                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                            <p className="text-sm font-bold text-forest-950 dark:text-white">Terms &amp; privacy</p>
-                            <p className="mt-0.5 text-xs leading-5 text-stone-600 dark:text-stone-300">Please review these before creating your customer account.</p>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs font-bold">
-                            <Link href="/terms" className="rounded text-forest-700 underline underline-offset-2 hover:text-forest-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 dark:text-forest-300 dark:hover:text-white">Terms</Link>
-                            <Link href="/privacy" className="rounded text-forest-700 underline underline-offset-2 hover:text-forest-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 dark:text-forest-300 dark:hover:text-white">Privacy</Link>
-                        </div>
-                    </div>
+                <div className="py-2">
                     <ConsentCheckbox checked={data.legal} onChange={(checked) => {
                         setData('legal', checked);
                         if (errors.legal) clearErrors('legal');
                     }} error={errors.legal}>
                         I agree to the <Link href="/terms" className="font-bold text-forest-700 underline decoration-forest-300 underline-offset-2 hover:text-forest-950 dark:text-forest-300 dark:hover:text-white">Terms of Use</Link> and <Link href="/privacy" className="font-bold text-forest-700 underline decoration-forest-300 underline-offset-2 hover:text-forest-950 dark:text-forest-300 dark:hover:text-white">Privacy Notice</Link>.
                     </ConsentCheckbox>
-                </fieldset>
+                </div>
 
                 <SubmitButton processing={processing}>{processing ? 'Creating account...' : 'Create account'}</SubmitButton>
             </form>

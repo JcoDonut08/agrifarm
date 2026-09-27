@@ -172,6 +172,18 @@ class StorefrontController extends Controller
             $props['reviewFeed'] = $this->reviewFeed($request, $productKey, $reviewStats[$productKey] ?? ['count' => 0, 'average' => null]);
         }
 
+        if ($user) {
+            if ($request->query('page') === 'notifications') {
+                $user->unreadNotifications->markAsRead();
+            }
+            $props['notifications'] = $user->notifications()->latest()->limit(50)->get()->map(fn ($notification) => [
+                'id' => $notification->id,
+                'data' => $notification->data,
+                'created_at' => $notification->created_at->toIso8601String(),
+                'read_at' => $notification->read_at ? $notification->read_at->toIso8601String() : null,
+            ]);
+        }
+
         return Inertia::render('Welcome', $props);
     }
 

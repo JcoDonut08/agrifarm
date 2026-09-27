@@ -1,4 +1,4 @@
-﻿import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import GuestLayout from '../Layouts/GuestLayout';
 import Marketplace from './Marketplace';
 import Cart from './Cart';
@@ -23,6 +23,7 @@ export default function Welcome() {
     const bestSellingProducts = (props.bestSellingProducts || []).map((sale) => listings.find((product) => product.id === sale.id)).filter(Boolean);
     const bestBarangaySale = props.bestBarangayProduct;
     const bestBarangayProduct = listings.find((product) => product.id === bestBarangaySale?.id);
+    const filipino = typeof window !== 'undefined' && localStorage.getItem('agrifarm-customer-language') === 'filipino';
     const query = new URLSearchParams(url.split('?')[1]?.split('#')[0] || '');
     const page = query.get('page') || 'home';
     const market = page === 'marketplace';
@@ -38,7 +39,7 @@ export default function Welcome() {
     return (
         <ShopProvider products={listings}>
             <GuestLayout storefront market={market || page === 'product' || page === 'seller'}>
-                <Head title={{ marketplace: 'Marketplace', cart: 'Your cart', checkout: 'Checkout', 'order-success': 'Order placed', favorites: 'Favorites', notifications: 'Notifications', product: selectedProduct?.name || 'Product not found', seller: props.sellerProfile?.name || 'Seller not found' }[page] || 'Fresh from your community'} />
+                <Head title={{ marketplace: 'Marketplace', cart: 'Your cart', checkout: 'Checkout', 'order-success': 'Order placed', favorites: 'Favorites', notifications: 'Notifications', product: selectedProduct?.name || 'Product not found', seller: props.sellerProfile?.name || 'Seller not found' }[page] || (filipino ? 'Sariwa mula sa iyong komunidad' : 'Fresh from your community')} />
                 {page === 'product' ? <ProductDetail productId={productId} products={listings} reviewFeed={props.reviewFeed} user={user} /> : page === 'seller' ? <SellerStorefront profile={props.sellerProfile} /> : page === 'checkout' || page === 'order-success' ? <Checkout order={props.checkoutOrder} successPage={page === 'order-success'} /> : ExtraPage ? <ExtraPage /> : market ? <Marketplace key={url} products={listings} hasSellerProducts={hasSellerProducts} serverResults={props.marketplaceResults} initialBarangay={query.get('barangay') || ''} initialSort={query.get('sort') || ''} /> : <>
                     <section className="home-hero" aria-labelledby="hero-heading">
                         <img
@@ -68,7 +69,7 @@ export default function Welcome() {
                     <div className="store-container home-content">
                         <section className="home-section" aria-labelledby="communities-heading">
                             <div className="section-heading">
-                                <div><h2 id="communities-heading">Featured Barangays</h2><p>Good things grow close to home.</p></div>
+                                <div><h2 id="communities-heading">{filipino ? 'Mga Tampok na Barangay' : 'Featured Barangays'}</h2><p>{filipino ? 'Sa sariling komunidad, may magandang ani.' : 'Good things grow close to home.'}</p></div>
                             </div>
                             <div className="community-grid">
                                 {communities.map((community, index) => {
@@ -83,7 +84,7 @@ export default function Welcome() {
                                         />
                                         <div className="community-copy">
                                             <h3>{community.name}</h3>
-                                            <p>{hasSellerProducts ? `${stats?.listingCount || 0} ${(stats?.listingCount || 0) === 1 ? 'seller listing' : 'seller listings'}` : community.description}</p>
+                                            <p>{hasSellerProducts ? `${stats?.listingCount || 0} ${(stats?.listingCount || 0) === 1 ? (filipino ? 'produktong naka-list' : 'seller listing') : (filipino ? 'produktong naka-list' : 'seller listings')}` : community.description}</p>
                                             <span>{active ? <>Explore products <Icon name="arrow" size={17} /></> : 'Awaiting listings'}</span>
                                         </div>
                                     </>;
@@ -97,35 +98,35 @@ export default function Welcome() {
                             {!bestBarangayProduct && <div className="featured-photo" role="img" aria-label="Fresh leafy produce from a local garden" />}
                             <div className="featured-copy">
                                 <p className="featured-eyebrow"><Icon name="trophy" size={25} /> {bestBarangay ? 'BEST BARANGAY' : 'BEST BARANGAY · RANKING PENDING'}</p>
-                                <h2 id="featured-heading">{bestBarangay ? `Barangay ${bestBarangay.name}` : 'Fresh communities, growing together'}</h2>
-                                <p>{bestBarangay ? `${money(bestBarangay.deliveredRevenue)} from ${bestBarangay.deliveredOrderCount} delivered ${bestBarangay.deliveredOrderCount === 1 ? 'order' : 'orders'}.` : 'The leading barangay will appear after orders are delivered.'}</p>
-                                <div className="featured-actions"><Link className="store-button white-button" href={bestBarangayProduct ? productHref(bestBarangayProduct.id) : marketHref()}>{bestBarangayProduct ? 'View featured product' : 'Browse marketplace'} <Icon name="arrow" /></Link>{bestBarangay && <Link className="featured-market-link" href={marketHref(bestBarangay.name)}>Shop {bestBarangay.name} <Icon name="arrow" size={17} /></Link>}</div>
+                                <h2 id="featured-heading">{bestBarangay ? `Barangay ${bestBarangay.name}` : (filipino ? 'Sariwang komunidad, sabay-sabay umaasenso' : 'Fresh communities, growing together')}</h2>
+                                <p>{bestBarangay ? `${money(bestBarangay.deliveredRevenue)} ${filipino ? 'mula sa' : 'from'} ${bestBarangay.deliveredOrderCount} ${filipino ? 'naihatid na' : 'delivered'} ${bestBarangay.deliveredOrderCount === 1 ? 'order' : (filipino ? 'order' : 'orders')}.` : (filipino ? 'Lilitaw ang nangungunang barangay kapag may mga naihatid nang order.' : 'The leading barangay will appear after orders are delivered.')}</p>
+                                <div className="featured-actions"><Link className="store-button white-button" href={bestBarangayProduct ? productHref(bestBarangayProduct.id) : marketHref()}>{bestBarangayProduct ? (filipino ? 'Tingnan ang produkto' : 'View featured product') : 'Browse marketplace'} <Icon name="arrow" /></Link>{bestBarangay && <Link className="featured-market-link" href={marketHref(bestBarangay.name)}>{filipino ? 'Bumili sa' : 'Shop'} {bestBarangay.name} <Icon name="arrow" size={17} /></Link>}</div>
                             </div>
                             {bestBarangayProduct ? <div className="featured-product-stage">
                                 <div className="featured-stage-image"><ProducePhoto product={bestBarangayProduct} className="featured-product-photo" /></div>
                                 <div className="featured-stage-copy">
-                                    <span className="featured-stage-kicker"><Icon name="sprout" size={16} /> {bestBarangaySale.orderCount ? 'MOST ORDERED' : 'LOCAL LISTING'}</span>
+                                    <span className="featured-stage-kicker"><Icon name="sprout" size={16} /> {bestBarangaySale.orderCount ? (filipino ? 'PINAKAMABENTA' : 'MOST ORDERED') : (filipino ? 'LOKAL NA PRODUKTO' : 'LOCAL LISTING')}</span>
                                     <Link href={productHref(bestBarangayProduct.id)} className="featured-stage-name">{bestBarangayProduct.name} <Icon name="arrow" size={18} /></Link>
-                                    <span className="featured-stage-origin">From Barangay {bestBarangay.name}</span>
+                                    <span className="featured-stage-origin">{filipino ? 'Mula sa Barangay' : 'From Barangay'} {bestBarangay.name}</span>
                                     <strong>{money(bestBarangayProduct.price)} <small>/ {bestBarangayProduct.unit}</small></strong>
-                                    {bestBarangaySale.orderCount > 0 && <span className="featured-stage-sales">{bestBarangaySale.orderCount} delivered {bestBarangaySale.orderCount === 1 ? 'order' : 'orders'}</span>}
+                                    {bestBarangaySale.orderCount > 0 && <span className="featured-stage-sales">{bestBarangaySale.orderCount} {filipino ? 'naihatid na' : 'delivered'} {bestBarangaySale.orderCount === 1 ? 'order' : (filipino ? 'order' : 'orders')}</span>}
                                 </div>
-                            </div> : <span className="featured-price">Based on delivered sales</span>}
+                            </div> : <span className="featured-price">{filipino ? 'Batay sa mga naihatid na order' : 'Based on delivered sales'}</span>}
                         </section>
                         <section className="home-section top-selling-section" aria-labelledby="top-selling-heading">
-                            <div className="section-heading"><div><h2 id="top-selling-heading">Best-selling plants</h2><p>Most ordered products from delivered sales.</p></div>{bestSellingProducts.length > 0 && <Link className="section-link" href={marketHref(null, 'best-selling')}>View all <Icon name="arrow" size={17} /></Link>}</div>
-                            {bestSellingProducts.length > 0 ? <div className="home-product-grid">{bestSellingProducts.map((product) => <ProductCard product={product} key={product.id} />)}</div> : <div className="top-selling-empty"><Icon name="trophy" size={28} /><div><h3>No best sellers yet</h3><p>Products with delivered orders will appear here.</p></div></div>}
+                            <div className="section-heading"><div><h2 id="top-selling-heading">{filipino ? 'Pinakamabentang mga halaman' : 'Best-selling plants'}</h2><p>{filipino ? 'Mga produktong pinakamaraming order na naihatid.' : 'Most ordered products from delivered sales.'}</p></div>{bestSellingProducts.length > 0 && <Link className="section-link" href={marketHref(null, 'best-selling')}>{filipino ? 'Tingnan lahat' : 'View all'} <Icon name="arrow" size={17} /></Link>}</div>
+                            {bestSellingProducts.length > 0 ? <div className="home-product-grid">{bestSellingProducts.map((product) => <ProductCard product={product} key={product.id} />)}</div> : <div className="top-selling-empty"><Icon name="trophy" size={28} /><div><h3>{filipino ? 'Wala pang pinakamabenta' : 'No best sellers yet'}</h3><p>{filipino ? 'Lilitaw dito ang mga produkto na may naihatid nang order.' : 'Products with delivered orders will appear here.'}</p></div></div>}
                         </section>
-                        <ProductSection id="popular-heading" title={hasSellerProducts ? 'Fresh from local sellers' : 'Popular Products'} description={hasSellerProducts ? 'Real harvests listed by AgriFarm growers.' : 'Everyday favorites from neighborhood growers.'} products={popularProducts} />
-                        {newProducts.length > 0 && <ProductSection id="fresh-heading" title={hasSellerProducts ? 'More to explore' : 'Fresh New Products'} description={hasSellerProducts ? 'Find more produce from local sellers.' : 'A fresh selection for your next meal.'} products={newProducts} />}
+                        <ProductSection id="popular-heading" title={hasSellerProducts ? (filipino ? 'Sariwa mula sa mga lokal na nagtitinda' : 'Fresh from local sellers') : (filipino ? 'Mga Sikat na Produkto' : 'Popular Products')} description={hasSellerProducts ? (filipino ? 'Mga totoong ani mula sa mga magsasaka ng AgriFarm.' : 'Real harvests listed by AgriFarm growers.') : (filipino ? 'Mga paborito sa araw-araw mula sa mga nagtitinda sa kapitbahayan.' : 'Everyday favorites from neighborhood growers.')} products={popularProducts} />
+                        {newProducts.length > 0 && <ProductSection id="fresh-heading" title={hasSellerProducts ? (filipino ? 'Marami pang pagpipilian' : 'More to explore') : (filipino ? 'Mga Bagong Produkto' : 'Fresh New Products')} description={hasSellerProducts ? (filipino ? 'Maghanap ng iba pang produkto mula sa mga lokal na nagtitinda.' : 'Find more produce from local sellers.') : (filipino ? 'Mga bagong pagpipilian para sa iyong susunod na lutuin.' : 'A fresh selection for your next meal.')} products={newProducts} />}
                         <section className="harvest-cta" aria-labelledby="harvest-heading">
                             <div>
-                                <h2 id="harvest-heading">READY TO GRAB<br />THE HARVEST?</h2>
-                                <p>Browse the full marketplace or create an account to support<br className="desktop-break" /> local growers directly.</p>
+                                <h2 id="harvest-heading">{filipino ? <>HANDA NANG KUNIN<br />ANG ANI?</> : <>READY TO GRAB<br />THE HARVEST?</>}</h2>
+                                <p>{filipino ? <>Tingnan ang buong pamilihan o gumawa ng account upang<br className="desktop-break" /> direktang suportahan ang mga lokal na magsasaka.</> : <>Browse the full marketplace or create an account to support<br className="desktop-break" /> local growers directly.</>}</p>
                             </div>
                             <div className="harvest-actions">
-                                <Link href={marketHref()} className="store-button lime-button">Browse marketplace</Link>
-                                <Link href={accountDestination} className="store-button white-button">{user ? 'Open my account' : 'Create account'}</Link>
+                                <Link href={marketHref()} className="store-button lime-button">{filipino ? 'Tingnan ang pamilihan' : 'Browse marketplace'}</Link>
+                                <Link href={accountDestination} className="store-button white-button">{user ? (filipino ? 'Buksan ang aking account' : 'Open my account') : (filipino ? 'Gumawa ng account' : 'Create account')}</Link>
                             </div>
                         </section>
                     </div>
