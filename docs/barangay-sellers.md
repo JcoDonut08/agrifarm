@@ -18,7 +18,9 @@ The seeder preserves existing accounts/passwords and also runs with the normal d
 
 ## Current seller behavior
 
-- Seller Center uses the authenticated seller's mapped barangay identity.
+- Each seller has a persisted barangay assignment. CENRO administrators create and manage individual farmer-seller accounts from the Farmers & Sellers section.
+- New administrator-created seller accounts are active and verified, but the farmer must replace the administrator-provided temporary password before using Seller Center.
+- CENRO can suspend an account only with a recorded reason. Suspended sellers cannot sign in, active sessions are ended, and public shops, listings, photos, reviews, and checkout eligibility are hidden until the account is reinstated. Suspension and reinstatement history is retained.
 - Store Profile supports JPG/PNG/WebP photos up to 2 MB. Originals are private; the customer storefront uses `/marketplace/sellers/{seller}/photo` for the safe public response.
 - Products and photos persist in the database/private disk. JPG/PNG/WebP product photos up to 10 MB can be chosen, dropped, or pasted with Ctrl+V. Replacing a photo refreshes it in seller and customer listings. Seller-created listings appear in the customer marketplace and public seller shop.
 - Public shop URL: `/?page=seller&seller={id}`. It shows the seller's real name, avatar, barangay, and live listings.
@@ -34,4 +36,4 @@ npm run build
 npx playwright test tests/e2e/seller.spec.js tests/e2e/seller-storefront.spec.js
 ```
 
-Run `php artisan migrate` when setting up another environment.
+Run `php artisan migrate` when setting up another environment. The seller-management migrations backfill the known seeded barangay accounts with their persisted barangay assignment.

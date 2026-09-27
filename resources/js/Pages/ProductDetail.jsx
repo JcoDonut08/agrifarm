@@ -4,12 +4,14 @@ import Icon from '../Components/Storefront/Icon';
 import ProductCard, { ProducePhoto } from '../Components/Storefront/ProductCard';
 import ProductReviews from '../Components/Storefront/ProductReviews';
 import { useShop } from '../Components/Storefront/ShopContext';
+import ReportModal from '../Components/Storefront/ReportModal';
 import { getProductBadge, marketHref, money, sellerHref, stockUnit, products as previewProducts } from '../Components/Storefront/catalog';
 
 export default function ProductDetail({ productId, products = previewProducts, reviewFeed, user }) {
     const product = products.find((item) => item.id === productId);
     const { cart, favorites, addQuantity, toggleFavorite } = useShop();
     const [quantity, setQuantity] = useState(1);
+    const [reportModalOpen, setReportModalOpen] = useState(false);
 
     useEffect(() => setQuantity(1), [productId]);
 
@@ -41,6 +43,9 @@ export default function ProductDetail({ productId, products = previewProducts, r
             </div>
 
             <section className="product-detail-info" aria-labelledby="product-detail-title">
+                <button type="button" className="product-report-btn" aria-label="Report this product or seller" title="Report this product or seller" onClick={() => setReportModalOpen(true)}>
+                    <Icon name="flag" size={18} />
+                </button>
                 {badge && <span className={`product-detail-badge badge-${badge.style}`} title={badge.description}><Icon name={badge.icon} size={15} />{badge.label}</span>}
                 <h1 id="product-detail-title">{product.name}</h1>
                 <a className="product-detail-rating" href="#product-reviews" aria-label={`View ratings and reviews for ${product.name}`}>
@@ -73,16 +78,16 @@ export default function ProductDetail({ productId, products = previewProducts, r
                     </div>
                 </div>
             </section>
-            {product.sellerId && <section className="product-seller-card" aria-label={`${product.sellerName} seller profile`}>
-                <span className="product-seller-avatar" aria-hidden="true">{product.sellerAvatarUrl ? <img src={product.sellerAvatarUrl} alt="" /> : product.sellerName?.charAt(0)?.toUpperCase()}</span>
-                <div className="product-seller-identity">
-                    <span>Seller</span>
-                    <strong>{product.sellerName}</strong>
-                    <small><Icon name="pin" size={14} />Barangay {product.barangay}</small>
-                </div>
-                <Link className="product-seller-shop-button" href={sellerHref(product.sellerId)} aria-label={`View ${product.sellerName} shop`}><Icon name="people" size={17} />View shop</Link>
-            </section>}
         </div>
+        {product.sellerId && <section className="product-seller-card" aria-label={`${product.sellerName} seller profile`}>
+            <span className="product-seller-avatar" aria-hidden="true">{product.sellerAvatarUrl ? <img src={product.sellerAvatarUrl} alt="" /> : product.sellerName?.charAt(0)?.toUpperCase()}</span>
+            <div className="product-seller-identity">
+                <span>Seller</span>
+                <strong>{product.sellerName}</strong>
+                <small><Icon name="pin" size={14} />Barangay {product.barangay}</small>
+            </div>
+            <Link className="product-seller-shop-button" href={sellerHref(product.sellerId)} aria-label={`View ${product.sellerName} shop`}><Icon name="people" size={17} />View shop</Link>
+        </section>}
 
         <ProductReviews product={product} feed={reviewFeed} user={user} />
 
@@ -90,5 +95,6 @@ export default function ProductDetail({ productId, products = previewProducts, r
             <div className="section-heading"><div><h2 id="product-detail-related-title">You may also like</h2><p>More produce from the marketplace.</p></div><Link className="section-link" href={marketHref()}>View all <Icon name="arrow" size={17} /></Link></div>
             <div className="market-product-grid">{related.map((item) => <ProductCard key={item.id} product={item} />)}</div>
         </section>}
+        {reportModalOpen && <ReportModal product={product} onClose={() => setReportModalOpen(false)} />}
     </div>;
 }

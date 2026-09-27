@@ -12,10 +12,10 @@ export default function Cart() {
     const orderable = items.filter((product) => product.isSellerProduct);
     const previewItems = items.length - orderable.length;
     const total = items.reduce((sum, product) => sum + product.price * cart[product.id], 0);
-    return <CollectionPage title="Your cart">
+    return <CollectionPage title={<span style={{ display: 'flex', alignItems: 'center', gap: '16px' }}><Icon name="cart" size={38} />Your cart</span>}>
         {items.length ? <div className="basket-layout">
             <section className="basket-products" aria-labelledby="basket-items-heading">
-                <div className="basket-section-heading"><h2 id="basket-items-heading"><Icon name="cart" size={21} />Your harvest</h2><span>{items.length} {items.length === 1 ? 'product' : 'products'} · {count} units</span></div>
+                
                 {items.map((product) => <article className="basket-product" key={product.id}>
                     <ProducePhoto product={product} />
                     <div className="basket-product-copy">

@@ -1,5 +1,7 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+import ThemeToggle from '../../Components/ThemeToggle';
+import Icon from '../../Components/Storefront/Icon';
 import { ShopProvider } from '../../Components/Storefront/ShopContext';
 import AddressAutocomplete from '../../Components/Storefront/AddressAutocomplete';
 import StorefrontLayout from '../../Layouts/StorefrontLayout';
@@ -18,10 +20,21 @@ function ProfileAvatar({ user, preview, large = false }) {
 export default function Home() {
     const { auth, flash } = usePage().props;
     const user = auth.user;
+    const filipino = typeof window !== 'undefined' && localStorage.getItem('agrifarm-customer-language') === 'filipino';
     const profile = useForm({ name: user.name || '', username: user.username || '', mobile_number: user.mobile_number || '', delivery_address: user.delivery_address || '' });
     const password = useForm({ current_password: '', password: '', password_confirmation: '' });
     const photo = useForm({ photo: null });
     const photoInput = useRef(null);
+    const [notifications, setNotifications] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('agrifarm-customer-notifications') || '{"orderUpdates":true,"promotions":false}');
+        } catch { return {"orderUpdates":true,"promotions":false}; }
+    });
+    const onNotificationChange = (key, val) => {
+        const next = { ...notifications, [key]: val };
+        setNotifications(next);
+        localStorage.setItem('agrifarm-customer-notifications', JSON.stringify(next));
+    };
     const [preview, setPreview] = useState(null);
 
     useEffect(() => {
@@ -52,19 +65,19 @@ export default function Home() {
     }
 
     return <ShopProvider products={[]} persist={false}><StorefrontLayout>
-        <Head title="My profile" />
+        <Head title={filipino ? 'Aking Profile' : 'My profile'} />
         <div className="store-container customer-profile-page">
-            <header className="customer-profile-heading"><h1>My Profile</h1></header>
+            <header className="customer-profile-heading"><h1>{filipino ? 'Aking Profile' : 'My Profile'}</h1></header>
             <div className="customer-profile-panel">
             <div className="customer-profile-content">
                 <div className="customer-profile-identity"><ProfileAvatar user={user} /><div><strong>{user.name}</strong><span>{user.username ? `@${user.username} · ${user.email}` : user.email}</span></div></div>
                 {flash?.status && <p className="customer-profile-status" role="status">{flash.status}</p>}
 
                 <form onSubmit={savePhoto} className="customer-settings-section">
-                    <div className="customer-settings-intro"><h2>Profile photo</h2><p>Choose a photo for your AgriFarm account.</p></div>
+                    <div className="customer-settings-intro"><h2>{filipino ? 'Larawan sa profile' : 'Profile photo'}</h2><p>{filipino ? 'Pumili ng larawan para sa iyong AgriFarm account.' : 'Choose a photo for your AgriFarm account.'}</p></div>
                     <div className="customer-settings-fields">
                         <ProfileAvatar user={user} preview={preview} large />
-                        <label htmlFor="customer-photo">Choose profile photo</label>
+                        <label htmlFor="customer-photo">{filipino ? 'Pumili ng larawan' : 'Choose profile photo'}</label>
                         <input id="customer-photo" ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="customer-photo-help" aria-invalid={Boolean(photo.errors.photo)} onChange={event => { photo.clearErrors(); photo.setData('photo', event.target.files?.[0] || null); }} />
                         <p id="customer-photo-help" className="customer-field-hint">JPG, PNG or WebP. Maximum 2 MB.</p>
                         {photo.errors.photo && <small role="alert" className="customer-field-error">{photo.errors.photo}</small>}
@@ -76,23 +89,28 @@ export default function Home() {
                     <div className="customer-settings-intro"><h2>Personal and delivery details</h2><p>Saved details appear at checkout. You can edit them for each order.</p></div>
                     <div className="customer-settings-fields">
                         <Field label="Full name" autoComplete="name" maxLength="120" required value={profile.data.name} onChange={event => profile.setData('name', event.target.value)} error={profile.errors.name} />
-                        <Field label="Username (optional)" autoComplete="username" maxLength="40" value={profile.data.username} onChange={event => profile.setData('username', event.target.value)} error={profile.errors.username} />
+                        <Field label={filipino ? 'Username (opsyonal)' : 'Username (optional)'} autoComplete="username" maxLength="40" value={profile.data.username} onChange={event => profile.setData('username', event.target.value)} error={profile.errors.username} />
                         <Field label="Email address" type="email" readOnly value={user.email} hint="Your sign-in email fills checkout automatically." />
-                        <Field label="Mobile number" type="tel" autoComplete="tel" inputMode="tel" value={profile.data.mobile_number} onChange={event => profile.setData('mobile_number', event.target.value)} error={profile.errors.mobile_number} />
+                        <Field label={filipino ? 'Numero ng mobile' : 'Mobile number'} type="tel" autoComplete="tel" inputMode="tel" value={profile.data.mobile_number} onChange={event => profile.setData('mobile_number', event.target.value)} error={profile.errors.mobile_number} />
                         <AddressAutocomplete className="customer-field" value={profile.data.delivery_address} onChange={address => profile.setData('delivery_address', address)} error={profile.errors.delivery_address} />
                         <div className="customer-profile-actions"><button className="store-button" disabled={profile.processing}>{profile.processing ? 'Saving…' : 'Save details'}</button></div>
                     </div>
                 </form>
 
-                <form onSubmit={savePassword} noValidate className="customer-settings-section">
+                                <form onSubmit={savePassword} noValidate className="customer-settings-section">
                     <div className="customer-settings-intro"><h2>Change password</h2><p>Use at least 8 characters, including letters and numbers.</p></div>
                     <div className="customer-settings-fields">
-                        <Field label="Current password" type="password" autoComplete="current-password" required value={password.data.current_password} onChange={event => password.setData('current_password', event.target.value)} error={password.errors.current_password} />
-                        <Field label="New password" type="password" autoComplete="new-password" required value={password.data.password} onChange={event => password.setData('password', event.target.value)} error={password.errors.password} />
+                        <Field label={filipino ? 'Kasalukuyang password' : 'Current password'} type="password" autoComplete="current-password" required value={password.data.current_password} onChange={event => password.setData('current_password', event.target.value)} error={password.errors.current_password} />
+                        <Field label={filipino ? 'Bagong password' : 'New password'} type="password" autoComplete="new-password" required value={password.data.password} onChange={event => password.setData('password', event.target.value)} error={password.errors.password} />
                         <Field label="Confirm new password" type="password" autoComplete="new-password" required value={password.data.password_confirmation} onChange={event => password.setData('password_confirmation', event.target.value)} error={password.errors.password_confirmation} />
-                        <div className="customer-profile-actions"><button className="store-button" disabled={password.processing}>{password.processing ? 'Updating…' : 'Update password'}</button></div>
+                        <div className="customer-settings-actions">
+                            <button type="submit" disabled={password.processing} className="customer-button">{filipino ? 'I-update ang password' : 'Update password'}</button>
+                            {password.recentlySuccessful && <p className="customer-saved-text">Saved.</p>}
+                        </div>
                     </div>
                 </form>
+
+
             </div>
             </div>
         </div>

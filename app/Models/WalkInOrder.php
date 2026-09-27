@@ -27,4 +27,9 @@ class WalkInOrder extends Model
     {
         return $this->belongsTo(CustomerCheckout::class, 'customer_checkout_id');
     }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

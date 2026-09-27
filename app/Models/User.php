@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Auth\MustVerifyEmail;
@@ -56,6 +57,42 @@ class User extends Authenticatable implements MustVerifyEmailContract
     }
 
     /**
+     * @return HasMany<Product, $this>
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /**
+     * @return HasMany<WalkInOrder, $this>
+     */
+    public function walkInOrders(): HasMany
+    {
+        return $this->hasMany(WalkInOrder::class);
+    }
+
+    /** @return HasMany<HarvestRecord, $this> */
+    public function harvestRecords(): HasMany
+    {
+        return $this->hasMany(HarvestRecord::class);
+    }
+
+    /**
+     * @return HasMany<AdminTask, $this>
+     */
+    public function adminTasks(): HasMany
+    {
+        return $this->hasMany(AdminTask::class);
+    }
+
+    /** @return HasMany<AccountStatusHistory, $this> */
+    public function accountStatusHistory(): HasMany
+    {
+        return $this->hasMany(AccountStatusHistory::class)->latest();
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -65,6 +102,8 @@ class User extends Authenticatable implements MustVerifyEmailContract
         return [
             'email_verified_at' => 'datetime',
             'role' => UserRole::class,
+            'account_status' => AccountStatus::class,
+            'password_must_be_changed' => 'boolean',
             'terms_accepted_at' => 'immutable_datetime',
             'privacy_accepted_at' => 'immutable_datetime',
             'password' => 'hashed',

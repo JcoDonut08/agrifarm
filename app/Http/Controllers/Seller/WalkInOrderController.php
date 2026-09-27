@@ -83,6 +83,10 @@ class WalkInOrderController extends Controller
             }
 
             $order->update(['status' => $nextStatus]);
+
+            if ($order->checkout && $order->checkout->customer) {
+                $order->checkout->customer->notify(new \App\Notifications\OrderStatusUpdated($order));
+            }
         });
 
         $message = match ($nextStatus) {

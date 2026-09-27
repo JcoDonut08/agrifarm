@@ -1,0 +1,260 @@
+{
+    "barangays": [
+        "Maybunga",
+        "Rosario",
+        "Sto. Tomas"
+    ],
+    "allBarangaysData": {
+        "overview": {
+            "totalBarangays": 3,
+            "totalProducts": 4,
+            "totalSales": 93232
+        },
+        "statusTable": [
+            {
+                "name": "Maybunga",
+                "seller": {
+                    "name": "Barangay Maybunga",
+                    "photoUrl": "http:\/\/127.0.0.1:8000\/admin\/sellers\/8\/photo"
+                },
+                "products": 2,
+                "harvest": 4,
+                "sales": 90000,
+                "demand": 18
+            },
+            {
+                "name": "Rosario",
+                "seller": {
+                    "name": "Barangay Rosario",
+                    "photoUrl": "http:\/\/127.0.0.1:8000\/admin\/sellers\/7\/photo"
+                },
+                "products": 2,
+                "harvest": 2,
+                "sales": 3232,
+                "demand": 4
+            },
+            {
+                "name": "Sto. Tomas",
+                "seller": {
+                    "name": "Barangay Sto. Thomas",
+                    "photoUrl": null
+                },
+                "products": 0,
+                "harvest": 0,
+                "sales": 0,
+                "demand": 0
+            }
+        ],
+        "comparisonData": {
+            "labels": [
+                "Maybunga",
+                "Rosario",
+                "Sto. Tomas"
+            ],
+            "harvest": [
+                4,
+                2,
+                0
+            ],
+            "sales": [
+                90000,
+                3232,
+                0
+            ],
+            "demand": [
+                18,
+                4,
+                0
+            ]
+        },
+        "reports": []
+    },
+    "specificBarangayData": {
+        "Maybunga": {
+            "overview": {
+                "totalProducts": 2,
+                "totalHarvest": 4,
+                "totalSales": 90000,
+                "activeReports": 0
+            },
+            "products": [
+                {
+                    "id": 4,
+                    "name": "pokemon",
+                    "harvested": 64,
+                    "available": 82,
+                    "sold": 18,
+                    "status": "Sufficient",
+                    "unit": "piece"
+                },
+                {
+                    "id": 6,
+                    "name": "Cabbage",
+                    "harvested": 100,
+                    "available": 30,
+                    "sold": 0,
+                    "status": "Sufficient",
+                    "unit": "piece"
+                }
+            ],
+            "salesTrend": {
+                "labels": [
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep"
+                ],
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    90000
+                ],
+                "available": true
+            },
+            "harvestTrend": {
+                "labels": [
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep"
+                ],
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    4
+                ],
+                "available": true
+            },
+            "reports": []
+        },
+        "Rosario": {
+            "overview": {
+                "totalProducts": 2,
+                "totalHarvest": 2,
+                "totalSales": 3232,
+                "activeReports": 0
+            },
+            "products": [
+                {
+                    "id": 5,
+                    "name": "kangkong",
+                    "harvested": 70,
+                    "available": 50,
+                    "sold": 0,
+                    "status": "Sufficient",
+                    "unit": "bunch"
+                },
+                {
+                    "id": 3,
+                    "name": "Strawberry",
+                    "harvested": 56,
+                    "available": 200,
+                    "sold": 1,
+                    "status": "Sufficient",
+                    "unit": "piece"
+                }
+            ],
+            "salesTrend": {
+                "labels": [
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep"
+                ],
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    3232
+                ],
+                "available": true
+            },
+            "harvestTrend": {
+                "labels": [
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep"
+                ],
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2
+                ],
+                "available": true
+            },
+            "reports": []
+        },
+        "Sto. Tomas": {
+            "overview": {
+                "totalProducts": 0,
+                "totalHarvest": 0,
+                "totalSales": 0,
+                "activeReports": 0
+            },
+            "products": [],
+            "salesTrend": {
+                "labels": [
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep"
+                ],
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                "available": false
+            },
+            "harvestTrend": {
+                "labels": [
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep"
+                ],
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                "available": false
+            },
+            "reports": []
+        }
+    },
+    "dataAvailability": {
+        "harvest": true,
+        "reports": false
+    }
+}

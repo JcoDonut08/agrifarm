@@ -25,6 +25,8 @@ shadcn/ui components used in AgriFarm are customized through Tailwind CSS and th
 ## Implemented behavior
 
 - Customer registration, email verification, password recovery, and role-aware login for customers, sellers, and CENRO admins
+- CENRO Farmers & Sellers administration: create individual farmer-seller accounts, assign barangays, edit store details, and review account status/history
+- Admin-created sellers begin active with a temporary password that must be replaced before seller-dashboard access; suspended sellers cannot sign in and their public shop/listings are hidden
 - Seller profiles, private product/photo management (JPG/PNG/WebP up to 10 MB, including clipboard paste), inventory, walk-in orders, and public-safe image routes
 - Customer profile photo, contact and delivery details, and password management; saved details can prefill checkout
 - Customer marketplace search/filter/sort, product detail, favorites, and a device-local cart
@@ -64,7 +66,7 @@ These non-production accounts use `AgriFarm123!`:
 | --- | --- | --- |
 | Customer | `customer@agrifarm.test` | `/` |
 | Seller | `seller@agrifarm.test` | `/seller/dashboard` |
-| CENRO Admin | `admin@agrifarm.test` | `/admin/dashboard` |
+| CENRO Admin | `pasigcenro@gmail.com` | `/admin/dashboard` |
 
 Barangay partner accounts are listed in [docs/barangay-sellers.md](docs/barangay-sellers.md).
 

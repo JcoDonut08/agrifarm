@@ -47,6 +47,11 @@ class Product extends Model
         return $this->hasMany(ProductReview::class);
     }
 
+    public function harvestRecords(): HasMany
+    {
+        return $this->hasMany(HarvestRecord::class);
+    }
+
     public function toSearchableArray(): array
     {
         return [

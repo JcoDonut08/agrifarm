@@ -12,10 +12,10 @@ export default function StorefrontLayout({ children, market }) {
     const user = props.auth?.user;
     const pathname = url.split('?')[0];
     const currentPage = pathname === '/contact' ? 'contact' : pathname === '/customer' ? 'profile' : new URLSearchParams(url.split('?')[1] || '').get('page') || 'home';
-    const { count, favorites, panel, setPanel, notice, noticeId, noticeTarget, dismissNotice, setNoticePaused } = useShop();
+    const { filipino, count, favorites, panel, setPanel, notice, noticeId, noticeTarget, dismissNotice, setNoticePaused } = useShop();
     const [menuOpen, setMenuOpen] = useState(false);
     const destination = user ? ({ customer: '/customer', seller: '/seller/dashboard', cenro_admin: '/admin/dashboard' }[user.role] || '/') : '/login';
-    const links = [{ label: 'Home', href: '/', active: currentPage === 'home' }, { label: 'Marketplace', href: marketHref(), active: market }];
+    const links = [{ label: filipino ? 'Home' : 'Home', href: '/', active: currentPage === 'home' }, { label: filipino ? 'Pamilihan' : 'Marketplace', href: marketHref(), active: market }];
 
     return (
         <div className="storefront">
@@ -25,24 +25,24 @@ export default function StorefrontLayout({ children, market }) {
                     <AppMark storefront />
                     <nav className="store-desktop-nav" aria-label="Main navigation">
                         {links.map((link) => <Link key={link.label} href={link.href} className={link.active ? 'active' : ''} aria-current={link.active ? 'page' : undefined}>{link.label}</Link>)}
-                        <button className={panel === 'about' ? 'active' : ''} aria-expanded={panel === 'about'} onClick={() => setPanel('about')}>About</button>
-                        <Link href="/contact" className={currentPage === 'contact' ? 'active' : ''} aria-current={currentPage === 'contact' ? 'page' : undefined}>Contact</Link>
+                        <button className={panel === 'about' ? 'active' : ''} aria-expanded={panel === 'about'} onClick={() => setPanel('about')}>{filipino ? 'Tungkol sa amin' : 'About'}</button>
+                        <Link href="/contact" className={currentPage === 'contact' ? 'active' : ''} aria-current={currentPage === 'contact' ? 'page' : undefined}>{filipino ? 'Makipag-ugnayan' : 'Contact'}</Link>
                     </nav>
                     <div className="store-header-actions">
                         <Link className="store-icon-button favorites-header" aria-label={`Favorites${favorites.length ? `, ${favorites.length} saved` : ''}`} href="/?page=favorites" aria-current={currentPage === 'favorites' ? 'page' : undefined}><Icon name="heart" size={23} />{favorites.length > 0 && <span className="count-badge">{favorites.length}</span>}</Link>
                         <Link className="store-icon-button" aria-label={`Shopping cart, ${count} items`} href="/?page=cart" aria-current={currentPage === 'cart' ? 'page' : undefined}><Icon name="cart" size={23} />{count > 0 && <span className="count-badge">{count}</span>}</Link>
-                        <Link className="store-icon-button notifications-header" aria-label="Notifications" href="/?page=notifications" aria-current={currentPage === 'notifications' ? 'page' : undefined}><Icon name="bell" size={22} /></Link>
+                        <Link className="store-icon-button notifications-header" aria-label="Notifications" href="/?page=notifications" aria-current={currentPage === 'notifications' ? 'page' : undefined}><Icon name="bell" size={23} />{((usePage().props.notifications || []).filter(n => !n.read_at).length) > 0 && <span className="count-badge">{((usePage().props.notifications || []).filter(n => !n.read_at).length)}</span>}</Link>
                         {user
-                            ? <AccountMenu user={user} destination={destination} current={currentPage === 'profile'} onOpen={() => setMenuOpen(false)} onFavorites={() => router.visit('/?page=favorites')} />
+                            ? <AccountMenu user={user} destination={destination} current={currentPage === 'profile'} onOpen={() => setMenuOpen(false)} />
                             : <Link className="store-button header-login" href={destination}>Log in</Link>}
                         <button className="store-icon-button store-menu-button" aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={menuOpen} aria-controls="store-mobile-nav" onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
                     </div>
                 </div>
                 {menuOpen && <nav id="store-mobile-nav" className="store-mobile-nav" aria-label="Mobile navigation">
                     {links.map((link) => <Link key={link.label} href={link.href} aria-current={link.active ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{link.label}</Link>)}
-                    {['favorites', 'cart', 'notifications'].map((page) => <Link key={page} href={`/?page=${page}`} aria-current={currentPage === page ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{page.charAt(0).toUpperCase() + page.slice(1)}</Link>)}
-                    <Link href="/contact" aria-current={currentPage === 'contact' ? 'page' : undefined} onClick={() => setMenuOpen(false)}>Contact</Link>
-                    {['about'].map((panel) => <button key={panel} onClick={() => { setMenuOpen(false); setPanel(panel); }}>{panel.charAt(0).toUpperCase() + panel.slice(1)}</button>)}
+                    {['favorites', 'cart', 'notifications'].map((page) => <Link key={page} href={`/?page=${page}`} aria-current={currentPage === page ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{filipino ? {favorites: 'Mga Paborito', cart: 'Cart', notifications: 'Mga Notipikasyon'}[page] : page.charAt(0).toUpperCase() + page.slice(1)}</Link>)}
+                    <Link href="/contact" aria-current={currentPage === 'contact' ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{filipino ? 'Makipag-ugnayan' : 'Contact'}</Link>
+                    {['about'].map((panel) => <button key={panel} onClick={() => { setMenuOpen(false); setPanel(panel); }}>{filipino ? 'Tungkol sa amin' : 'About'}</button>)}
                 </nav>}
             </header>
             <main id="main-content" tabIndex={-1}>{children}</main>
@@ -55,14 +55,14 @@ export default function StorefrontLayout({ children, market }) {
                             <p>Discover fresh produce and the neighborhood growers behind it, right here in Pasig.</p>
                         </div>
                         <nav aria-label="Footer navigation">
-                            <h2>Explore AgriFarm</h2>
-                            <Link href="/">Home</Link>
-                            <Link href={marketHref()}>Marketplace</Link>
-                            <button onClick={() => setPanel('about')}>About us</button>
+                            <h2>{filipino ? 'Tuklasin ang AgriFarm' : 'Explore AgriFarm'}</h2>
+                            <Link href="/">{filipino ? 'Home' : 'Home'}</Link>
+                            <Link href={marketHref()}>{filipino ? 'Pamilihan' : 'Marketplace'}</Link>
+                            <button onClick={() => setPanel('about')}>{filipino ? 'Tungkol sa amin' : 'About us'}</button>
                             <Link href="/contact" className={currentPage === 'contact' ? 'active' : ''} aria-current={currentPage === 'contact' ? 'page' : undefined}>Contact</Link>
                         </nav>
                         <nav aria-label="Community gardens">
-                            <h2>Our communities</h2>
+                            <h2>{filipino ? 'Ang aming mga komunidad' : 'Our communities'}</h2>
                             <Link href={marketHref('Rosario')}>Barangay Rosario</Link>
                             <Link href={marketHref('Maybunga')}>Barangay Maybunga</Link>
                             <Link href={marketHref('Sto. Tomas')}>Barangay Sto. Tomas</Link>
@@ -72,7 +72,7 @@ export default function StorefrontLayout({ children, market }) {
                     <div className="store-footer-bottom">
                         <p>© {new Date().getFullYear()} AgriFarm</p>
                         {pathname === '/' && !props.sellerProducts?.length && <p className="sample-note">Design preview · Sample products, stock and prices</p>}
-                        <nav aria-label="Legal information"><Link href="/terms">Terms of use</Link><Link href="/privacy">Privacy policy</Link></nav>
+                        <nav aria-label="Legal information"><Link href="/terms">{filipino ? 'Mga Tuntunin sa Paggamit' : 'Terms of use'}</Link><Link href="/privacy">{filipino ? 'Patakaran sa Pagkapribado' : 'Privacy policy'}</Link></nav>
                     </div>
                 </div>
             </footer>

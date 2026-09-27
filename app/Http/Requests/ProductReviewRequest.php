@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\Product;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,7 +24,7 @@ class ProductReviewRequest extends FormRequest
 
     public function rules(): array
     {
-        $sellerKeys = Product::query()->whereHas('seller', fn ($query) => $query->where('role', UserRole::Seller->value))
+        $sellerKeys = Product::query()->whereHas('seller', fn ($query) => $query->where('role', UserRole::Seller->value)->where('account_status', AccountStatus::Active->value))
             ->pluck('id')->map(fn ($id) => 'seller-'.$id)->all();
 
         return [
@@ -31,6 +32,7 @@ class ProductReviewRequest extends FormRequest
             'rating' => ['required', 'integer', 'between:1,5'],
             'comment' => ['required', 'string', 'min:10', 'max:2000'],
             'anonymous' => ['required', 'boolean'],
+            'attachment' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,mp4,mov,avi', 'max:10240'],
         ];
     }
 }

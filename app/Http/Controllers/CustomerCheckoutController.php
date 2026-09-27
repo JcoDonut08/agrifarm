@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\CustomerCheckout;
 use App\Models\Product;
@@ -57,7 +58,7 @@ class CustomerCheckoutController extends Controller
             $goodsTotal = 0;
             foreach ($products as $product) {
                 $quantity = $quantities->get($product->id)['quantity'];
-                if ($product->seller?->role !== UserRole::Seller || $product->stock < $quantity) {
+                if ($product->seller?->role !== UserRole::Seller || $product->seller->account_status !== AccountStatus::Active || $product->stock < $quantity) {
                     throw ValidationException::withMessages(['items' => "{$product->name} is no longer available in that quantity. Review your cart."]);
                 }
                 $goodsTotal += (int) round((float) $product->price * 100) * $quantity;

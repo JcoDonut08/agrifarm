@@ -6,6 +6,7 @@ use App\Http\Requests\ProductReviewRequest;
 use App\Models\ProductReview;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductReviewController extends Controller
 {
@@ -13,7 +14,11 @@ class ProductReviewController extends Controller
     {
         $data = $request->validated();
 
-        ProductReview::query()->create($this->reviewData($data, $request->user()->id));
+        $reviewData = $this->reviewData($data, $request->user()->id);
+        if ($request->hasFile('attachment')) {
+            $reviewData['attachment_path'] = $request->file('attachment')->store('reviews', 'public');
+        }
+        ProductReview::query()->create($reviewData);
 
         return redirect('/?page=product&product='.$data['product_key'].'#product-reviews')
             ->with('review_status', 'Your review has been posted.');
@@ -24,7 +29,14 @@ class ProductReviewController extends Controller
         abort_unless($productReview->user_id === $request->user()->id, 403);
         $data = $request->validated();
         abort_unless($productReview->product_key === $data['product_key'], 422);
-        $productReview->update($this->reviewData($data, $request->user()->id));
+        $reviewData = $this->reviewData($data, $request->user()->id);
+        if ($request->hasFile('attachment')) {
+            if ($productReview->attachment_path) {
+                Storage::disk('public')->delete($productReview->attachment_path);
+            }
+            $reviewData['attachment_path'] = $request->file('attachment')->store('reviews', 'public');
+        }
+        $productReview->update($reviewData);
 
         return redirect('/?page=product&product='.$productReview->product_key.'#product-reviews')
             ->with('review_status', 'Your review has been updated.');
@@ -34,6 +46,9 @@ class ProductReviewController extends Controller
     {
         abort_unless($productReview->user_id === $request->user()->id, 403);
         $productKey = $productReview->product_key;
+        if ($productReview->attachment_path) {
+            Storage::disk('public')->delete($productReview->attachment_path);
+        }
         $productReview->delete();
 
         return redirect('/?page=product&product='.$productKey.'#product-reviews')

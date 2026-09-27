@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
+use App\Http\Controllers\Admin\SellerController as AdminSellerController;
+use App\Http\Controllers\Admin\TaskController as AdminTaskController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
@@ -8,10 +12,13 @@ use App\Http\Controllers\CustomerCheckoutController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
+use App\Http\Controllers\Seller\HarvestRecordController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\ProfileController;
+use App\Http\Controllers\Seller\TemporaryPasswordController;
 use App\Http\Controllers\Seller\WalkInOrderController;
 use App\Http\Controllers\StorefrontController;
+use App\Http\Controllers\StorefrontCustomerPhotoController;
 use App\Http\Controllers\StorefrontProductPhotoController;
 use App\Http\Controllers\StorefrontSellerPhotoController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [StorefrontController::class, 'index'])->name('home');
 Route::get('/marketplace/products/{product}/photo', StorefrontProductPhotoController::class)->name('marketplace.products.photo');
 Route::get('/marketplace/sellers/{user}/photo', StorefrontSellerPhotoController::class)->name('marketplace.sellers.photo');
+Route::get('/marketplace/customers/{user}/photo', StorefrontCustomerPhotoController::class)->name('marketplace.customers.photo');
 
 Route::get('/terms', [LegalPageController::class, 'terms'])->name('terms');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
@@ -37,16 +45,29 @@ Route::delete('/product-reviews/{productReview}', [ProductReviewController::clas
     ->middleware(['auth', 'role:customer', 'throttle:10,1'])
     ->name('product-reviews.destroy');
 
+Route::post('/product-reviews/{productReview}/react', [\App\Http\Controllers\ReviewReactionController::class, 'toggle'])
+    ->middleware(['auth', 'throttle:20,1'])
+    ->name('product-reviews.react');
+
 Route::post('/checkout', [CustomerCheckoutController::class, 'store'])
     ->middleware(['auth', 'role:customer', 'throttle:10,1'])
     ->name('checkout.store');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
     Route::get('/customer', CustomerHomeController::class)
         ->middleware('role:customer')
         ->name('customer.home');
 
+    Route::get('/customer/settings', function () {
+        return \Inertia\Inertia::render('Customer/Settings');
+    })->name('customer.settings');
+
+    Route::get('/customer/orders', [\App\Http\Controllers\Customer\OrderController::class, 'index'])
+        ->middleware('role:customer')
+        ->name('customer.orders');
+
     Route::middleware('role:customer')->group(function () {
+        Route::post('/customer/reports', [\App\Http\Controllers\Customer\ReportController::class, 'store'])->middleware('throttle:10,1')->name('customer.reports.store');
         Route::patch('/customer/profile', [CustomerProfileController::class, 'update'])->middleware('throttle:6,1')->name('customer.profile.update');
         Route::put('/customer/password', [CustomerProfileController::class, 'password'])->middleware('throttle:6,1')->name('customer.password.update');
         Route::post('/customer/profile/photo', [CustomerProfileController::class, 'photo'])->middleware('throttle:10,1')->name('customer.profile.photo');
@@ -54,11 +75,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/customer/profile/photo', [CustomerProfileController::class, 'removePhoto'])->name('customer.profile.photo.remove');
     });
 
+    Route::middleware('role:seller')->group(function () {
+        Route::get('/seller/temporary-password', [TemporaryPasswordController::class, 'create'])->name('seller.temporary-password.create');
+        Route::put('/seller/temporary-password', [TemporaryPasswordController::class, 'store'])->name('seller.temporary-password.store');
+    });
+
     Route::get('/seller/dashboard', SellerDashboardController::class)
-        ->middleware('role:seller')
+        ->middleware(['role:seller', 'seller.password-change'])
         ->name('seller.dashboard');
 
-    Route::middleware('role:seller')->group(function () {
+    Route::middleware(['role:seller', 'seller.password-change'])->group(function () {
+        Route::post('/seller/crop-yields', [HarvestRecordController::class, 'store'])->middleware('throttle:30,1')->name('seller.harvest-records.store');
+        Route::patch('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'update'])->middleware('throttle:30,1')->name('seller.harvest-records.update');
+        Route::delete('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'destroy'])->middleware('throttle:30,1')->name('seller.harvest-records.destroy');
         Route::post('/seller/products', [ProductController::class, 'store'])->middleware('throttle:seller-product-management')->name('seller.products.store');
         Route::patch('/seller/products/{product}', [ProductController::class, 'update'])->middleware('throttle:seller-product-management')->name('seller.products.update');
         Route::delete('/seller/products', [ProductController::class, 'bulkDestroy'])->middleware('throttle:seller-product-management')->name('seller.products.bulk-destroy');
@@ -74,7 +103,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/seller/profile/email/verify', [ProfileController::class, 'verifyEmail'])->middleware('signed')->name('seller.profile.email.verify');
     });
 
-    Route::get('/admin/dashboard', AdminDashboardController::class)
-        ->middleware('role:cenro_admin')
-        ->name('admin.dashboard');
+    Route::middleware('role:cenro_admin')->group(function () {
+        Route::get('/admin/dashboard', AdminDashboardController::class)->name('admin.dashboard');
+        Route::post('/admin/profile/photo', [AdminProfileController::class, 'photo'])->name('admin.profile.photo');
+        Route::get('/admin/profile/photo', [AdminProfileController::class, 'showPhoto'])->name('admin.profile.photo.show');
+        Route::delete('/admin/profile/photo', [AdminProfileController::class, 'removePhoto'])->name('admin.profile.photo.remove');
+        Route::post('/admin/sellers', [AdminSellerController::class, 'store'])->name('admin.sellers.store');
+        Route::patch('/admin/sellers/{seller}', [AdminSellerController::class, 'update'])->name('admin.sellers.update');
+        Route::post('/admin/sellers/{seller}/suspend', [AdminSellerController::class, 'suspend'])->name('admin.sellers.suspend');
+        Route::post('/admin/sellers/{seller}/reinstate', [AdminSellerController::class, 'reinstate'])->name('admin.sellers.reinstate');
+        Route::get('/admin/sellers/{seller}/photo', [AdminSellerController::class, 'photo'])->name('admin.sellers.photo');
+        Route::post('/admin/tasks', [AdminTaskController::class, 'store'])->name('admin.tasks.store');
+        Route::patch('/admin/tasks/{adminTask}', [AdminTaskController::class, 'update'])->name('admin.tasks.update');
+        Route::delete('/admin/tasks/{adminTask}', [AdminTaskController::class, 'destroy'])->name('admin.tasks.destroy');
+        Route::delete('/admin/reports/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
+    });
 });

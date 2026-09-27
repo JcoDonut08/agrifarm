@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Models\CustomerCheckout;
 use App\Models\Product;
@@ -11,15 +12,23 @@ use App\Models\WalkInOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
-use Inertia\Response;
 
 class StorefrontController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request)
     {
+        $user = $request->user();
+        if ($user) {
+            if ($user->role === UserRole::CenroAdmin) {
+                return redirect()->route('admin.dashboard');
+            }
+            if ($user->role === UserRole::Seller) {
+                return redirect()->route('seller.dashboard');
+            }
+        }
         $productModels = Product::query()
-            ->with('seller:id,name,email,role,avatar_url')
-            ->whereHas('seller', fn ($query) => $query->where('role', UserRole::Seller->value))
+            ->with('seller:id,name,email,role,avatar_url,barangay,account_status')
+            ->whereHas('seller', fn ($query) => $query->where('role', UserRole::Seller->value)->where('account_status', AccountStatus::Active->value))
             ->latest('id')->get();
         $rankedOrders = WalkInOrder::query()
             ->where('status', 'delivered')
@@ -121,7 +130,7 @@ class StorefrontController extends Controller
         }
         if ($request->query('page') === 'seller') {
             $sellerId = filter_var($request->query('seller'), FILTER_VALIDATE_INT);
-            $seller = $sellerId ? User::query()->where('role', UserRole::Seller->value)->find($sellerId) : null;
+            $seller = $sellerId ? User::query()->where('role', UserRole::Seller->value)->where('account_status', AccountStatus::Active->value)->find($sellerId) : null;
             if ($seller) {
                 $sellerListings = collect($sellerProducts)->where('sellerId', $seller->id)->values()->all();
                 $props['sellerProfile'] = [
@@ -163,6 +172,18 @@ class StorefrontController extends Controller
             $props['reviewFeed'] = $this->reviewFeed($request, $productKey, $reviewStats[$productKey] ?? ['count' => 0, 'average' => null]);
         }
 
+        if ($user) {
+            if ($request->query('page') === 'notifications') {
+                $user->unreadNotifications->markAsRead();
+            }
+            $props['notifications'] = $user->notifications()->latest()->limit(50)->get()->map(fn ($notification) => [
+                'id' => $notification->id,
+                'data' => $notification->data,
+                'created_at' => $notification->created_at->toIso8601String(),
+                'read_at' => $notification->read_at ? $notification->read_at->toIso8601String() : null,
+            ]);
+        }
+
         return Inertia::render('Welcome', $props);
     }
 
@@ -171,13 +192,13 @@ class StorefrontController extends Controller
         $value = fn (string $key) => is_string($request->query($key)) ? trim($request->query($key)) : '';
         $search = mb_substr($value('q'), 0, 120);
         $category = in_array($value('category'), ['Vegetables', 'Fruits', 'Herbs', 'Beans'], true) ? $value('category') : '';
-        $barangay = array_key_exists($value('barangay'), config('marketplace.barangay_seller_names')) ? $value('barangay') : '';
+        $barangay = in_array($value('barangay'), array_keys(config('marketplace.barangay_seller_names')), true) ? $value('barangay') : '';
         $price = in_array($value('price'), ['under50', '50to70', 'over70'], true) ? $value('price') : '';
         $sort = in_array($value('sort'), ['best-selling', 'latest', 'rating', 'name'], true) ? $value('sort') : 'recommended';
 
         $query = Product::query()
             ->select('products.id')
-            ->whereHas('seller', fn ($seller) => $seller->where('role', UserRole::Seller->value));
+            ->whereHas('seller', fn ($seller) => $seller->where('role', UserRole::Seller->value)->where('account_status', AccountStatus::Active->value));
 
         if ($search !== '') {
             $matchingIds = Product::search($search)->keys()->all();
@@ -234,7 +255,8 @@ class StorefrontController extends Controller
     private function whereSellerInBarangay($query, string $barangay): void
     {
         $query->where(function ($seller) use ($barangay) {
-            $seller->whereIn('email', config('marketplace.barangay_seller_emails')[$barangay] ?? [])
+            $seller->where('barangay', $barangay)
+                ->orWhereIn('email', config('marketplace.barangay_seller_emails')[$barangay] ?? [])
                 ->orWhereIn('name', config('marketplace.barangay_seller_names')[$barangay] ?? []);
         });
     }
@@ -243,6 +265,10 @@ class StorefrontController extends Controller
     {
         if (! $seller) {
             return null;
+        }
+
+        if ($seller->barangay) {
+            return $seller->barangay;
         }
 
         foreach (config('marketplace.barangay_seller_emails') as $barangay => $emails) {
@@ -296,7 +322,7 @@ class StorefrontController extends Controller
             ->select('user_id')
             ->selectRaw('COUNT(*) as order_count, SUM(total) as revenue')
             ->groupBy('user_id')
-            ->with('seller:id,name,email,role')
+            ->with('seller:id,name,email,role,barangay,account_status')
             ->get();
 
         foreach ($sellerSales as $sales) {
@@ -328,7 +354,12 @@ class StorefrontController extends Controller
         $reviews = ProductReview::query()
             ->where('product_key', $productKey)
             ->when($filter, fn ($query) => $query->where('rating', $filter))
-            ->with('user:id,name')
+            ->with('user:id,name,avatar_url')
+            ->withCount([
+                'reactions as likes_count' => fn ($q) => $q->where('type', 'like'),
+                'reactions as dislikes_count' => fn ($q) => $q->where('type', 'dislike'),
+            ])
+            ->with(['reactions' => fn ($q) => $q->where('user_id', $request->user()?->id ?: -1)])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(5, ['*'], 'review_page');
@@ -345,7 +376,12 @@ class StorefrontController extends Controller
                 'comment' => $review->comment,
                 'anonymous' => $review->anonymous,
                 'displayName' => $review->anonymous ? 'Anonymous customer' : $review->user?->name,
+                'avatar' => $review->anonymous ? null : $review->user?->avatar_url,
                 'createdAt' => $review->created_at->toIso8601String(),
+                'attachment' => $review->attachment_path ? asset('storage/' . $review->attachment_path) : null,
+                'likes' => $review->likes_count ?? 0,
+                'dislikes' => $review->dislikes_count ?? 0,
+                'myReaction' => $review->reactions->first()?->type,
                 'isMine' => $review->user_id === $viewerId,
             ])->all(),
             'currentPage' => $reviews->currentPage(),

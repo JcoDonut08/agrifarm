@@ -30,6 +30,8 @@ class BarangaySellerSeeder extends Seeder
                 'name' => $name,
                 'email' => $email,
                 'role' => UserRole::Seller,
+                'barangay' => str_replace(['Barangay ', 'Sto. Thomas'], ['', 'Sto. Tomas'], $name),
+                'account_status' => 'active',
                 'password' => Hash::make('AgriFarm123!'),
                 'email_verified_at' => now(),
             ])->save();

@@ -33,15 +33,14 @@ export default function Register() {
                     <PasswordField id="password" label="Password" autoComplete="new-password" hint="Use at least 8 characters that are difficult to guess." value={data.password} onChange={(event) => setData('password', event.target.value)} error={errors.password} required />
                 </div>
 
-                <fieldset className="rounded-2xl border border-forest-200 bg-forest-50 p-4 dark:border-white/15 dark:bg-night-800">
-                    <legend className="sr-only">Legal acceptance</legend>
+                <div className="py-2">
                     <ConsentCheckbox checked={data.legal} onChange={(checked) => {
                         setData('legal', checked);
                         if (errors.legal) clearErrors('legal');
                     }} error={errors.legal}>
-                        I agree to the <Link href="/terms" className="font-bold text-forest-700 underline">Terms of Use</Link> and <Link href="/privacy" className="font-bold text-forest-700 underline">Privacy Notice</Link>.
+                        I agree to the <Link href="/terms" className="font-bold text-forest-700 underline decoration-forest-300 underline-offset-2 hover:text-forest-950 dark:text-forest-300 dark:hover:text-white">Terms of Use</Link> and <Link href="/privacy" className="font-bold text-forest-700 underline decoration-forest-300 underline-offset-2 hover:text-forest-950 dark:text-forest-300 dark:hover:text-white">Privacy Notice</Link>.
                     </ConsentCheckbox>
-                </fieldset>
+                </div>
 
                 <SubmitButton processing={processing}>{processing ? 'Creating account...' : 'Create account'}</SubmitButton>
             </form>

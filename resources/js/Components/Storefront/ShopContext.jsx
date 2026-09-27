@@ -24,6 +24,8 @@ export function ShopProvider({ children, products = previewProducts, persist = t
     const [noticeId, setNoticeId] = useState(0);
     const [noticeTarget, setNoticeTarget] = useState(null);
     const [noticePaused, setNoticePaused] = useState(false);
+    const [language, setLanguage] = useState(() => { try { return localStorage.getItem('agrifarm-customer-language') || 'english'; } catch { return 'english'; } });
+    const changeLanguage = (lang) => { setLanguage(lang); try { localStorage.setItem('agrifarm-customer-language', lang); } catch {} };
 
     function notify(message, target = null) {
         setNotice(message);
@@ -100,7 +102,7 @@ export function ShopProvider({ children, products = previewProducts, persist = t
         setSaved((previous) => ({ ...previous, favorites: previous.favorites.includes(id) ? previous.favorites.filter((item) => item !== id) : [...previous.favorites, id] }));
     }
 
-    const value = { ...saved, products, panel, setPanel, notice, noticeId, noticeTarget, dismissNotice: () => setNotice(''), setNoticePaused, add, addQuantity, saveForLater, changeQuantity, clearPurchased, toggleFavorite, count: Object.values(saved.cart).reduce((total, quantity) => total + quantity, 0) };
+    const value = { ...saved, products, panel, setPanel, notice, noticeId, noticeTarget, dismissNotice: () => setNotice(''), setNoticePaused, add, addQuantity, saveForLater, changeQuantity, clearPurchased, toggleFavorite, count: Object.values(saved.cart).reduce((total, quantity) => total + quantity, 0), language, filipino: language === 'filipino', changeLanguage };
     return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
 

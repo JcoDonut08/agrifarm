@@ -13,11 +13,13 @@ Browser -> route -> controller/request -> Eloquent -> PostgreSQL
 app/
   Http/Controllers/
     Auth/                    registration, login OTP, password reset
+    Admin/                   dashboard, seller account management, tasks
     Seller/                  inventory, orders, profile
     StorefrontController     public catalog, search, rankings, reviews, shops
     ProductReviewController  customer review CRUD
     CustomerCheckoutController  COD orders, stock locks, price snapshots
-  Models/                    users, products, reviews, walk-in orders
+  Models/                    users, products, reviews, walk-in orders, account-status history
+  Services/                  dashboard analytics and admin seller serialization
   Services/Auth/             multi-step authentication workflows
 resources/js/
   Components/Storefront/     shared storefront controls and product/review UI
@@ -36,6 +38,8 @@ tests/
 - Use Eloquent as the data-access layer; do not add repositories.
 - Keep simple CRUD in controllers. Use services and database transactions for multi-write workflows such as order placement, payment, stock reservation, or analytics generation.
 - Protect seller-owned resources server-side. Public routes expose only intentionally mapped storefront fields and safe image responses.
+- Seller accounts persist their barangay and current account status. CENRO-only routes create/edit seller accounts and append immutable suspension/reinstatement history records.
+- Active-account middleware rejects suspended seller sessions and hides their marketplace presence. A separate seller middleware directs administrator-created accounts to replace their temporary password before seller-dashboard access.
 - Query-string storefront pages preserve shareable URLs. Review pagination uses `review_page`; marketplace pagination uses `market_page`.
 - Cart/favorites remain client-side. COD checkout uses a UUID-keyed header and transactional, locked stock decrements; each seller receives one line in their existing Orders workspace.
 - Add directories and abstractions only when a real feature needs them.

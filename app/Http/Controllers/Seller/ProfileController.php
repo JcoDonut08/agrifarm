@@ -98,7 +98,7 @@ class ProfileController extends Controller
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::min(8)->letters()->numbers(), 'confirmed', 'different:current_password'],
         ]);
-        $request->user()->forceFill(['password' => $data['password'], 'remember_token' => Str::random(60)])->save();
+        $request->user()->forceFill(['password' => $data['password'], 'password_must_be_changed' => false, 'remember_token' => Str::random(60)])->save();
         $request->session()->regenerate();
 
         return redirect('/seller/dashboard?section=profile')->with('status', 'Password updated successfully.');

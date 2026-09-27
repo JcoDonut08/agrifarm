@@ -162,8 +162,13 @@ export default function Checkout({ order, successPage = false }) {
     if (successPage) return <div className="store-container checkout-page"><section className="checkout-state"><h1>Order not found</h1><p>This order may not exist, or it may belong to another account.</p><Link className="store-button" href={marketHref()}>Browse marketplace</Link></section></div>;
 
     return <div className="store-container checkout-page">
-        <div className="checkout-heading"><div><span className="checkout-kicker">AgriFarm marketplace</span><h1>Checkout</h1></div><Link href="/?page=cart" className="checkout-back">Back to cart</Link></div>
-        <nav className="checkout-progress" aria-label="Checkout progress"><ol>{steps.map((label, index) => <li key={label} className={step >= index + 1 ? 'is-active' : ''} aria-current={step === index + 1 ? 'step' : undefined}><span>{step > index + 1 ? <Icon name="check" size={16} /> : index + 1}</span><strong>{label}</strong></li>)}</ol></nav>
+        <div className="checkout-heading">
+            <div className="checkout-heading-top">
+                <div><h1>Checkout</h1></div>
+                <Link href="/?page=cart" className="checkout-back">← Back to cart</Link>
+            </div>
+            <nav className="checkout-progress" aria-label="Checkout progress"><ol>{steps.map((label, index) => <li key={label} className={step >= index + 1 ? 'is-active' : ''} aria-current={step === index + 1 ? 'step' : undefined}><span>{step > index + 1 ? <Icon name="check" size={16} /> : index + 1}</span><strong>{label}</strong></li>)}</ol></nav>
+        </div>
 
         {!user ? <section className="checkout-state"><h2>Log in to continue</h2><p>A customer account is needed to place a Cash on Delivery order.</p><Link className="store-button" href="/login">Log in</Link></section>
             : user.role !== 'customer' ? <section className="checkout-state"><h2>Customer checkout only</h2><p>Sign in with a customer account to place an order.</p></section>
@@ -187,8 +192,10 @@ export default function Checkout({ order, successPage = false }) {
                                 <div className="checkout-fields">
                                     <label>Full name<input autoComplete="name" maxLength="120" value={form.data.recipient_name} onChange={(event) => form.setData('recipient_name', event.target.value)} aria-invalid={Boolean(form.errors.recipient_name)} required />{form.errors.recipient_name && <small role="alert">{form.errors.recipient_name}</small>}</label>
                                     <label>Email address<input type="email" autoComplete="email" maxLength="255" value={form.data.contact_email} onChange={(event) => form.setData('contact_email', event.target.value)} aria-invalid={Boolean(form.errors.contact_email)} />{form.errors.contact_email && <small role="alert">{form.errors.contact_email}</small>}</label>
-                                    <label>Contact number<input type="tel" autoComplete="tel" inputMode="tel" placeholder="09XX XXX XXXX" value={form.data.phone} onChange={(event) => form.setData('phone', event.target.value)} aria-invalid={Boolean(form.errors.phone)} required />{form.errors.phone && <small role="alert">{form.errors.phone}</small>}</label>
-                                    <AddressAutocomplete className="is-wide" value={form.data.address} onChange={address => form.setData('address', address)} error={form.errors.address} required />
+                                    <div className="checkout-row">
+                                        <label>Contact number<input type="tel" autoComplete="tel" inputMode="tel" placeholder="09XX XXX XXXX" value={form.data.phone} onChange={(event) => form.setData('phone', event.target.value)} aria-invalid={Boolean(form.errors.phone)} required />{form.errors.phone && <small role="alert">{form.errors.phone}</small>}</label>
+                                        <AddressAutocomplete value={form.data.address} onChange={address => form.setData('address', address)} error={form.errors.address} required />
+                                    </div>
                                     <label className="is-wide checkout-notes-field">Delivery notes <span>(optional)</span><textarea maxLength="500" rows="3" placeholder="Gate color, landmark, or preferred handoff instructions" value={form.data.notes} onChange={(event) => form.setData('notes', event.target.value)} /></label>
                                 </div>
                                 {localError && <p className="checkout-error" role="alert">{localError}</p>}{form.errors.items && <p className="checkout-error" role="alert">{form.errors.items}</p>}
