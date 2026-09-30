@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
+﻿import { Head, Link, router, useForm, usePage } from "@inertiajs/react";
 import {
     Apple,
     Bell,
@@ -50,6 +50,9 @@ import AdminSettings from "./Settings";
 import FarmersSellers from "./FarmersSellers";
 import AuditLogs from "./AuditLogs";
 import BarangayMonitoring from "./BarangayMonitoring";
+import AdminProducts from "./Products";
+import AdminOrders from "./Orders";
+import AdminReports from "./Reports";
 
 const ADMIN_EMAIL = "pasigcenro@gmail.com";
 const ADMIN_PREFERENCES_KEY = "agrifarm-admin-preferences";
@@ -258,6 +261,9 @@ export default function Dashboard() {
         auditLogs = [],
         monitoringData,
         weather = null,
+        productManagement,
+        orderManagement,
+        reportData = {},
     } = usePage().props;
     const [section, setSection] = useState(initialSection);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -324,7 +330,7 @@ export default function Dashboard() {
 
     return (
         <div className="admin-app">
-            <Head title={`${section} · Pasig CENRO`} />
+            <Head title={`${section} Â· Pasig CENRO`} />
 
             <aside className="admin-sidebar">
                 <div className="admin-brand">
@@ -460,6 +466,10 @@ export default function Dashboard() {
                             preferences={preferences.display}
                             filipino={filipino}
                         />
+                    ) : section === "Products" ? (
+                        <AdminProducts productManagement={productManagement} filipino={filipino} />
+                    ) : section === "Orders" ? (
+                        <AdminOrders orderManagement={orderManagement} filipino={filipino} />
                     ) : section === "Farmers & Sellers" ? (
                         <FarmersSellers
                             management={sellerManagement}
@@ -469,6 +479,14 @@ export default function Dashboard() {
                         <AuditLogs logs={auditLogs} filipino={filipino} />
                     ) : section === "Barangay Monitoring" ? (
                         <BarangayMonitoring monitoringData={monitoringData} filipino={filipino} />
+                    ) : section === "Reports" ? (
+                        <AdminReports
+                            harvestRecords={reportData.harvestRecords ?? []}
+                            walkInOrders={reportData.walkInOrders ?? []}
+                            sellers={reportData.sellers ?? []}
+                            pendingRegistrations={reportData.pendingRegistrations ?? []}
+                            filipino={filipino}
+                        />
                     ) : section === "Profile" ? (
                         <Profile
                             user={auth.user}
@@ -487,7 +505,7 @@ export default function Dashboard() {
                         />
                     )}
                     <footer className="admin-footer">
-                        AgriFarm · Pasig City CENRO Administration
+                        AgriFarm Â· Pasig City CENRO Administration
                     </footer>
                 </main>
             </div>
@@ -684,7 +702,7 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
         },
         {
             label: filipino ? "Nangungunang barangay" : "Leading barangay",
-            value: summary.leadingBarangay?.name || "—",
+            value: summary.leadingBarangay?.name || "â€”",
             detail: summary.leadingBarangay
                 ? filipino
                     ? `${formatCurrency(summary.leadingBarangay.sales)} na nakumpletong benta`
@@ -965,8 +983,8 @@ function AdminTodoPanel({ tasks, filipino }) {
 
     const deleteTask = (task) => {
         const confirmMessage = filipino
-            ? `Burahin ang “${task.title}”?`
-            : `Delete “${task.title}”?`;
+            ? `Burahin ang â€œ${task.title}â€?`
+            : `Delete â€œ${task.title}â€?`;
         if (window.confirm(confirmMessage)) {
             router.delete(`/admin/tasks/${task.id}`, { preserveScroll: true });
         }
@@ -1089,8 +1107,8 @@ function AdminTodoPanel({ tasks, filipino }) {
                         <button type="submit" disabled={form.processing}>
                             {form.processing
                                 ? filipino
-                                    ? "Idinadagdag…"
-                                    : "Adding…"
+                                    ? "Idinadagdagâ€¦"
+                                    : "Addingâ€¦"
                                 : filipino
                                   ? "Idagdag"
                                   : "Add task"}
@@ -1329,7 +1347,7 @@ function MonthlySalesChart({ data }) {
                             x="23"
                             y="21"
                         >
-                            {activePoint.series} · {activePoint.month}
+                            {activePoint.series} Â· {activePoint.month}
                         </text>
                         <text
                             className="admin-chart-tooltip-value"
@@ -1574,10 +1592,10 @@ function formatNumber(value) {
 
 function formatAxisCurrency(value) {
     if (Number(value) >= 1000000)
-        return `₱${(Number(value) / 1000000).toFixed(Number(value) % 1000000 ? 1 : 0)}M`;
+        return `â‚±${(Number(value) / 1000000).toFixed(Number(value) % 1000000 ? 1 : 0)}M`;
     if (Number(value) >= 1000)
-        return `₱${(Number(value) / 1000).toFixed(Number(value) % 1000 ? 1 : 0)}K`;
-    return `₱${Math.round(Number(value))}`;
+        return `â‚±${(Number(value) / 1000).toFixed(Number(value) % 1000 ? 1 : 0)}K`;
+    return `â‚±${Math.round(Number(value))}`;
 }
 
 function formatTaskDate(value) {
@@ -1608,3 +1626,4 @@ function formatRelativeTime(value) {
         day: "numeric",
     }).format(new Date(timestamp));
 }
+

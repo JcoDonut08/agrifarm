@@ -8,6 +8,9 @@ use App\Services\AdminSellerService;
 use App\Services\AuditLogService;
 use App\Services\BarangayMonitoringService;
 use App\Services\WeatherService;
+use App\Services\AdminProductService;
+use App\Services\AdminOrderService;
+use App\Services\AdminReportService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,7 +22,10 @@ class DashboardController extends Controller
         protected AdminSellerService $sellerService,
         protected AuditLogService $auditLogService,
         protected BarangayMonitoringService $barangayMonitoringService,
-        protected WeatherService $weatherService
+        protected WeatherService $weatherService,
+        protected AdminProductService $productService,
+        protected AdminOrderService $orderService,
+        protected AdminReportService $reportService
     ) {
     }
 
@@ -34,6 +40,10 @@ class DashboardController extends Controller
             'auditLogs' => $this->auditLogService->logs(),
             'monitoringData' => $this->barangayMonitoringService->data(),
             'weather' => $this->weatherService->current(),
+            'productManagement' => $this->productService->data(),
+            'orderManagement' => $this->orderService->data(),
+            'reportData' => $this->reportService->data(),
         ]);
     }
 }
+

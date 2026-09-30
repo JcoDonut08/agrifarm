@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\SellerController as AdminSellerController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
@@ -117,5 +118,10 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         Route::patch('/admin/tasks/{adminTask}', [AdminTaskController::class, 'update'])->name('admin.tasks.update');
         Route::delete('/admin/tasks/{adminTask}', [AdminTaskController::class, 'destroy'])->name('admin.tasks.destroy');
         Route::delete('/admin/reports/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
+
+        Route::post('/admin/products/{product}/delist', [AdminProductController::class, 'delist'])->name('admin.products.delist');
+        Route::post('/admin/products/{product}/relist', [AdminProductController::class, 'relist'])->name('admin.products.relist');
+        Route::post('/admin/products/{product}/dismiss', [AdminProductController::class, 'dismiss'])->name('admin.products.dismiss');
+
     });
 });

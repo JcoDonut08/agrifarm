@@ -3,6 +3,7 @@ import Icon from './Icon';
 
 export default function ReportModal({ product, onClose }) {
     const [data, setData] = useState({
+        product_id: product?.id && typeof product.id === 'string' && product.id.startsWith('seller-') ? parseInt(product.id.replace('seller-', ''), 10) : (typeof product?.id === 'number' ? product.id : null),
         product_name: product?.name || '',
         seller_name: product?.sellerName || '',
         barangay: product?.barangay || '',

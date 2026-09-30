@@ -28,6 +28,7 @@ class StorefrontController extends Controller
         }
         $productModels = Product::query()
             ->with('seller:id,name,email,role,avatar_url,barangay,account_status')
+            ->where('status', 'active')
             ->whereHas('seller', fn ($query) => $query->where('role', UserRole::Seller->value)->where('account_status', AccountStatus::Active->value))
             ->latest('id')->get();
         $rankedOrders = WalkInOrder::query()
@@ -198,6 +199,7 @@ class StorefrontController extends Controller
 
         $query = Product::query()
             ->select('products.id')
+            ->where('products.status', 'active')
             ->whereHas('seller', fn ($seller) => $seller->where('role', UserRole::Seller->value)->where('account_status', AccountStatus::Active->value));
 
         if ($search !== '') {

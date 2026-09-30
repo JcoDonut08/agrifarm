@@ -11,6 +11,7 @@ class ReportController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            "product_id" => "nullable|integer|exists:products,id",
             "product_name" => "nullable|string|max:255",
             "seller_name" => "nullable|string|max:255",
             "barangay" => "nullable|string|max:100",
@@ -21,6 +22,7 @@ class ReportController extends Controller
         Report::create([
             "reporter_name" => $request->user()?->name ?? "Anonymous",
             "seller_name" => $validated["seller_name"] ?? null,
+            "product_id" => $validated["product_id"] ?? null,
             "product_name" => $validated["product_name"] ?? null,
             "barangay" => $validated["barangay"] ?? null,
             "type" => $validated["type"],

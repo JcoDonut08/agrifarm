@@ -1,6 +1,9 @@
 import { useForm } from "@inertiajs/react";
 import {
     ArrowLeft,
+    ShieldCheck,
+    UserPlus,
+    FilePenLine,
     BadgeCheck,
     Camera,
     ChevronLeft,
@@ -561,6 +564,7 @@ function Dialog({
     children,
     onClose,
     variant = "default",
+    filipino = false
 }) {
     useEffect(() => {
         const handleKeyDown = (event) => {
@@ -863,7 +867,8 @@ function SellerForm({ seller, barangays, onClose, filipino }) {
                 <DialogActions
                     onClose={onClose}
                     processing={form.processing}
-                    action={creating ? (filipino ? "Gumawa ng account" : "Create account") : (filipino ? "I-save ang mga pagbabago" : "Save changes")}
+                    action={filipino ? "I-suspend ang account" : "Suspend account"}
+                    danger={true}
                 />
             </form>
         </Dialog>
@@ -1026,11 +1031,12 @@ function SuspendDialog({ seller, onClose, filipino }) {
 
     return (
         <Dialog
-            title={creating ? (filipino ? "Gumawa ng account ng nagbebenta" : "Create seller account") : (filipino ? "I-edit ang account ng nagbebenta" : "Edit seller account")}
-            subtitle={seller?.name}
-            icon={creating ? UserPlus : FilePenLine}
+            title={filipino ? "I-suspend ang nagbebenta" : "Suspend seller"}
+            subtitle={seller.name}
+            icon={ShieldAlert}
             onClose={onClose}
             filipino={filipino}
+            variant="danger"
         >
             <form className="admin-seller-form" onSubmit={submit}>
                 <div className="admin-dialog-alert admin-dialog-alert--danger">
@@ -1083,7 +1089,8 @@ function SuspendDialog({ seller, onClose, filipino }) {
                 <DialogActions
                     onClose={onClose}
                     processing={form.processing}
-                    action={creating ? (filipino ? "Gumawa ng account" : "Create account") : (filipino ? "I-save ang mga pagbabago" : "Save changes")}
+                    action={filipino ? "I-suspend ang account" : "Suspend account"}
+                    danger={true}
                 />
             </form>
         </Dialog>
@@ -1106,7 +1113,7 @@ function ReinstateDialog({ seller, onClose, filipino }) {
             onClose={onClose}
             filipino={filipino}
         >
-            <div className="admin-seller-form">
+            <form className="admin-seller-form" onSubmit={(e) => { e.preventDefault(); submit(); }}>
                 <div className="admin-dialog-alert admin-dialog-alert--success">
                     <BadgeCheck aria-hidden="true" />
                     <div>
@@ -1132,7 +1139,7 @@ function ReinstateDialog({ seller, onClose, filipino }) {
                     processing={form.processing}
                     action={filipino ? "Ibalik ang account" : "Reinstate account"}
                 />
-            </div>
+            </form>
         </Dialog>
     );
 }
