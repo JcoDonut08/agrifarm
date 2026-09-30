@@ -161,7 +161,7 @@ Route::get('/api/chatbot/latest-order', function (Illuminate\Http\Request $reque
     return response()->json([
         'reference' => 'multiple_active',
         'status' => 'active_multiple',
-        'summary' => implode("\n• ", $allItems)
+        'summary' => implode("\nâ€¢ ", $allItems)
     ]);
 });
 
@@ -253,3 +253,4 @@ Route::get('/api/chatbot/order-status', function (Illuminate\Http\Request $reque
         'status' => strtolower($item->status)
     ]);
 });
+Route::get('/test-403', function () { abort(403); });
