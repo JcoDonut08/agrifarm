@@ -5,6 +5,7 @@ import AccountMenu from '../Components/Storefront/AccountMenu';
 import Icon from '../Components/Storefront/Icon';
 import { marketHref } from '../Components/Storefront/catalog';
 import { useShop } from '../Components/Storefront/ShopContext';
+import HelpWidget from '../Components/Storefront/HelpWidget';
 import '../../css/storefront.css';
 
 export default function StorefrontLayout({ children, market }) {
@@ -15,7 +16,7 @@ export default function StorefrontLayout({ children, market }) {
     const { filipino, count, favorites, panel, setPanel, notice, noticeId, noticeTarget, dismissNotice, setNoticePaused } = useShop();
     const [menuOpen, setMenuOpen] = useState(false);
     const destination = user ? ({ customer: '/customer', seller: '/seller/dashboard', cenro_admin: '/admin/dashboard' }[user.role] || '/') : '/login';
-    const links = [{ label: filipino ? 'Home' : 'Home', href: '/', active: currentPage === 'home' }, { label: filipino ? 'Pamilihan' : 'Marketplace', href: marketHref(), active: market }];
+    const links = [{ label: filipino ? 'Home' : 'Home', href: '/', active: currentPage === 'home' }, { label: filipino ? 'Pamilihan' : 'Marketplace', href: marketHref(), active: market }, { label: filipino ? 'Tungkol' : 'About', href: '/about', active: currentPage === 'about' }];
 
     return (
         <div className="storefront">
@@ -25,7 +26,6 @@ export default function StorefrontLayout({ children, market }) {
                     <AppMark storefront />
                     <nav className="store-desktop-nav" aria-label="Main navigation">
                         {links.map((link) => <Link key={link.label} href={link.href} className={link.active ? 'active' : ''} aria-current={link.active ? 'page' : undefined}>{link.label}</Link>)}
-                        <button className={panel === 'about' ? 'active' : ''} aria-expanded={panel === 'about'} onClick={() => setPanel('about')}>{filipino ? 'Tungkol sa amin' : 'About'}</button>
                         <Link href="/contact" className={currentPage === 'contact' ? 'active' : ''} aria-current={currentPage === 'contact' ? 'page' : undefined}>{filipino ? 'Makipag-ugnayan' : 'Contact'}</Link>
                     </nav>
                     <div className="store-header-actions">
@@ -58,7 +58,6 @@ export default function StorefrontLayout({ children, market }) {
                             <h2>{filipino ? 'Tuklasin ang AgriFarm' : 'Explore AgriFarm'}</h2>
                             <Link href="/">{filipino ? 'Home' : 'Home'}</Link>
                             <Link href={marketHref()}>{filipino ? 'Pamilihan' : 'Marketplace'}</Link>
-                            <button onClick={() => setPanel('about')}>{filipino ? 'Tungkol sa amin' : 'About us'}</button>
                             <Link href="/contact" className={currentPage === 'contact' ? 'active' : ''} aria-current={currentPage === 'contact' ? 'page' : undefined}>Contact</Link>
                         </nav>
                         <nav aria-label="Community gardens">
@@ -70,8 +69,8 @@ export default function StorefrontLayout({ children, market }) {
                         </nav>
                     </div>
                     <div className="store-footer-bottom">
-                        <p>© {new Date().getFullYear()} AgriFarm</p>
-                        {pathname === '/' && !props.sellerProducts?.length && <p className="sample-note">Design preview · Sample products, stock and prices</p>}
+                        <p>ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© {new Date().getFullYear()} AgriFarm</p>
+                        {pathname === '/' && !props.sellerProducts?.length && <p className="sample-note">Design preview ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· Sample products, stock and prices</p>}
                         <nav aria-label="Legal information"><Link href="/terms">{filipino ? 'Mga Tuntunin sa Paggamit' : 'Terms of use'}</Link><Link href="/privacy">{filipino ? 'Patakaran sa Pagkapribado' : 'Privacy policy'}</Link></nav>
                     </div>
                 </div>
@@ -81,6 +80,7 @@ export default function StorefrontLayout({ children, market }) {
                 {notice && <>{noticeTarget && <Link href={`/?page=${noticeTarget}`}>View {noticeTarget === 'cart' ? 'cart' : 'favorites'} <Icon name="arrow" size={16} /></Link>}<button type="button" className="toast-dismiss" aria-label="Dismiss notification" onClick={dismissNotice}><Icon name="close" size={18} /></button></>}
             </div>
             <ShopDialog />
+              <HelpWidget />
         </div>
     );
 }
@@ -106,7 +106,7 @@ function ShopDialog() {
     return (
         <dialog ref={dialog} className={`store-dialog ${panel === 'cart' ? 'cart-dialog' : ''}`} aria-labelledby="shop-dialog-title" onCancel={() => setPanel(null)} onClick={(event) => { if (event.target === event.currentTarget) { const bounds = event.currentTarget.getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) setPanel(null); } }}>
             <div className="dialog-heading"><h2 id="shop-dialog-title">{title}</h2><button className="store-icon-button" aria-label="Close dialog" onClick={() => setPanel(null)}><Icon name="close" /></button></div>
-            {panel === 'about' && <div className="information-dialog"><Icon name="sprout" size={44} /><p>AgriFarm brings Pasig’s local growers and their neighbors closer together. Discover community gardens, explore locally grown produce, and support the people growing food close to home.</p><p>Every local harvest is a small step toward a greener, more connected community.</p>{url.split('?')[0] === '/' && <p className="preview-message">{props.sellerProducts?.length ? 'Product listings and prices come from AgriFarm sellers.' : 'You’re exploring a design preview. Products, prices, and barangay features are illustrative.'}</p>}</div>}
+            
 
         </dialog>
     );

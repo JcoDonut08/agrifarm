@@ -30,6 +30,7 @@ Route::get('/marketplace/sellers/{user}/photo', StorefrontSellerPhotoController:
 Route::get('/marketplace/customers/{user}/photo', StorefrontCustomerPhotoController::class)->name('marketplace.customers.photo');
 
 Route::get('/terms', [LegalPageController::class, 'terms'])->name('terms');
+Route::inertia('/about', 'About')->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 Route::get('/privacy', [LegalPageController::class, 'privacy'])->name('privacy');
@@ -124,4 +125,131 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         Route::post('/admin/products/{product}/dismiss', [AdminProductController::class, 'dismiss'])->name('admin.products.dismiss');
 
     });
+});
+
+Route::get('/api/chatbot/latest-order', function (Illuminate\Http\Request $request) {
+    if (!$request->user()) return response()->json(['error' => 'Not logged in'], 401);
+    
+    $activeCheckouts = \App\Models\CustomerCheckout::with('items')
+        ->where('user_id', $request->user()->id)
+        ->whereHas('items', function($q) {
+            $q->whereNotIn('status', ['delivered', 'cancelled']);
+        })
+        ->orderByDesc('created_at')
+        ->get();
+        
+    if ($activeCheckouts->isEmpty()) {
+        $latest = \App\Models\CustomerCheckout::with('items')->where('user_id', $request->user()->id)->orderByDesc('created_at')->first();
+        if (!$latest || $latest->items->isEmpty()) return response()->json(['status' => 'not_found']);
+        $itemsDetail = $latest->items->map(fn($i) => $i->quantity . 'x ' . $i->product_name)->join(', ');
+        return response()->json([
+            'reference' => $latest->reference_number,
+            'status' => strtolower($latest->items->first()->status),
+            'summary' => $itemsDetail
+        ]);
+    }
+    
+    $allItems = [];
+    foreach ($activeCheckouts as $checkout) {
+        foreach ($checkout->items as $item) {
+            if (!in_array(strtolower($item->status), ['delivered', 'cancelled'])) {
+                $allItems[] = $item->quantity . 'x ' . $item->product_name . ' (' . ucfirst($item->status) . ')';
+            }
+        }
+    }
+    
+    return response()->json([
+        'reference' => 'multiple_active',
+        'status' => 'active_multiple',
+        'summary' => implode("\n• ", $allItems)
+    ]);
+});
+
+Route::get('/api/chatbot/order-status', function (Illuminate\Http\Request $request) {
+    $reference = $request->query('reference');
+    if (!$reference) return response()->json(['error' => 'No reference provided'], 400);
+    
+    $checkout = \App\Models\CustomerCheckout::with('items')->where('reference_number', $reference)->first();
+    if (!$checkout || $checkout->items->isEmpty()) return response()->json(['status' => 'not_found']);
+    
+    $itemsDetail = $checkout->items->map(function ($i) {
+        return $i->quantity . 'x ' . $i->product_name . ' (' . ucfirst($i->status) . ')';
+    })->join(', ');
+    
+    $statuses = $checkout->items->pluck('status')->map(fn($s) => strtolower($s))->unique();
+    $overallStatus = 'mixed';
+    if ($statuses->count() === 1) {
+        $overallStatus = $statuses->first();
+    } elseif ($statuses->contains('pending') || $statuses->contains('preparing')) {
+        $overallStatus = 'processing';
+    }
+    
+    return response()->json([
+        'reference' => $checkout->reference_number,
+        'status' => $overallStatus,
+        'summary' => $itemsDetail
+    ]);
+});
+
+Route::get('/api/chatbot/order-status', function (Illuminate\Http\Request $request) {
+    $reference = $request->query('reference');
+    if (!$reference) return response()->json(['error' => 'No reference provided'], 400);
+    
+    $checkout = \App\Models\CustomerCheckout::with('items')->where('reference_number', $reference)->first();
+    if (!$checkout || $checkout->items->isEmpty()) return response()->json(['status' => 'not_found']);
+    
+    $itemsDetail = $checkout->items->map(function ($i) {
+        return $i->quantity . 'x ' . $i->product_name . ' (' . ucfirst($i->status) . ')';
+    })->join(', ');
+    
+    $statuses = $checkout->items->pluck('status')->map(fn($s) => strtolower($s))->unique();
+    $overallStatus = 'mixed';
+    if ($statuses->count() === 1) {
+        $overallStatus = $statuses->first();
+    } elseif ($statuses->contains('pending') || $statuses->contains('preparing')) {
+        $overallStatus = 'processing';
+    }
+    
+    return response()->json([
+        'reference' => $checkout->reference_number,
+        'status' => $overallStatus,
+        'summary' => $itemsDetail
+    ]);
+});
+
+Route::get('/api/chatbot/order-status', function (Illuminate\Http\Request $request) {
+    $reference = $request->query('reference');
+    if (!$reference) return response()->json(['error' => 'No reference provided'], 400);
+    
+    $checkout = \App\Models\CustomerCheckout::with('items')->where('reference_number', $reference)->first();
+    if (!$checkout || $checkout->items->isEmpty()) return response()->json(['status' => 'not_found']);
+    
+    $itemsSummary = $checkout->items->take(2)->map(fn($i) => $i->quantity . 'x ' . $i->product_name)->join(', ');
+    if ($checkout->items->count() > 2) $itemsSummary .= ' and more';
+    
+    return response()->json([
+        'reference' => $checkout->reference_number,
+        'status' => strtolower($checkout->items->first()->status),
+        'summary' => $itemsSummary
+    ]);
+});
+Route::get('/api/chatbot/order-status', function (Illuminate\Http\Request $request) {
+    $reference = $request->query('reference');
+    if (!$reference) {
+        return response()->json(['error' => 'No reference provided'], 400);
+    }
+    
+    $checkout = \App\Models\CustomerCheckout::with('items')
+        ->where('reference_number', $reference)
+        ->first();
+        
+    if (!$checkout || $checkout->items->isEmpty()) {
+        return response()->json(['status' => 'not_found']);
+    }
+    
+    $item = $checkout->items->first();
+    return response()->json([
+        'reference' => $checkout->reference_number,
+        'status' => strtolower($item->status)
+    ]);
 });
