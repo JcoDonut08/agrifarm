@@ -93,7 +93,7 @@ function SellerIcon({ name }) {
         store: (
             <path d="M4 10v11h16V10M3 3h18l1 6c-1 4-4 4-5 0-1 4-4 4-5 0-1 4-4 4-5 0-1 4-4 4-5 0ZM9 21v-7h6v7" />
         ),
-        star: <path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" />,
+        star: <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor" stroke="none" />,
     };
     return paths[name] ? (
         <svg
@@ -272,7 +272,7 @@ export default function Dashboard() {
     };
     return (
         <div className="seller-app">
-            <Head title={`${name} · AgriFarm`} />
+            <Head title={`${name} Â· AgriFarm`} />
             <aside className="seller-sidebar">
                 <div className="seller-brand">
                     <AppMark storefront href="/seller/dashboard" />
@@ -331,8 +331,8 @@ export default function Dashboard() {
                             <strong>{name}</strong>
                             <span>
                                 {filipino
-                                    ? "Katuwang na barangay · Pasig City"
-                                    : "Partner barangay · Pasig City"}
+                                    ? "Katuwang na barangay Â· Pasig City"
+                                    : "Partner barangay Â· Pasig City"}
                             </span>
                         </div>
                     </div>
@@ -425,7 +425,7 @@ export default function Dashboard() {
                                             ? Number(
                                                   reviewSummary.average,
                                               ).toFixed(1)
-                                            : "—",
+                                            : "â€”",
                                         rating: reviewSummary.count
                                             ? Number(reviewSummary.average)
                                             : 0,
@@ -604,7 +604,7 @@ export default function Dashboard() {
                         </>
                     )}
                     <footer className="seller-footer">
-                        AgriFarm ·{" "}
+                        AgriFarm Â·{" "}
                         {filipino ? "Katuwang na barangay" : "Partner barangay"}
                     </footer>
                 </main>

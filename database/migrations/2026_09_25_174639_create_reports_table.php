@@ -6,20 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
+            $table->string('barangay')->nullable();
+            $table->string('type');
+            $table->text('description');
+            $table->string('attachment_path')->nullable();
+            $table->string('status')->default('pending');
+            $table->text('remarks')->nullable();
+            $table->text('resolution')->nullable();
+            $table->string('seller_name')->nullable();
+            $table->string('product_name')->nullable();
+            $table->string('reporter_name')->nullable();
+            $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('reports');

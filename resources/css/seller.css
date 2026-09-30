@@ -1541,10 +1541,7 @@
     stroke: #f59e0b;
     stroke-width: 1px;
 }
-.seller-stat--rating .seller-stat-icon {
-    background: #fef3c7;
-    color: #d97706;
-}
+
 .seller-stat p {
     color: var(--stat-muted);
     font-size: 12px;
@@ -1681,10 +1678,7 @@
     --stat-line: #3c7d5c;
     --stat-icon: #307651;
 }
-.dark .seller-stat--rating .seller-stat-icon {
-    background: #38301b;
-    color: #fbbf24;
-}
+
 .dark .seller-rating-star-bg {
     fill: rgba(255, 255, 255, 0.12);
     stroke: rgba(255, 255, 255, 0.22);
