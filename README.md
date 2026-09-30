@@ -35,6 +35,8 @@ shadcn/ui components used in AgriFarm are customized through Tailwind CSS and th
 - Three pre-submit COD steps for real seller listings: shipping details with optional address suggestions, payment method (GCash/Maya shown as coming soon), and full order confirmation with product photos. Placing the order opens a separate mascot-led success page with a random alphanumeric `AgFrm-` reference and icon actions for printable/downloadable unpaid order slips. Prices and stock are verified and reserved server-side; sellers receive the order in their Orders workspace.
 - Light/dark themes; light mode uses a `#f5f5f5` page canvas with white cards
 
+- Interactive Storefront Features: An overhauled, bilingual (English/Filipino) About page featuring a 2.5D custom mascot (Kuya Ani) who acts as an interactive frontend chatbot. The chatbot includes dynamic conversational flows, FAQs, and securely hooks into the Laravel backend (/api/chatbot/latest-order) to actively scan and summarize the real-time status of all pending products in the user's active checkouts.
+
 The cart itself is stored on the device and does not reserve stock. Only real seller listings can be submitted as COD orders; sample catalog products remain previews. Delivery charges are not configured and must be agreed with the seller before fulfillment.
 
 ## Local setup
