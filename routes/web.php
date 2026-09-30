@@ -161,7 +161,7 @@ Route::get('/api/chatbot/latest-order', function (Illuminate\Http\Request $reque
     return response()->json([
         'reference' => 'multiple_active',
         'status' => 'active_multiple',
-        'summary' => implode("\nÃ¢â‚¬Â¢ ", $allItems)
+        'summary' => implode("\n- ", $allItems)
     ]);
 });
 
