@@ -108,14 +108,14 @@ function AboutPage() {
                 <div className="about-banner-break">
                     <img src="/images/agrifarm-market-hero.png" alt="Fresh harvest background" className="banner-bg" />
                     <div className="banner-content">
-                        <h2>{filipino ? 'Sariwang Ani Mula Sa Kapwa Mo PasigueÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±o' : 'Fresh Harvests From Your Neighbors'}</h2>
+                        <h2>{filipino ? 'Sariwang Ani Mula Sa Kapwa Mo PasigueÃ±o' : 'Fresh Harvests From Your Neighbors'}</h2>
                     </div>
                 </div>
 
                                 {/* Mission and Vision Section */}
                 <section className="store-container about-mission-vision">
-                    <div className="about-eyebrow">{filipino ? 'LAYUNIN' : 'PURPOSE'}</div>
-                    <h2>{filipino ? 'Misyon at Bisyon' : 'Mission and Vision'}</h2>
+                    <div className="about-eyebrow">PURPOSE</div>
+                    <h2>Mission and Vision</h2>
                     <p className="about-subtitle">{filipino ? 'Ang aming pangunahing layunin at trabaho ay gabay ng aming pananaw.' : 'Our core work is guided by our mission and vision.'}</p>
                     
                     <div className="about-cards">
@@ -124,7 +124,7 @@ function AboutPage() {
                                 <img src="/images/market-basket.png" alt="Basket of vegetables" />
                             </div>
                             <div className="card-text-box">
-                                <h3>{filipino ? 'Ang Aming Misyon' : 'Our Mission'}</h3>
+                                <h3>Our Mission</h3>
                                 <p>
                                     {filipino 
                                         ? 'Upang lumikha, suportahan, at panatilihin ang isang network ng mga naa-access na urban farms na nagbibigay ng sariwa at lokal na ani para sa mga residente ng Pasig.'
@@ -137,7 +137,7 @@ function AboutPage() {
                                 <img src="/images/market-pechay-feature.png" alt="Fresh green pechay" />
                             </div>
                             <div className="card-text-box">
-                                <h3>{filipino ? 'Ang Aming Bisyon' : 'Our Vision'}</h3>
+                                <h3>Our Vision</h3>
                                 <p>
                                     {filipino 
                                         ? 'Isang masigla at napapanatiling Pasig kung saan bawat komunidad ay may access sa isang luntiang espasyo para sa pagpapalago ng pagkain at pagkakaisa.'
