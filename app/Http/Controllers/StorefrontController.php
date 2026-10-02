@@ -72,6 +72,8 @@ class StorefrontController extends Controller
                 'price' => (float) $product->price,
                 'unit' => $product->unit,
                 'stock' => $product->stock,
+                'expected_yield' => (int) $product->expected_yield,
+                'harvest_date' => $product->harvest_date ? $product->harvest_date->toDateString() : null,
                 'sellerId' => $product->user_id,
                 'sellerName' => $product->seller?->name,
                 'sellerAvatarUrl' => $this->sellerAvatarUrl($product->seller),

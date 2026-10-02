@@ -25,7 +25,9 @@ export default function ProductDetail({ productId, products = previewProducts, r
 
     const badge = getProductBadge(product);
     const inCart = cart[product.id] || 0;
-    const available = Math.max(0, product.stock - inCart);
+    const isPreorderMode = product.stock === 0 && product.expected_yield > 0;
+    const maxAvailable = isPreorderMode ? product.expected_yield : product.stock;
+    const available = Math.max(0, maxAvailable - inCart);
     const selectedQuantity = available ? Math.min(quantity, available) : 0;
     const favorite = favorites.includes(product.id);
     const related = products.filter((item) => item.id !== product.id && (item.category === product.category || (product.sellerName && item.sellerName === product.sellerName) || (product.barangay && item.barangay === product.barangay))).slice(0, 4);
