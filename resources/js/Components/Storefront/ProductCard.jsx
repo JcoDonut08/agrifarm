@@ -45,13 +45,13 @@ export default function ProductCard({ product }) {
                 <div className="produce-meta">
                     <span className="barangay-label"><Icon name={product.barangay ? 'pin' : 'people'} size={13} />{product.barangay || product.sellerName}</span>
                 </div>
-                <div className="produce-price-row"><p className="produce-price">{money(product.price)} <span>/ {product.unit}</span></p><span className="product-stock">{product.stock} {stockUnit(product.unit, product.stock)} left</span></div>
+                <div className="produce-price-row"><p className="produce-price">{money(product.price)} <span>/ {product.unit}</span></p><span className="product-stock">{product.stock} {stockUnit(product.unit, product.stock)} {product.is_preorder ? 'to reserve' : 'left'}</span></div>
                 <div className="produce-rating" aria-label={count ? `${rating.toFixed(1)} out of 5 stars, ${count} reviews` : 'No reviews yet'}>
-                    {count > 0 && <span className="rating-stars" aria-hidden="true"><span style={{ width: `${rating / 5 * 100}%` }}>★★★★★</span>★★★★★</span>}
+                    {count > 0 && <span className="rating-stars" aria-hidden="true"><span style={{ width: `${rating / 5 * 100}%` }}>â˜…â˜…â˜…â˜…â˜…</span>â˜…â˜…â˜…â˜…â˜…</span>}
                     {count ? <><strong>{rating.toFixed(1)}</strong><small>({count})</small></> : <small>No reviews yet</small>}
                 </div>
                 <button type="button" className={`market-add-button ${added ? 'is-added' : ''}`} disabled={atLimit} onClick={addToCart} aria-label={`Add ${product.name} to cart`}>
-                    <span key={addAnimation} className={added ? 'add-feedback' : ''}><Icon name={added ? 'check' : 'cart'} size={17} />{added ? 'Added to cart' : product.stock === 0 ? 'Out of stock' : atLimit ? 'Limit reached' : 'Add to cart'}</span>
+                    <span key={addAnimation} className={added ? 'add-feedback' : ''}><Icon name={added ? 'check' : 'cart'} size={17} />{added ? (product.is_preorder ? 'Reserved' : 'Added to cart') : product.stock === 0 ? 'Out of stock' : atLimit ? 'Limit reached' : (product.is_preorder ? 'Reserve' : 'Add to cart')}</span>
                 </button>
             </div>
         </article>

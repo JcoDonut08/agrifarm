@@ -49,7 +49,7 @@ export default function ProductDetail({ productId, products = previewProducts, r
                 {badge && <span className={`product-detail-badge badge-${badge.style}`} title={badge.description}><Icon name={badge.icon} size={15} />{badge.label}</span>}
                 <h1 id="product-detail-title">{product.name}</h1>
                 <a className="product-detail-rating" href="#product-reviews" aria-label={`View ratings and reviews for ${product.name}`}>
-                    <span aria-hidden="true">{reviewFeed?.summary?.count ? '★'.repeat(Math.round(reviewFeed.summary.average)) + '☆'.repeat(5 - Math.round(reviewFeed.summary.average)) : '☆☆☆☆☆'}</span>{reviewFeed?.summary?.count ? <><strong>{Number(reviewFeed.summary.average).toFixed(1)}</strong><small>{reviewFeed.summary.count} {reviewFeed.summary.count === 1 ? 'review' : 'reviews'}</small></> : <small>No reviews yet</small>}<span className="product-detail-rating-link">See reviews <Icon name="arrow" size={15} /></span>
+                    <span aria-hidden="true">{reviewFeed?.summary?.count ? 'â˜…'.repeat(Math.round(reviewFeed.summary.average)) + 'â˜†'.repeat(5 - Math.round(reviewFeed.summary.average)) : 'â˜†â˜†â˜†â˜†â˜†'}</span>{reviewFeed?.summary?.count ? <><strong>{Number(reviewFeed.summary.average).toFixed(1)}</strong><small>{reviewFeed.summary.count} {reviewFeed.summary.count === 1 ? 'review' : 'reviews'}</small></> : <small>No reviews yet</small>}<span className="product-detail-rating-link">See reviews <Icon name="arrow" size={15} /></span>
                 </a>
 
                 <div className="product-detail-price"><strong>{money(product.price)}</strong><span>/ {product.unit}</span></div>
@@ -58,7 +58,7 @@ export default function ProductDetail({ productId, products = previewProducts, r
                     {!product.sellerId && <div><dt>From</dt><dd><Icon name="pin" size={17} />{`Barangay ${product.barangay}`}</dd></div>}
                     <div><dt>Category</dt><dd>{product.category}</dd></div>
                     <div><dt>Unit</dt><dd>{product.unit}</dd></div>
-                    <div><dt>Availability</dt><dd><Icon name="check" size={17} />{product.stock ? `${product.stock} ${stockUnit(product.unit, product.stock)} available` : 'Out of stock'}</dd></div>
+                    {product.is_preorder ? <div><dt>Pre-order</dt><dd><Icon name="calendar" size={17} />{product.harvest_date ? `Expected harvest: ${product.harvest_date}` : 'Currently growing'}</dd></div> : <div><dt>Availability</dt><dd><Icon name="check" size={17} />{product.stock ? `${product.stock} ${stockUnit(product.unit, product.stock)} available` : 'Out of stock'}</dd></div>}
                 </dl>
                 {product.description && <div className="product-detail-description"><h2>About this product</h2><p>{product.description}</p></div>}
 
@@ -70,10 +70,10 @@ export default function ProductDetail({ productId, products = previewProducts, r
                             <output aria-label="Selected quantity">{selectedQuantity}</output>
                             <button type="button" aria-label="Increase quantity" disabled={selectedQuantity >= available} onClick={() => setQuantity((current) => selectedQuantity + 1)}><Icon name="plus" size={16} /></button>
                         </div>
-                        <small>{available} available to add</small>
+                        <small>{available} {product.is_preorder ? 'available to reserve' : 'available to add'}</small>
                     </div>
                     <div className="product-detail-actions">
-                        <button type="button" className="store-button" disabled={!available} onClick={addToCart}><Icon name="cart" size={19} />{available ? 'Add to cart' : product.stock === 0 ? 'Out of stock' : 'Cart limit reached'}</button>
+                        <button type="button" className="store-button" disabled={!available} onClick={addToCart}><Icon name="cart" size={19} />{available ? (product.is_preorder ? 'Reserve harvest' : 'Add to cart') : product.stock === 0 ? 'Out of stock' : 'Cart limit reached'}</button>
                         <button type="button" className={`product-detail-favorite ${favorite ? 'is-saved' : ''}`} aria-label={favorite ? `Remove ${product.name} from favorites` : `Save ${product.name} to favorites`} aria-pressed={favorite} onClick={() => toggleFavorite(product.id)}><Icon name="heart" size={20} fill={favorite ? 'currentColor' : 'none'} />{favorite ? 'Saved' : 'Save'}</button>
                     </div>
                 </div>

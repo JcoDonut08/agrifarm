@@ -24,10 +24,11 @@ export const marketHref = (barangay, sort) => `/?page=marketplace${barangay ? `&
 export const productHref = (id) => `/?page=product&product=${encodeURIComponent(id)}`;
 export const sellerHref = (id) => `/?page=seller&seller=${encodeURIComponent(id)}`;
 export const reviewHref = (id, rating = null, page = 1) => `${productHref(id)}${rating ? `&review_rating=${rating}` : ''}${page > 1 ? `&review_page=${page}` : ''}#product-reviews`;
-export const money = (value) => `₱${value.toLocaleString('en-PH', { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 })}`;
+export const money = (value) => `â‚±${value.toLocaleString('en-PH', { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 })}`;
 export const stockUnit = (unit, count) => unit === 'kg' ? 'kg' : count === 1 ? unit : ({ bunch: 'bunches', piece: 'pieces', head: 'heads', pack: 'packs' }[unit] || unit);
 
 export function getProductBadge(product) {
+    if (product.is_preorder) return { label: 'PRE-ORDER', style: 'preorder', icon: 'calendar', description: `Expected harvest: ${product.harvest_date}` };
     if (product.isBestSeller) return { label: 'Best Seller', style: 'bestseller', icon: 'trophy', description: 'Among the most ordered products from delivered sales' };
     if (product.isTrending) return { label: 'Trending', style: 'trending', icon: 'trend', description: 'Delivered walk-in orders rose this week' };
     if (product.isNew) return { label: 'New', style: 'new', icon: 'sprout', description: 'Listed within the last 7 days' };
