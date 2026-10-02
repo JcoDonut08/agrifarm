@@ -24,7 +24,7 @@ export const marketHref = (barangay, sort) => `/?page=marketplace${barangay ? `&
 export const productHref = (id) => `/?page=product&product=${encodeURIComponent(id)}`;
 export const sellerHref = (id) => `/?page=seller&seller=${encodeURIComponent(id)}`;
 export const reviewHref = (id, rating = null, page = 1) => `${productHref(id)}${rating ? `&review_rating=${rating}` : ''}${page > 1 ? `&review_page=${page}` : ''}#product-reviews`;
-export const money = (value) => `â‚±${value.toLocaleString('en-PH', { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 })}`;
+export const money = (value) => `₱${value.toLocaleString('en-PH', { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 })}`;
 export const stockUnit = (unit, count) => unit === 'kg' ? 'kg' : count === 1 ? unit : ({ bunch: 'bunches', piece: 'pieces', head: 'heads', pack: 'packs' }[unit] || unit);
 
 export function getProductBadge(product) {

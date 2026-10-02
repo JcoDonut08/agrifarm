@@ -47,7 +47,7 @@ export default function ProductCard({ product }) {
                 </div>
                 <div className="produce-price-row"><p className="produce-price">{money(product.price)} <span>/ {product.unit}</span></p><span className="product-stock">{product.stock} {stockUnit(product.unit, product.stock)} {product.is_preorder ? 'to reserve' : 'left'}</span></div>
                 <div className="produce-rating" aria-label={count ? `${rating.toFixed(1)} out of 5 stars, ${count} reviews` : 'No reviews yet'}>
-                    {count > 0 && <span className="rating-stars" aria-hidden="true"><span style={{ width: `${rating / 5 * 100}%` }}>â˜…â˜…â˜…â˜…â˜…</span>â˜…â˜…â˜…â˜…â˜…</span>}
+                    {count > 0 && <span className="rating-stars" aria-hidden="true"><span style={{ width: `${rating / 5 * 100}%` }}>★★★★★</span>★★★★★</span>}
                     {count ? <><strong>{rating.toFixed(1)}</strong><small>({count})</small></> : <small>No reviews yet</small>}
                 </div>
                 <button type="button" className={`market-add-button ${added ? 'is-added' : ''}`} disabled={atLimit} onClick={addToCart} aria-label={`Add ${product.name} to cart`}>
