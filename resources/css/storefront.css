@@ -508,9 +508,11 @@ img.review-avatar { object-fit: cover; display: block; }
 .badge-new { color: #fff; background: #106335; }
 .badge-bestseller { color: #513b09; background: #f4dfa0; }
 .badge-trending { color: #7b3516; background: #ffe0cc; }
+.badge-preorder { color: #fff; background: #097ba8; }
 .dark .badge-new { color: #d8f4df; background: #244d32; }
 .dark .badge-bestseller { color: #f5df9f; background: #514322; }
 .dark .badge-trending { color: #ffd8bd; background: #593623; }
+.dark .badge-preorder { color: #d6f2ff; background: #0c4d66; }
 .produce-price-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 8px; margin-top: 18px; }
 .produce-price-row .produce-price { margin: 0; white-space: nowrap; }
 .product-stock { font-size: 11px; font-weight: 600; color: var(--store-muted); white-space: nowrap; }
@@ -1103,6 +1105,7 @@ img.review-avatar { object-fit: cover; display: block; }
 .dark .featured-banner.has-featured-product .featured-market-link { color: #e5eddd; }
 .product-detail-badge.badge-bestseller { color: #513b09; background: #f4dfa0; }
 .product-detail-badge.badge-trending { color: #7b3516; background: #ffe0cc; }
+.badge-preorder { color: #fff; background: #097ba8; }
 .product-detail-badge.badge-new { color: white; background: #106335; }
 .dark .product-detail-badge.badge-bestseller { color: #f5df9f; background: #514322; }
 .dark .product-detail-badge.badge-trending { color: #ffd8bd; background: #593623; }
