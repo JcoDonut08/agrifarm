@@ -57,7 +57,9 @@ export function ShopProvider({ children, products = previewProducts, persist = t
     function changeQuantity(id, change) {
         setSaved((previous) => {
             const cart = { ...previous.cart };
-            const next = Math.min(products.find((product) => product.id === id)?.stock || 0, Math.max(0, (cart[id] || 0) + change));
+            const p = products.find((product) => product.id === id);
+            const maxAvailable = p ? (p.stock === 0 && p.expected_yield > 0 ? p.expected_yield : p.stock) : 0;
+            const next = Math.min(maxAvailable, Math.max(0, (cart[id] || 0) + change));
             if (next) cart[id] = next;
             else delete cart[id];
             return { ...previous, cart };
@@ -65,7 +67,9 @@ export function ShopProvider({ children, products = previewProducts, persist = t
     }
 
     function addQuantity(product, quantity) {
-        if ((saved.cart[product.id] || 0) + quantity > product.stock) {
+        const isPreorderMode = product.stock === 0 && product.expected_yield > 0;
+        const maxAvailable = isPreorderMode ? product.expected_yield : product.stock;
+        if ((saved.cart[product.id] || 0) + quantity > maxAvailable) {
             notify('You have added all available stock for this item.');
             return false;
         }

@@ -33,8 +33,10 @@ class WalkInOrderController extends Controller
 
         DB::transaction(function () use ($data, $request): void {
             $product = Product::where('user_id', $request->user()->id)->lockForUpdate()->findOrFail($data['product_id']);
-            if ($product->stock < $data['quantity']) {
-                throw ValidationException::withMessages(['quantity' => "Only {$product->stock} {$product->unit} available."]);
+            $isPreorder = $product->stock === 0 && $product->expected_yield > 0;
+            $maxAvailable = $isPreorder ? $product->expected_yield : $product->stock;
+            if ($maxAvailable < $data['quantity']) {
+                throw ValidationException::withMessages(['quantity' => "Only {$maxAvailable} {$product->unit} available."]);
             }
 
             $order = new WalkInOrder([
@@ -44,12 +46,16 @@ class WalkInOrderController extends Controller
                 'quantity' => $data['quantity'],
                 'unit_price' => $product->price,
                 'total' => number_format((float) $product->price * $data['quantity'], 2, '.', ''),
-                'status' => 'pending',
+                'status' => $isPreorder ? 'reservation' : 'pending',
             ]);
             $order->user_id = $request->user()->id;
             $order->product_id = $product->id;
             $order->save();
-            $product->decrement('stock', $data['quantity']);
+            if ($isPreorder) {
+                $product->decrement('expected_yield', $data['quantity']);
+            } else {
+                $product->decrement('stock', $data['quantity']);
+            }
         });
 
         return redirect('/seller/dashboard?section=orders')->with('status', 'Walk-in order added successfully.');

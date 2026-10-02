@@ -58,7 +58,9 @@ class CustomerCheckoutController extends Controller
             $goodsTotal = 0;
             foreach ($products as $product) {
                 $quantity = $quantities->get($product->id)['quantity'];
-                if ($product->seller?->role !== UserRole::Seller || $product->seller->account_status !== AccountStatus::Active || $product->stock < $quantity) {
+                $isPreorder = $product->stock === 0 && $product->expected_yield > 0;
+                $maxAvailable = $isPreorder ? $product->expected_yield : $product->stock;
+                if ($product->seller?->role !== UserRole::Seller || $product->seller->account_status !== AccountStatus::Active || $maxAvailable < $quantity) {
                     throw ValidationException::withMessages(['items' => "{$product->name} is no longer available in that quantity. Review your cart."]);
                 }
                 $goodsTotal += (int) round((float) $product->price * 100) * $quantity;
@@ -87,13 +89,17 @@ class CustomerCheckoutController extends Controller
                     'quantity' => $quantity,
                     'unit_price' => $product->price,
                     'total' => number_format((int) round((float) $product->price * 100) * $quantity / 100, 2, '.', ''),
-                    'status' => 'pending',
+                    'status' => $isPreorder ? 'reservation' : 'pending',
                 ]);
                 $order->user_id = $product->user_id;
                 $order->product_id = $product->id;
                 $order->customer_checkout_id = $checkout->id;
                 $order->save();
-                $product->decrement('stock', $quantity);
+                if ($isPreorder) {
+                    $product->decrement('expected_yield', $quantity);
+                } else {
+                    $product->decrement('stock', $quantity);
+                }
             }
             $checkout->update(['reference_number' => $reference]);
         });
