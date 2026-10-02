@@ -51,7 +51,7 @@ export default function ProductDetail({ productId, products = previewProducts, r
                 {badge && <span className={`product-detail-badge badge-${badge.style}`} title={badge.description}><Icon name={badge.icon} size={15} />{badge.label}</span>}
                 <h1 id="product-detail-title">{product.name}</h1>
                 <a className="product-detail-rating" href="#product-reviews" aria-label={`View ratings and reviews for ${product.name}`}>
-                    <span aria-hidden="true">{reviewFeed?.summary?.count ? 'â˜…'.repeat(Math.round(reviewFeed.summary.average)) + 'â˜†'.repeat(5 - Math.round(reviewFeed.summary.average)) : 'â˜†â˜†â˜†â˜†â˜†'}</span>{reviewFeed?.summary?.count ? <><strong>{Number(reviewFeed.summary.average).toFixed(1)}</strong><small>{reviewFeed.summary.count} {reviewFeed.summary.count === 1 ? 'review' : 'reviews'}</small></> : <small>No reviews yet</small>}<span className="product-detail-rating-link">See reviews <Icon name="arrow" size={15} /></span>
+                    <span aria-hidden="true">{reviewFeed?.summary?.count ? '★'.repeat(Math.round(reviewFeed.summary.average)) + '☆'.repeat(5 - Math.round(reviewFeed.summary.average)) : '☆☆☆☆☆'}</span>{reviewFeed?.summary?.count ? <><strong>{Number(reviewFeed.summary.average).toFixed(1)}</strong><small>{reviewFeed.summary.count} {reviewFeed.summary.count === 1 ? 'review' : 'reviews'}</small></> : <small>No reviews yet</small>}<span className="product-detail-rating-link">See reviews <Icon name="arrow" size={15} /></span>
                 </a>
 
                 <div className="product-detail-price"><strong>{money(product.price)}</strong><span>/ {product.unit}</span></div>
