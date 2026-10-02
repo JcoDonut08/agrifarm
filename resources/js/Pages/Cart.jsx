@@ -22,12 +22,16 @@ export default function Cart() {
                         <h3>{product.name}</h3>
                         {product.barangay ? <Link className="basket-grower" href={marketHref(product.barangay)}><Icon name="pin" size={14} />{product.barangay}</Link> : <span className="basket-grower"><Icon name="people" size={14} />{product.sellerName}</span>}
                         <p className="basket-unit-price">{money(product.price)} <span>/ {product.unit}</span></p>
-                        <p className="basket-stock"><Icon name="check" size={14} />{product.stock} {stockUnit(product.unit, product.stock)} available</p>
+                        {(() => {
+        const isPreorder = product.stock === 0 && product.expected_yield > 0;
+        const maxAvailable = isPreorder ? product.expected_yield : product.stock;
+        return <p className="basket-stock"><Icon name={isPreorder ? "calendar" : "check"} size={14} />{maxAvailable} {stockUnit(product.unit, maxAvailable)} {isPreorder ? 'to reserve' : 'available'}</p>;
+    })()}
                     </div>
                     <button className="basket-remove" onClick={() => changeQuantity(product.id, -cart[product.id])} aria-label={`Remove ${product.name} from cart`} title="Remove item"><Icon name="trash" size={19} /></button>
                     <div className="basket-item-bottom">
                         <button className="basket-save" onClick={() => saveForLater(product.id)} aria-label={`Save ${product.name} for later`}><Icon name="heart" size={17} />Save for later</button>
-                        <div className="basket-product-quantity"><span>Quantity</span><div className="quantity-control"><button aria-label={`Decrease ${product.name} quantity`} onClick={() => changeQuantity(product.id, -1)}><Icon name="minus" size={16} /></button><output aria-label={`${product.name} quantity`}>{cart[product.id]}</output><button aria-label={`Increase ${product.name} quantity`} disabled={cart[product.id] >= product.stock} onClick={() => changeQuantity(product.id, 1)}><Icon name="plus" size={16} /></button></div></div>
+                        <div className="basket-product-quantity"><span>Quantity</span><div className="quantity-control"><button aria-label={`Decrease ${product.name} quantity`} onClick={() => changeQuantity(product.id, -1)}><Icon name="minus" size={16} /></button><output aria-label={`${product.name} quantity`}>{cart[product.id]}</output><button aria-label={`Increase ${product.name} quantity`} disabled={cart[product.id] >= (product.stock === 0 && product.expected_yield > 0 ? product.expected_yield : product.stock)} onClick={() => changeQuantity(product.id, 1)}><Icon name="plus" size={16} /></button></div></div>
                         <div className="basket-line-total"><span>Item total</span><strong>{money(product.price * cart[product.id])}</strong></div>
                     </div>
                 </article>)}

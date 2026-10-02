@@ -325,10 +325,11 @@ export default function Orders({
             next.quantity = filipino
                 ? "Maglagay ng dami na hindi bababa sa isa."
                 : "Enter a quantity of at least one.";
-        if (selectedProduct && Number(data.quantity) > selectedProduct.stock)
+        const maxAvailable = selectedProduct ? (selectedProduct.stock === 0 && selectedProduct.expected_yield > 0 ? selectedProduct.expected_yield : selectedProduct.stock) : 0;
+        if (selectedProduct && Number(data.quantity) > maxAvailable)
             next.quantity = filipino
-                ? `${selectedProduct.stock} ${unitLabel(selectedProduct.unit, true)} na lang ang available.`
-                : `Only ${selectedProduct.stock} ${selectedProduct.unit} available.`;
+                ? `${maxAvailable} ${unitLabel(selectedProduct.unit, true)} na lang ang available.`
+                : `Only ${maxAvailable} ${selectedProduct.unit} available.`;
         setErrors(next);
         if (Object.keys(next).length || processing) return;
 
