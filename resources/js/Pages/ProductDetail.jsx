@@ -58,7 +58,7 @@ export default function ProductDetail({ productId, products = previewProducts, r
                     {!product.sellerId && <div><dt>From</dt><dd><Icon name="pin" size={17} />{`Barangay ${product.barangay}`}</dd></div>}
                     <div><dt>Category</dt><dd>{product.category}</dd></div>
                     <div><dt>Unit</dt><dd>{product.unit}</dd></div>
-                    {product.is_preorder ? <div><dt>Pre-order</dt><dd><Icon name="calendar" size={17} />{product.harvest_date ? `Expected harvest: ${product.harvest_date}` : 'Currently growing'}</dd></div> : <div><dt>Availability</dt><dd><Icon name="check" size={17} />{product.stock ? `${product.stock} ${stockUnit(product.unit, product.stock)} available` : 'Out of stock'}</dd></div>}
+                    {isPreorderMode ? <div><dt>Pre-order</dt><dd><Icon name="calendar" size={17} />{product.harvest_date ? `Expected harvest: ${product.harvest_date}` : 'Currently growing'}</dd></div> : <div><dt>Availability</dt><dd><Icon name="check" size={17} />{maxAvailable ? `${maxAvailable} ${stockUnit(product.unit, maxAvailable)} available` : 'Out of stock'}</dd></div>}
                 </dl>
                 {product.description && <div className="product-detail-description"><h2>About this product</h2><p>{product.description}</p></div>}
 
@@ -70,10 +70,10 @@ export default function ProductDetail({ productId, products = previewProducts, r
                             <output aria-label="Selected quantity">{selectedQuantity}</output>
                             <button type="button" aria-label="Increase quantity" disabled={selectedQuantity >= available} onClick={() => setQuantity((current) => selectedQuantity + 1)}><Icon name="plus" size={16} /></button>
                         </div>
-                        <small>{available} {product.is_preorder ? 'available to reserve' : 'available to add'}</small>
+                        <small>{available} {isPreorderMode ? 'available to reserve' : 'available to add'}</small>
                     </div>
                     <div className="product-detail-actions">
-                        <button type="button" className="store-button" disabled={!available} onClick={addToCart}><Icon name="cart" size={19} />{available ? (product.is_preorder ? 'Reserve harvest' : 'Add to cart') : product.stock === 0 ? 'Out of stock' : 'Cart limit reached'}</button>
+                        <button type="button" className="store-button" disabled={!available || maxAvailable === 0} onClick={addToCart}><Icon name="cart" size={19} />{available ? (isPreorderMode ? 'Reserve harvest' : 'Add to cart') : maxAvailable === 0 ? 'Out of stock' : 'Cart limit reached'}</button>
                         <button type="button" className={`product-detail-favorite ${favorite ? 'is-saved' : ''}`} aria-label={favorite ? `Remove ${product.name} from favorites` : `Save ${product.name} to favorites`} aria-pressed={favorite} onClick={() => toggleFavorite(product.id)}><Icon name="heart" size={20} fill={favorite ? 'currentColor' : 'none'} />{favorite ? 'Saved' : 'Save'}</button>
                     </div>
                 </div>

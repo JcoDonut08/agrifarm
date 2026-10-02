@@ -8,7 +8,7 @@ import { categoryLabel, localizeMessage, unitLabel } from './SellerLocale';
 import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import '../../../css/seller-products.css';
 
-const initial = { name: '', category: '', description: '', price: '', unit: 'kg', stock: '', threshold: '5', is_preorder: false, harvest_date: '' };
+const initial = { name: '', category: '', description: '', price: '', unit: 'kg', stock: '', threshold: '5',  harvest_date: '', expected_yield: '0' };
 const PRODUCTS_PER_PAGE = 8;
 export default function Products({ filipino = false }) {
     const { auth, products = [], flash } = usePage().props;
@@ -65,7 +65,7 @@ export default function Products({ filipino = false }) {
     }
     function openEdit(product) {
         setEditingProduct(product);
-        setData({ name: product.name, category: product.category, description: product.description || '', price: String(product.price), unit: product.unit, stock: String(product.stock), threshold: String(product.threshold), is_preorder: Boolean(product.is_preorder), harvest_date: product.harvest_date ? String(product.harvest_date).split('T')[0] : '' });
+        setData({ name: product.name, category: product.category, description: product.description || '', price: String(product.price), unit: product.unit, stock: String(product.stock), threshold: String(product.threshold),  harvest_date: product.harvest_date ? String(product.harvest_date).split('T')[0] : '', expected_yield: String(product.expected_yield || '0') });
         setPhoto(null);
         setErrors({});
         setEditing(true);

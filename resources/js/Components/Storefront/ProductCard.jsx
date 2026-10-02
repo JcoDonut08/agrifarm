@@ -29,7 +29,9 @@ export default function ProductCard({ product }) {
         resetAdded.current = window.setTimeout(() => setAdded(false), 1400);
     }
     const favorite = favorites.includes(product.id);
-    const atLimit = (cart[product.id] || 0) >= product.stock;
+    const isPreorderMode = product.stock === 0 && product.expected_yield > 0;
+    const maxAvailable = isPreorderMode ? product.expected_yield : product.stock;
+    const atLimit = (cart[product.id] || 0) >= maxAvailable;
     const badge = getProductBadge(product);
 
     return (
@@ -45,13 +47,13 @@ export default function ProductCard({ product }) {
                 <div className="produce-meta">
                     <span className="barangay-label"><Icon name={product.barangay ? 'pin' : 'people'} size={13} />{product.barangay || product.sellerName}</span>
                 </div>
-                <div className="produce-price-row"><p className="produce-price">{money(product.price)} <span>/ {product.unit}</span></p><span className="product-stock">{product.stock} {stockUnit(product.unit, product.stock)} {product.is_preorder ? 'to reserve' : 'left'}</span></div>
+                <div className="produce-price-row"><p className="produce-price">{money(product.price)} <span>/ {product.unit}</span></p><span className="product-stock">{maxAvailable} {stockUnit(product.unit, maxAvailable)} {isPreorderMode ? 'to reserve' : 'left'}</span></div>
                 <div className="produce-rating" aria-label={count ? `${rating.toFixed(1)} out of 5 stars, ${count} reviews` : 'No reviews yet'}>
                     {count > 0 && <span className="rating-stars" aria-hidden="true"><span style={{ width: `${rating / 5 * 100}%` }}>★★★★★</span>★★★★★</span>}
                     {count ? <><strong>{rating.toFixed(1)}</strong><small>({count})</small></> : <small>No reviews yet</small>}
                 </div>
-                <button type="button" className={`market-add-button ${added ? 'is-added' : ''}`} disabled={atLimit} onClick={addToCart} aria-label={`Add ${product.name} to cart`}>
-                    <span key={addAnimation} className={added ? 'add-feedback' : ''}><Icon name={added ? 'check' : 'cart'} size={17} />{added ? (product.is_preorder ? 'Reserved' : 'Added to cart') : product.stock === 0 ? 'Out of stock' : atLimit ? 'Limit reached' : (product.is_preorder ? 'Reserve' : 'Add to cart')}</span>
+                <button type="button" className={`market-add-button ${added ? 'is-added' : ''}`} disabled={atLimit || maxAvailable === 0} onClick={addToCart} aria-label={`Add ${product.name} to cart`}>
+                    <span key={addAnimation} className={added ? 'add-feedback' : ''}><Icon name={added ? 'check' : 'cart'} size={17} />{added ? (isPreorderMode ? 'Reserved' : 'Added to cart') : maxAvailable === 0 ? 'Out of stock' : atLimit ? 'Limit reached' : (isPreorderMode ? 'Reserve' : 'Add to cart')}</span>
                 </button>
             </div>
         </article>

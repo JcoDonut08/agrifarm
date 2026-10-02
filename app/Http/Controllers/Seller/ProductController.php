@@ -121,7 +121,7 @@ class ProductController extends Controller
             'unit' => ['required', Rule::in(self::UNITS)],
             'stock' => ['required', 'integer', 'min:0', 'max:1000000'],
             'threshold' => ['required', 'integer', 'min:0', 'max:1000000'],
-            'is_preorder' => ['nullable', 'boolean'],
+            'expected_yield' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'harvest_date' => ['nullable', 'date', 'after_or_equal:today'],
             'photo' => [$photoRequired ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240', 'dimensions:max_width=6000,max_height=6000'],
         ]);

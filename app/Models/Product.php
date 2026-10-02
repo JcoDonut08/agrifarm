@@ -11,7 +11,7 @@ class Product extends Model
 {
     use Searchable;
 
-    protected $fillable = ['name', 'category', 'description', 'price', 'unit', 'stock', 'is_preorder', 'harvest_date', 'threshold', 'photo_path'];
+    protected $fillable = ['name', 'category', 'description', 'price', 'unit', 'stock', 'expected_yield', 'harvest_date', 'threshold', 'photo_path'];
 
     protected $hidden = ['photo_path'];
 
@@ -20,7 +20,7 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'is_preorder' => 'boolean',
+            'expected_yield' => 'integer',
             'harvest_date' => 'date',
         ];
         return ['price' => 'decimal:2', 'stock' => 'integer', 'threshold' => 'integer'];
