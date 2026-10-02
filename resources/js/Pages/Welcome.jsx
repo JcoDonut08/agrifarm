@@ -35,7 +35,7 @@ export default function Welcome() {
     const accountDestination = user
         ? ({ customer: '/customer', seller: '/seller/dashboard', cenro_admin: '/admin/dashboard' }[user.role] || '/')
         : '/register';    const metaTitle = { marketplace: 'Marketplace', cart: 'Your cart', checkout: 'Checkout', 'order-success': 'Order placed', favorites: 'Favorites', notifications: 'Notifications', product: selectedProduct?.name || 'Product not found', seller: props.sellerProfile?.name || 'Seller not found' }[page] || (filipino ? 'Sariwa mula sa iyong komunidad' : 'Fresh from your community');
-    const metaDescription = page === 'product' && selectedProduct ? `${selectedProduct.name} - Ã¢â€šÂ±${selectedProduct.price}. ${selectedProduct.description || 'Grown locally in Pasig.'}` : page === 'seller' && props.sellerProfile ? `Shop fresh harvests from ${props.sellerProfile.name} in Barangay ${props.sellerProfile.barangay || 'Pasig'}. Support urban farmers.` : 'Discover fresh produce grown by your neighbors. Support local Pasig City urban farmers directly through the AgriFarm marketplace.';
+    const metaDescription = page === 'product' && selectedProduct ? `${selectedProduct.name} - ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${selectedProduct.price}. ${selectedProduct.description || 'Grown locally in Pasig.'}` : page === 'seller' && props.sellerProfile ? `Shop fresh harvests from ${props.sellerProfile.name} in Barangay ${props.sellerProfile.barangay || 'Pasig'}. Support urban farmers.` : 'Discover fresh produce grown by your neighbors. Support local Pasig City urban farmers directly through the AgriFarm marketplace.';
     const metaImage = page === 'product' && selectedProduct?.photo_url ? selectedProduct.photo_url : page === 'seller' && props.sellerProfile?.avatarUrl ? props.sellerProfile.avatarUrl : '/images/market-hero-v2.png';
 
     return (
@@ -62,9 +62,9 @@ export default function Welcome() {
                         
                         <div className="store-container hero-inner modern-hero-inner">
                             <div className="hero-copy modern-hero-copy">
-                                <h1 id="hero-heading">{filipino ? 'Sariwang ani, ' : 'Farm-fresh produce, '} <br/>{filipino ? 'direkta sa Pasig.' : 'grown right here in Pasig.'}</h1>
+                                <h1 id="hero-heading">{filipino ? 'Sariwang ani,' : 'Fresh produce,'} <br/>{filipino ? 'laking Pasig.' : 'grown in Pasig.'}</h1>
                                 <p className="hero-description modern-hero-desc">
-                                    {filipino ? 'Huwag nang pumunta sa supermarket. Bumili ng sariwa at malusog na gulay na direktang inani mula sa iyong mga paboritong urban farmers sa Pasig.' : 'Skip the supermarket. Buy healthy, freshly-harvested greens directly from your neighborhood urban farmers.'}
+                                    {filipino ? 'Bumili ng malusog at bagong aning gulay direkta mula sa iyong mga lokal na urban farmers.' : 'Buy healthy, freshly-harvested greens directly from your neighborhood urban farmers.'}
                                 </p>
                                 <Link href={marketHref()} className="store-button modern-hero-btn">
                                     {filipino ? 'Mamili Ngayon' : 'Shop the Harvest'} <Icon name="arrow" />
@@ -108,7 +108,7 @@ export default function Welcome() {
                         <section className={`featured-banner ${bestBarangayProduct ? 'has-featured-product' : ''}`} aria-labelledby="featured-heading">
                             {!bestBarangayProduct && <div className="featured-photo" role="img" aria-label="Fresh leafy produce from a local garden" />}
                             <div className="featured-copy">
-                                <p className="featured-eyebrow"><Icon name="trophy" size={25} /> {bestBarangay ? 'BEST BARANGAY' : 'BEST BARANGAY Ãƒâ€šÃ‚Â· RANKING PENDING'}</p>
+                                <p className="featured-eyebrow"><Icon name="trophy" size={25} /> {bestBarangay ? 'BEST BARANGAY' : 'BEST BARANGAY ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· RANKING PENDING'}</p>
                                 <h2 id="featured-heading">{bestBarangay ? `Barangay ${bestBarangay.name}` : (filipino ? 'Sariwang komunidad, sabay-sabay umaasenso' : 'Fresh communities, growing together')}</h2>
                                 <p>{bestBarangay ? `${money(bestBarangay.deliveredRevenue)} ${filipino ? 'mula sa' : 'from'} ${bestBarangay.deliveredOrderCount} ${filipino ? 'naihatid na' : 'delivered'} ${bestBarangay.deliveredOrderCount === 1 ? 'order' : (filipino ? 'order' : 'orders')}.` : (filipino ? 'Lilitaw ang nangungunang barangay kapag may mga naihatid nang order.' : 'The leading barangay will appear after orders are delivered.')}</p>
                                 <div className="featured-actions"><Link className="store-button white-button" href={bestBarangayProduct ? productHref(bestBarangayProduct.id) : marketHref()}>{bestBarangayProduct ? (filipino ? 'Tingnan ang produkto' : 'View featured product') : 'Browse marketplace'} <Icon name="arrow" /></Link>{bestBarangay && <Link className="featured-market-link" href={marketHref(bestBarangay.name)}>{filipino ? 'Bumili sa' : 'Shop'} {bestBarangay.name} <Icon name="arrow" size={17} /></Link>}</div>
