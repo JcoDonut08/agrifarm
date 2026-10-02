@@ -10,7 +10,12 @@ function readSaved(products, preserveUnknown = false) {
         const ids = new Set(products.map((product) => product.id));
         return {
             favorites: Array.isArray(saved.favorites) ? [...new Set(saved.favorites.filter((id) => preserveUnknown || ids.has(id)))] : [],
-            cart: Object.fromEntries(Object.entries(saved.cart || {}).filter(([id, quantity]) => (preserveUnknown || ids.has(id)) && Number.isInteger(quantity) && quantity > 0).map(([id, quantity]) => [id, preserveUnknown ? quantity : Math.min(quantity, products.find((product) => product.id === id).stock)])),
+            cart: Object.fromEntries(Object.entries(saved.cart || {}).filter(([id, quantity]) => (preserveUnknown || ids.has(id)) && Number.isInteger(quantity) && quantity > 0).map(([id, quantity]) => {
+            if (preserveUnknown) return [id, quantity];
+            const p = products.find((product) => product.id === id);
+            const maxAvailable = p ? (p.stock === 0 && p.expected_yield > 0 ? p.expected_yield : p.stock) : 0;
+            return [id, Math.min(quantity, maxAvailable)];
+        })),
         };
     } catch {
         return { favorites: [], cart: {} };
@@ -43,7 +48,11 @@ export function ShopProvider({ children, products = previewProducts, persist = t
         const available = new Map(products.map((product) => [product.id, product]));
         setSaved((previous) => {
             const favorites = previous.favorites.filter((id) => available.has(id));
-            const cart = Object.fromEntries(Object.entries(previous.cart).map(([id, quantity]) => [id, Math.min(quantity, available.get(id)?.stock || 0)]).filter(([, quantity]) => quantity > 0));
+            const cart = Object.fromEntries(Object.entries(previous.cart).map(([id, quantity]) => {
+                const p = available.get(id);
+                const maxAvailable = p ? (p.stock === 0 && p.expected_yield > 0 ? p.expected_yield : p.stock) : 0;
+                return [id, Math.min(quantity, maxAvailable)];
+            }).filter(([, quantity]) => quantity > 0));
             return favorites.length === previous.favorites.length && JSON.stringify(cart) === JSON.stringify(previous.cart) ? previous : { favorites, cart };
         });
     }, [products, persist]);
