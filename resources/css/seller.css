@@ -2322,13 +2322,58 @@
         max-width: 150px;
     }
 }
+
+/* Kuya Ani mascot in weather scene */
+.kuya-ani {
+    animation: kuyaAniBob 2.5s ease-in-out infinite alternate;
+}
+.kuya-ani-head { fill: #c08b5c; }
+.kuya-ani-eye { fill: #2b1a0e; }
+.kuya-ani-smile { fill: none; stroke: #5e3a1a; stroke-width: 1; stroke-linecap: round; }
+.kuya-ani-shirt { fill: #2d8a4e; stroke: #1a5e32; stroke-width: 0.5; }
+.kuya-ani-pants { fill: #3a3632; }
+.kuya-ani-boots { fill: #5c3a22; }
+.kuya-ani-arm { fill: none; stroke: #c08b5c; stroke-width: 3; stroke-linecap: round; }
+.kuya-ani-hand { fill: #c08b5c; }
+.kuya-ani-hat ellipse { fill: #d4a745; stroke: #9c7a2e; stroke-width: 0.5; }
+.kuya-ani-hat path { fill: #c49935; stroke: #9c7a2e; stroke-width: 0.5; }
+.kuya-ani-umbrella-pole { fill: none; stroke: #5e3a22; stroke-width: 2; }
+.kuya-ani-umbrella { fill: #c44; stroke: #922; stroke-width: 0.5; }
+.kuya-ani-can { fill: none; stroke: #8fb; stroke-width: 2; stroke-linejoin: round; }
+.kuya-ani-water path { fill: none; stroke: #7ecef4; stroke-width: 1.5; stroke-linecap: round; animation: kuyaAniWater 0.8s ease-in-out infinite alternate; }
+.kuya-ani-water path:nth-child(2) { animation-delay: -0.3s; }
+.kuya-ani-water path:nth-child(3) { animation-delay: -0.6s; }
+.kuya-ani-lantern { fill: #e8a93e; stroke: #b07320; stroke-width: 0.5; }
+.kuya-ani-lantern-glow { fill: #ffe78a; opacity: 0.9; animation: kuyaAniGlow 1.5s ease-in-out infinite alternate; }
+.kuya-ani-lantern-handle { fill: none; stroke: #b07320; stroke-width: 1; }
+.is-clear .kuya-ani-arm { animation: kuyaAniWave 1s ease-in-out infinite alternate; transform-origin: 7px 20px; }
+@keyframes kuyaAniBob {
+    0% { transform: translate(158px, 148px); }
+    100% { transform: translate(158px, 146px); }
+}
+@keyframes kuyaAniWave {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-12deg); }
+}
+@keyframes kuyaAniWater {
+    0% { opacity: 0.4; transform: translateY(0); }
+    100% { opacity: 1; transform: translateY(2px); }
+}
+@keyframes kuyaAniGlow {
+    0% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
 @media (prefers-reduced-motion: reduce) {
     .farm-sun circle:last-child,
     .farm-clouds,
     .farm-plant,
     .farm-rain > g,
     .farm-lightning,
-    .farm-fog {
+    .farm-fog,
+    .kuya-ani,
+    .kuya-ani-water path,
+    .kuya-ani-lantern-glow,
+    .is-clear .kuya-ani-arm {
         animation: none;
     }
 }
