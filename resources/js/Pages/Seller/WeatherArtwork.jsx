@@ -8,58 +8,10 @@ function weatherKind(weather) {
     return 'cloudy';
 }
 
-function KuyaAni({ kind }) {
-    /* Kuya Ani: a small farmer mascot standing near the shed.
-       Body: brown skin, green shirt, dark pants, straw hat.
-       Pose changes by weather condition. */
-    const wet = ['rain', 'storm'].includes(kind);
-    return <g className="kuya-ani" transform="translate(158 148)">
-        {/* Legs */}
-        <path className="kuya-ani-pants" d="M-3 30l-2 14h4l2-14ZM3 30l2 14h4l-2-14Z" />
-        {/* Boots */}
-        <path className="kuya-ani-boots" d="M-6 43h6v3h-8ZM4 43h6v3h-8Z" />
-        {/* Body / shirt */}
-        <path className="kuya-ani-shirt" d="M-7 16c0-3 3-5 7-5s7 2 7 5v14h-14Z" />
-        {/* Arms + accessory */}
-        {wet ? <>
-            {/* Holding umbrella */}
-            <path className="kuya-ani-arm" d="M-7 20l-5-3M7 20l1-12" />
-            {/* Umbrella */}
-            <path className="kuya-ani-umbrella-pole" d="M8 8V-18" />
-            <path className="kuya-ani-umbrella" d="M-6-18c0-12 28-12 28 0Z" />
-        </> : kind === 'clear' ? <>
-            {/* Waving hand */}
-            <path className="kuya-ani-arm" d="M-7 20l-5 6M7 18l8-10" />
-            {/* Waving hand circle */}
-            <circle className="kuya-ani-hand" cx="15" cy="8" r="2.5" />
-        </> : kind === 'fog' ? <>
-            {/* Holding lantern */}
-            <path className="kuya-ani-arm" d="M-7 20l-5 6M7 20l6 2" />
-            {/* Lantern */}
-            <rect className="kuya-ani-lantern" x="11" y="19" width="6" height="8" rx="1" />
-            <circle className="kuya-ani-lantern-glow" cx="14" cy="23" r="2" />
-            <path className="kuya-ani-lantern-handle" d="M12 19c0-3 4-3 4 0" />
-        </> : <>
-            {/* Watering can */}
-            <path className="kuya-ani-arm" d="M-7 20l-5 6M7 20l7 0" />
-            <path className="kuya-ani-can" d="M13 17h9v7h-9ZM22 18l5-4" />
-            {/* Water drops from can */}
-            <g className="kuya-ani-water"><path d="M26 16l1-2M28 15l1-3M30 16l1-2" /></g>
-        </>}
-        {/* Head */}
-        <circle className="kuya-ani-head" cx="0" cy="6" r="7" />
-        {/* Face */}
-        <circle className="kuya-ani-eye" cx="-2.5" cy="5" r="1" />
-        <circle className="kuya-ani-eye" cx="2.5" cy="5" r="1" />
-        <path className="kuya-ani-smile" d="M-2 8c1 2 3 2 4 0" />
-        {/* Hat */}
-        {wet
-            ? null /* No hat, umbrella covers him */
-            : <g className="kuya-ani-hat">
-                <ellipse cx="0" cy="-1" rx="10" ry="2.5" />
-                <path d="M-6-1c0-6 12-6 12 0" />
-            </g>}
-    </g>;
+function kuyaAniImage(kind) {
+    if (['rain', 'storm'].includes(kind)) return '/images/kuya-ani-weather-rain.jpg';
+    if (kind === 'clear') return '/images/kuya-ani-weather-clear.jpg';
+    return '/images/kuya-ani-weather-cloudy.jpg';
 }
 
 export function WeatherSymbol({ weather, size = 48 }) {
@@ -143,7 +95,6 @@ export function WeatherScene({ weather, label, filipino = false }) {
                 <path className="farm-shed-trim" d="M84 181h70M119 129v-10" />
                 <circle className="farm-door-handle" cx="128" cy="183" r="1.5" />
             </g>
-            <KuyaAni kind={kind} />
             <g className="farm-beds">
                 <path className="farm-bed" d="m186 177 163-19 101 34-176 18Z" />
                 <path className="farm-bed" d="m419 174 120-14 112 32-129 18Z" />
@@ -171,6 +122,7 @@ export function WeatherScene({ weather, label, filipino = false }) {
             {kind === 'storm' && <path className="farm-lightning" d="m365 18-24 42h19l-13 39 43-54h-22l18-27Z" />}
             {kind === 'fog' && <g className="farm-fog"><path d="M20 79h230M310 57h285M420 99h270" /></g>}
         </svg>
+        <img className="kuya-ani-overlay" src={kuyaAniImage(kind)} alt="Kuya Ani" aria-hidden="true" />
         <span className="agrifarm-weather-scene-caption"><strong>{filipino ? 'Lagay ng urban farm' : 'Urban farm conditions'}</strong><small>{filipino ? (wet ? 'Takpan ang mga inaning produkto at suriin ang daluyan ng tubig.' : 'Gamitin ang taya sa pagpaplano ng pagdidilig at pag-aani.') : (wet ? 'Keep harvested produce covered and check drainage.' : 'Use the outlook to plan watering and harvest work.')}</small></span>
     </div>;
 }
