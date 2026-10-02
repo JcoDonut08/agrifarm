@@ -35,7 +35,7 @@ export default function Welcome() {
     const accountDestination = user
         ? ({ customer: '/customer', seller: '/seller/dashboard', cenro_admin: '/admin/dashboard' }[user.role] || '/')
         : '/register';    const metaTitle = { marketplace: 'Marketplace', cart: 'Your cart', checkout: 'Checkout', 'order-success': 'Order placed', favorites: 'Favorites', notifications: 'Notifications', product: selectedProduct?.name || 'Product not found', seller: props.sellerProfile?.name || 'Seller not found' }[page] || (filipino ? 'Sariwa mula sa iyong komunidad' : 'Fresh from your community');
-    const metaDescription = page === 'product' && selectedProduct ? `${selectedProduct.name} - ₱${selectedProduct.price}. ${selectedProduct.description || 'Grown locally in Pasig.'}` : page === 'seller' && props.sellerProfile ? `Shop fresh harvests from ${props.sellerProfile.name} in Barangay ${props.sellerProfile.barangay || 'Pasig'}. Support urban farmers.` : 'Discover fresh produce grown by your neighbors. Support local Pasig City urban farmers directly through the AgriFarm marketplace.';
+    const metaDescription = page === 'product' && selectedProduct ? `${selectedProduct.name} - Ã¢â€šÂ±${selectedProduct.price}. ${selectedProduct.description || 'Grown locally in Pasig.'}` : page === 'seller' && props.sellerProfile ? `Shop fresh harvests from ${props.sellerProfile.name} in Barangay ${props.sellerProfile.barangay || 'Pasig'}. Support urban farmers.` : 'Discover fresh produce grown by your neighbors. Support local Pasig City urban farmers directly through the AgriFarm marketplace.';
     const metaImage = page === 'product' && selectedProduct?.photo_url ? selectedProduct.photo_url : page === 'seller' && props.sellerProfile?.avatarUrl ? props.sellerProfile.avatarUrl : '/images/market-hero-v2.png';
 
     return (
@@ -51,29 +51,30 @@ export default function Welcome() {
                     <meta name="twitter:card" content="summary_large_image" />
                 </Head>
                 {page === 'product' ? <ProductDetail productId={productId} products={listings} reviewFeed={props.reviewFeed} user={user} /> : page === 'seller' ? <SellerStorefront profile={props.sellerProfile} /> : page === 'checkout' || page === 'order-success' ? <Checkout order={props.checkoutOrder} successPage={page === 'order-success'} /> : ExtraPage ? <ExtraPage /> : market ? <Marketplace key={url} products={listings} hasSellerProducts={hasSellerProducts} serverResults={props.marketplaceResults} initialBarangay={query.get('barangay') || ''} initialSort={query.get('sort') || ''} /> : <>
-                    <section className="home-hero" aria-labelledby="hero-heading">
+                                        <section className="home-hero modern-hero" aria-labelledby="hero-heading">
                         <img
-                            className="hero-photo"
-                            src="/images/market-hero-v2.png"
-                            alt="A basket of fresh leafy greens, tomatoes, carrots, and eggplants in a sunny community garden"
+                            className="hero-photo modern-hero-photo"
+                            src="/images/pasig-urban-garden.jpg"
+                            alt="A vibrant community garden in Pasig"
                             fetchPriority="high"
                         />
-                        <div className="hero-copy-surface" aria-hidden="true" />
-                        <div className="hero-foliage" aria-hidden="true"><i /><i /><i /><i /><i /></div>
-                        <div className="store-container hero-inner">
-                            <div className="hero-copy">
-                                <h1 id="hero-heading">Fresh from<br />your community.</h1>
-                                <p className="hero-description">Shop locally grown produce.<br />Support the farmers of Pasig.</p>
-                                <Link href={marketHref()} className="store-button hero-button">
-                                    Explore marketplace <Icon name="arrow" />
+                        <div className="modern-hero-overlay" aria-hidden="true" />
+                        
+                        <div className="store-container hero-inner modern-hero-inner">
+                            <div className="hero-copy modern-hero-copy">
+                                <h1 id="hero-heading">{filipino ? 'Sariwang ani, ' : 'Farm-fresh produce, '} <br/>{filipino ? 'direkta sa Pasig.' : 'grown right here in Pasig.'}</h1>
+                                <p className="hero-description modern-hero-desc">
+                                    {filipino ? 'Huwag nang pumunta sa supermarket. Bumili ng sariwa at malusog na gulay na direktang inani mula sa iyong mga paboritong urban farmers sa Pasig.' : 'Skip the supermarket. Buy healthy, freshly-harvested greens directly from your neighborhood urban farmers.'}
+                                </p>
+                                <Link href={marketHref()} className="store-button modern-hero-btn">
+                                    {filipino ? 'Mamili Ngayon' : 'Shop the Harvest'} <Icon name="arrow" />
                                 </Link>
-                                <div className="hero-values">
-                                    <div><Icon name="sprout" /><span>Local farmers</span></div>
-                                    <div><Icon name="people" /><span>Stronger communities</span></div>
-                                    <div><Icon name="leaf" /><span>A greener tomorrow</span></div>
+                                <div className="hero-values modern-hero-values">
+                                    <div><Icon name="leaf" /><span>{filipino ? '100% Lokal' : '100% Locally Grown'}</span></div>
+                                    <div><Icon name="sprout" /><span>{filipino ? 'Anihin Ngayong Araw' : 'Same-day Harvest'}</span></div>
+                                    <div><Icon name="people" /><span>{filipino ? 'Suportahan ang Pasig' : 'Support Pasig Farmers'}</span></div>
                                 </div>
                             </div>
-                            <span className="hero-handwriting" aria-hidden="true">Good<br />Food &hearts;<br />Brighter<br />Pasig &hearts;</span>
                         </div>
                     </section>
                     <div className="store-container home-content">
@@ -107,7 +108,7 @@ export default function Welcome() {
                         <section className={`featured-banner ${bestBarangayProduct ? 'has-featured-product' : ''}`} aria-labelledby="featured-heading">
                             {!bestBarangayProduct && <div className="featured-photo" role="img" aria-label="Fresh leafy produce from a local garden" />}
                             <div className="featured-copy">
-                                <p className="featured-eyebrow"><Icon name="trophy" size={25} /> {bestBarangay ? 'BEST BARANGAY' : 'BEST BARANGAY Â· RANKING PENDING'}</p>
+                                <p className="featured-eyebrow"><Icon name="trophy" size={25} /> {bestBarangay ? 'BEST BARANGAY' : 'BEST BARANGAY Ãƒâ€šÃ‚Â· RANKING PENDING'}</p>
                                 <h2 id="featured-heading">{bestBarangay ? `Barangay ${bestBarangay.name}` : (filipino ? 'Sariwang komunidad, sabay-sabay umaasenso' : 'Fresh communities, growing together')}</h2>
                                 <p>{bestBarangay ? `${money(bestBarangay.deliveredRevenue)} ${filipino ? 'mula sa' : 'from'} ${bestBarangay.deliveredOrderCount} ${filipino ? 'naihatid na' : 'delivered'} ${bestBarangay.deliveredOrderCount === 1 ? 'order' : (filipino ? 'order' : 'orders')}.` : (filipino ? 'Lilitaw ang nangungunang barangay kapag may mga naihatid nang order.' : 'The leading barangay will appear after orders are delivered.')}</p>
                                 <div className="featured-actions"><Link className="store-button white-button" href={bestBarangayProduct ? productHref(bestBarangayProduct.id) : marketHref()}>{bestBarangayProduct ? (filipino ? 'Tingnan ang produkto' : 'View featured product') : 'Browse marketplace'} <Icon name="arrow" /></Link>{bestBarangay && <Link className="featured-market-link" href={marketHref(bestBarangay.name)}>{filipino ? 'Bumili sa' : 'Shop'} {bestBarangay.name} <Icon name="arrow" size={17} /></Link>}</div>
