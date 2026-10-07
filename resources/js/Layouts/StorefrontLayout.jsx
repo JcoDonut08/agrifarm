@@ -69,8 +69,8 @@ export default function StorefrontLayout({ children, market }) {
                         </nav>
                     </div>
                     <div className="store-footer-bottom">
-                        <p>ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© {new Date().getFullYear()} AgriFarm</p>
-                        {pathname === '/' && !props.sellerProducts?.length && <p className="sample-note">Design preview ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· Sample products, stock and prices</p>}
+                        <p>© {new Date().getFullYear()} AgriFarm</p>
+                        {pathname === '/' && !props.sellerProducts?.length && <p className="sample-note">Design preview · Sample products, stock and prices</p>}
                         <nav aria-label="Legal information"><Link href="/terms">{filipino ? 'Mga Tuntunin sa Paggamit' : 'Terms of use'}</Link><Link href="/privacy">{filipino ? 'Patakaran sa Pagkapribado' : 'Privacy policy'}</Link></nav>
                     </div>
                 </div>
@@ -111,4 +111,3 @@ function ShopDialog() {
         </dialog>
     );
 }
-

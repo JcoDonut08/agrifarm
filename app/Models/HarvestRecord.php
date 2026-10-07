@@ -11,6 +11,7 @@ class HarvestRecord extends Model
         'product_id',
         'product_name',
         'quantity',
+        'measured_weight_kg',
         'unit',
         'harvest_date',
         'notes',
@@ -20,6 +21,7 @@ class HarvestRecord extends Model
     {
         return [
             'quantity' => 'decimal:3',
+            'measured_weight_kg' => 'decimal:3',
             'harvest_date' => 'date',
         ];
     }

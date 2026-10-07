@@ -1,0 +1,162 @@
+{
+  "Kamatis": {
+    "days_to_harvest": 75,
+    "growth_class": "standard",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Planning estimate from field planting; nursery time is separate.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Talong": {
+    "days_to_harvest": 75,
+    "growth_class": "standard",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Planning estimate from field planting; nursery time is separate.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Okra": {
+    "days_to_harvest": 60,
+    "growth_class": "standard",
+    "source_url": "https://ati2.da.gov.ph/ati-car/content/sites/default/files/2022-12/okra_production_flyer_.pdf",
+    "timing_note": "Planning estimate from sowing; actual first picking depends on variety.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Kangkong": {
+    "days_to_harvest": 30,
+    "growth_class": "fast",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Provisional planning estimate from sowing; validate with local growers.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Pechay": {
+    "days_to_harvest": 30,
+    "growth_class": "fast",
+    "source_url": "https://ati2.da.gov.ph/ati-car/content/sites/default/files/2022-12/pechay_production_for_urban_gardening_leaflet.pdf",
+    "timing_note": "Lower end of the guide's 30–40 days after sowing.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Mustasa": {
+    "days_to_harvest": 35,
+    "growth_class": "fast",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Provisional planning estimate from sowing; validate with local growers.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Kalabasa": {
+    "days_to_harvest": 90,
+    "growth_class": "standard",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Planning estimate for mature squash, rather than young fruits.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Ampalaya": {
+    "days_to_harvest": 45,
+    "growth_class": "fast",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Guide indicates first harvest from 45 days after planting.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Sitaw": {
+    "days_to_harvest": 50,
+    "growth_class": "standard",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Planning estimate from sowing.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Sili": {
+    "days_to_harvest": 90,
+    "growth_class": "standard",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Planning estimate from field planting; nursery time is separate.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Alugbati": {
+    "days_to_harvest": 45,
+    "growth_class": "fast",
+    "source_url": "https://hvcdp.da.gov.ph/wp-content/uploads/2022/05/Indigenous-Vegetables-Guide.pdf",
+    "timing_note": "Planning estimate for first leafy harvest.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Lettuce": {
+    "days_to_harvest": 55,
+    "growth_class": "standard",
+    "source_url": "https://ati2.da.gov.ph/ati-car/content/features/green-romance-romaine-lettuce-production-cloud-capped-mountains-bauko",
+    "timing_note": "Midpoint of reported 50–60 days after transplanting (romaine); variety and Pasig conditions differ.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Labanos": {
+    "days_to_harvest": 45,
+    "growth_class": "fast",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Provisional planning estimate from sowing; validate with local growers.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Patola": {
+    "days_to_harvest": 60,
+    "growth_class": "standard",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+    "timing_note": "Planning estimate from sowing; guide describes fruit maturity, not a fixed crop duration.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Gabi": {
+    "days_to_harvest": 180,
+    "growth_class": "long",
+    "source_url": null,
+    "timing_note": "Provisional planning estimate for corm harvest; verify variety and planting material with CENRO.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Saluyot": {
+    "days_to_harvest": 45,
+    "growth_class": "fast",
+    "source_url": "https://hvcdp.da.gov.ph/wp-content/uploads/2022/05/Indigenous-Vegetables-Guide.pdf",
+    "timing_note": "Midpoint of the guide's 30–60 days after planting.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Spinach": {
+    "days_to_harvest": 40,
+    "growth_class": "fast",
+    "source_url": null,
+    "timing_note": "Provisional estimate; confirm species (true spinach versus local leafy substitutes) before use.",
+    "planning_estimate": true,
+    "recommendable": false
+  },
+  "Kalamansi": {
+    "days_to_harvest": 548,
+    "growth_class": "long",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/calamansi_final.pdf",
+    "timing_note": "Approximate 18 months for a newly planted tree; excluded from a one-year planting shortlist. Existing trees differ.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Luya": {
+    "days_to_harvest": 270,
+    "growth_class": "long",
+    "source_url": "https://ati2.da.gov.ph/ati-main/content/features/ginger-does-it-ring-bell",
+    "timing_note": "Nine-month mature-rhizome planning estimate; young ginger may be harvested earlier.",
+    "planning_estimate": true,
+    "recommendable": true
+  },
+  "Malunggay": {
+    "days_to_harvest": 180,
+    "growth_class": "long",
+    "source_url": "https://hvcdp.da.gov.ph/wp-content/uploads/2022/05/Indigenous-Vegetables-Guide.pdf",
+    "timing_note": "Provisional first-leaf-harvest estimate for a newly established plant; propagation method changes timing.",
+    "planning_estimate": true,
+    "recommendable": true
+  }
+}

@@ -13,7 +13,9 @@ use App\Http\Controllers\CustomerCheckoutController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
+use App\Http\Controllers\Seller\ForecastController;
 use App\Http\Controllers\Seller\HarvestRecordController;
+use App\Http\Controllers\Seller\PlantingPlanController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\ProfileController;
 use App\Http\Controllers\Seller\TemporaryPasswordController;
@@ -99,6 +101,10 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         Route::get('/seller/products/{product}/photo', [ProductController::class, 'photo'])->name('seller.products.photo');
         Route::post('/seller/profile/photo', [ProfileController::class, 'photo'])->middleware('throttle:10,1')->name('seller.profile.photo');
         Route::get('/seller/profile/photo', [ProfileController::class, 'showPhoto']);
+        Route::post('/seller/forecasting', [ForecastController::class, 'store'])->middleware('throttle:seller-forecast-uploads')->name('seller.forecasting.store');
+        Route::get('/seller/forecasting/sample', [ForecastController::class, 'sample'])->name('seller.forecasting.sample');
+        Route::post('/seller/planting-plans', [PlantingPlanController::class, 'store'])->middleware('throttle:30,1')->name('seller.planting-plans.store');
+        Route::delete('/seller/planting-plans/{plantingPlan}', [PlantingPlanController::class, 'destroy'])->middleware('throttle:30,1')->name('seller.planting-plans.destroy');
         Route::delete('/seller/profile/photo', [ProfileController::class, 'removePhoto']);
         Route::patch('/seller/profile', [ProfileController::class, 'update'])->middleware('throttle:6,1')->name('seller.profile.update');
         Route::put('/seller/password', [ProfileController::class, 'password'])->middleware('throttle:6,1')->name('seller.password.update');
@@ -119,6 +125,8 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         Route::patch('/admin/tasks/{adminTask}', [AdminTaskController::class, 'update'])->name('admin.tasks.update');
         Route::delete('/admin/tasks/{adminTask}', [AdminTaskController::class, 'destroy'])->name('admin.tasks.destroy');
         Route::delete('/admin/reports/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
+        Route::get('/admin/reports/harvest-forecast/preview', [\App\Http\Controllers\Admin\HarvestForecastExportController::class, 'preview'])->name('admin.harvest-forecast.preview');
+        Route::get('/admin/reports/harvest-forecast/download', [\App\Http\Controllers\Admin\HarvestForecastExportController::class, 'download'])->name('admin.harvest-forecast.download');
 
         Route::post('/admin/products/{product}/delist', [AdminProductController::class, 'delist'])->name('admin.products.delist');
         Route::post('/admin/products/{product}/relist', [AdminProductController::class, 'relist'])->name('admin.products.relist');

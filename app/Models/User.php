@@ -78,6 +78,18 @@ class User extends Authenticatable implements MustVerifyEmailContract
         return $this->hasMany(HarvestRecord::class);
     }
 
+    /** @return HasMany<ForecastRun, $this> */
+    public function forecastRuns(): HasMany
+    {
+        return $this->hasMany(ForecastRun::class);
+    }
+
+    /** @return HasMany<PlantingPlan, $this> */
+    public function plantingPlans(): HasMany
+    {
+        return $this->hasMany(PlantingPlan::class);
+    }
+
     /**
      * @return HasMany<AdminTask, $this>
      */

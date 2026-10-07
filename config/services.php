@@ -57,6 +57,12 @@ return [
         'stale_minutes' => env('GOOGLE_WEATHER_STALE_MINUTES', 60),
     ],
 
+    'forecasting' => [
+        'python_bin' => env('FORECAST_PYTHON_BIN') ?: base_path(PHP_OS_FAMILY === 'Windows' ? 'python/.venv/Scripts/python.exe' : 'python/.venv/bin/python'),
+        'timeout' => (int) env('FORECAST_TIMEOUT', 180),
+        'tuning_seconds' => (int) env('FORECAST_TUNING_SECONDS', 30),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

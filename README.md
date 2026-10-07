@@ -1,6 +1,6 @@
 # AgriFarm
 
-AgriFarm is a Laravel 12 + React 19/Inertia marketplace for Pasig barangay sellers. It includes role-based authentication, seller inventory and order tools, a database-backed customer storefront, public seller shops, customer reviews, and Cash on Delivery orders. Online payments and forecasting remain deferred.
+AgriFarm is a Laravel 12 + React 19/Inertia marketplace for Pasig barangay sellers. It includes role-based authentication, seller inventory and order tools, a database-backed customer storefront, public seller shops, customer reviews, and Cash on Delivery orders. Online payments remain deferred.
 
 ## Stack
 
@@ -89,6 +89,9 @@ PHP tests use isolated SQLite. Playwright uses `database/playwright.sqlite`, see
 - React owns presentation and transient UI state through Inertia.
 - Use Eloquent directly; add a service only for multi-step workflows or transactions.
 - Public registration always creates a customer; seller/admin accounts are seeded or administered.
-- Deferred work: online payment processing, automated delivery-fee calculation, forecasting-service integration, production reporting, and deployment.
+- Harvest forecasting uses a local Python runtime and saves each seller's latest result. Recommendation cards show planting and harvest months, approximate growing times, and an action to save/remove crops in a seller-owned planting plan. See [SARIMA setup and deployment](docs/SARIMA%20Deployment.md) for Python installation, limits, and `php artisan forecast:check`.
+- Admin Reports previews actual monthly kilogram totals for one barangay and downloads forecasting-ready Excel or CSV files. For harvests in pieces/bunches, farmers can enter the measured total weight in kg in Record Harvest or Edit. Farmers upload either file through Generate; saved results retain the barangay and record coverage. See the [SARIMA Barangay Harvest Data Plan](docs/SARIMA%20Barangay%20Harvest%20Data%20Plan.md).
+- Deferred work: online payment processing, automated delivery-fee calculation, production reporting, and deployment.
+- Planting recommendations use aggregate completed sales from the relevant barangay, preferring past harvest-month sales when available and recent activity otherwise. Current stock stays separate by unit; sparse selling records leave ranks unchanged. This adds planning context without predicting future sales or profit.
 
 See [architecture](docs/architecture.md), [storefront behavior](docs/storefront-preview.md), and the [design system](docs/design-system.md) before changing those areas.

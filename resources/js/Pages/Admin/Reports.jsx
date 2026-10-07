@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MapPinned, Sprout, Users } from "lucide-react";
 import Icon from "../../Components/Storefront/Icon";
 import Pagination from "../Seller/Pagination";
+import HarvestForecastExport from "./HarvestForecastExport";
 import "../../../css/seller-reports.css";
 
 const DAY = 86400000;
@@ -102,6 +103,7 @@ export default function AdminReports({
     walkInOrders = [],
     sellers = [],
     pendingRegistrations = [],
+    barangays = [],
     filipino = false,
 }) {
     const today = useMemo(() => new Date(), []);
@@ -228,6 +230,9 @@ export default function AdminReports({
     const format = reportType ? formats[reportType] : "pdf";
     const reportPageCount = Math.max(1, Math.ceil(report.rows.length / REPORT_ROWS_PER_PAGE));
     const visibleReportRows = report.rows.slice((previewPage - 1) * REPORT_ROWS_PER_PAGE, previewPage * REPORT_ROWS_PER_PAGE);
+    const reportNote = filipino
+        ? "Opisyal na ulat ng AgriFarm para sa Pasig CENRO. Batay sa datos na nasa sistema noong ginawa ang ulat."
+        : "Official AgriFarm report for Pasig CENRO. Based on data available in the system at the time of generation.";
 
     useEffect(() => { if (previewPage > reportPageCount) setPreviewPage(reportPageCount); }, [previewPage, reportPageCount]);
 
@@ -237,7 +242,7 @@ export default function AdminReports({
     const exportReport = async () => {
         const slug = report.title.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
         const fileStem = `agrifarm-cenro-${slug}-${from}-to-${to}`;
-        const note = "Official AgriFarm report for Pasig CENRO. Based on data available in the system at the time of generation.";
+        const note = reportNote;
         setIsExporting(true);
         try {
             if (format === "csv") {
@@ -344,6 +349,8 @@ export default function AdminReports({
                 </div>
             </section>
 
+            <HarvestForecastExport barangays={barangays} from={from} to={to} filipino={filipino} />
+
             <section className="report-card-grid" aria-label={filipino ? "Mga uri ng ulat" : "Report types"}>
                 {Object.entries(reportChoices).map(([key, choice]) => (
                     <article key={key} className={`report-option-card report-option-card--${key}${reportType === key ? " is-generated" : ""}`}>
@@ -374,7 +381,7 @@ export default function AdminReports({
                 <section className="report-preview-section" aria-labelledby="admin-report-preview-heading">
                     <div className="report-preview-toolbar">
                         <div>
-                            <span>Live preview</span>
+                            <span>{filipino ? "Preview ng ulat" : "Live preview"}</span>
                             <h2 id="admin-report-preview-heading">{report.title}</h2>
                         </div>
                         <button type="button" disabled={isExporting} onClick={exportReport}>
@@ -402,18 +409,15 @@ export default function AdminReports({
                                         <tr key={`${row[0]}-${(previewPage-1)*REPORT_ROWS_PER_PAGE+ri}`}>
                                             {row.map((cell, i) => <td key={i}>{cell}</td>)}
                                         </tr>
-                                    )) : (
-                                        <tr><td className="report-no-data" colSpan={report.headers.length}>{filipino ? "Walang datos para sa napiling panahon." : "No data found for the selected period."}</td></tr>
-                                    )}
+                                    )) : null}
                                 </tbody>
                             </table>
                         </div>
-                        <footer>Official AgriFarm report for Pasig CENRO. Based on data available in the system at the time of generation.</footer>
+                        {!report.rows.length && <p className="report-empty-message">{filipino ? "Walang datos para sa napiling panahon." : "No data found for the selected period."}</p>}
+                        <footer>{reportNote}</footer>
                     </article>
                 </section>
             )}
         </div>
     );
 }
-
-

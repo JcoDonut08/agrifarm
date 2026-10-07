@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\User;
 use App\Models\WalkInOrder;
+use App\Services\ForecastRecommendationService;
 use App\Services\WeatherService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -32,6 +33,9 @@ class DashboardController extends Controller
             ? ProductReview::query()->whereIn('product_id', $products->pluck('id'))->selectRaw('COUNT(*) as review_count, AVG(rating) as average_rating')->first()
             : null;
         $orders = $shouldLoad('orders') ? $this->ordersFor($request) : collect();
+        $forecastRun = $shouldLoad('forecastData') || $shouldLoad('forecastRun')
+            ? $request->user()->forecastRuns()->latest('id')->first()
+            : null;
 
         return Inertia::render('Seller/Dashboard', [
             'products' => $products,
@@ -42,6 +46,21 @@ class DashboardController extends Controller
                 'average' => $rating?->average_rating !== null ? round((float) $rating->average_rating, 1) : null,
             ],
             'weather' => $shouldLoad('weather') ? $weatherService->current() : null,
+            'forecastData' => $forecastRun ? app(ForecastRecommendationService::class)->recommend($forecastRun->result, seller: $request->user()) : null,
+            'forecastRun' => $forecastRun ? [
+                'source_filename' => $forecastRun->source_filename,
+                'created_at' => $forecastRun->created_at->toIso8601String(),
+            ] : null,
+            'plantingPlans' => $shouldLoad('plantingPlans')
+                ? $request->user()->plantingPlans()->orderByDesc('planting_month')->latest('id')->get()
+                    ->map(fn ($plan) => [
+                        'id' => $plan->id,
+                        'crop' => $plan->crop,
+                        'planting_month' => $plan->planting_month->format('Y-m'),
+                        'harvest_month' => $plan->harvest_month->format('Y-m'),
+                        'days_to_harvest' => $plan->days_to_harvest,
+                    ])
+                : [],
         ]);
     }
 

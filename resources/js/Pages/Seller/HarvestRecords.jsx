@@ -8,7 +8,7 @@ import Pagination from './Pagination';
 import '../../../css/seller-harvest-records.css';
 
 const UNITS = ['kg', 'bunch', 'piece', 'head', 'pack'];
-const UNIT_DEFAULTS = { kg: 'kg', g: 'g', piece: 'pieces', pieces: 'pieces', bunch: 'bunches', bunches: 'bunches', crate: 'crates', crates: 'crates', sack: 'sacks', sacks: 'sacks', tray: 'trays', trays: 'trays', box: 'boxes', boxes: 'boxes' };
+const UNIT_DEFAULTS = { kg: 'kg', piece: 'piece', pieces: 'piece', bunch: 'bunch', bunches: 'bunch', head: 'head', heads: 'head', pack: 'pack', packs: 'pack' };
 const RECORDS_PER_PAGE = 8;
 
 function today() {
@@ -19,22 +19,22 @@ function today() {
 
 function initialForm(products) {
     const product = products[0];
-    return { product_id: product ? String(product.id) : '', quantity: '', unit: product ? defaultUnit(product.unit) : 'kg', harvest_date: today(), notes: '' };
+    return { product_id: product ? String(product.id) : '', quantity: '', unit: product ? defaultUnit(product.unit) : 'kg', measured_weight_kg: '', harvest_date: today(), notes: '' };
 }
 
 function defaultUnit(unit) {
-    return UNIT_DEFAULTS[unit] || 'other';
+    return UNIT_DEFAULTS[unit] || '';
 }
 
 function formatQuantity(value) {
     const quantity = Number(value);
-    return Number.isFinite(quantity) ? new Intl.NumberFormat('en-PH', { maximumFractionDigits: 3 }).format(quantity) : 'â€”';
+    return Number.isFinite(quantity) ? new Intl.NumberFormat('en-PH', { maximumFractionDigits: 3 }).format(quantity) : '—';
 }
 
 function formatDate(value) {
-    if (!value) return 'â€”';
+    if (!value) return '—';
     const date = new Date(`${String(value).slice(0, 10)}T12:00:00`);
-    return Number.isNaN(date.getTime()) ? 'â€”' : new Intl.DateTimeFormat('en-PH', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+    return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat('en-PH', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
 }
 
 function ProductIdentity({ productId, productName, products, detail = false }) {
@@ -116,6 +116,7 @@ export default function HarvestRecords({ products = [], harvestRecords = [], fil
             product_id: String(record.product_id || ''),
             quantity: String(record.quantity),
             unit: record.unit,
+            measured_weight_kg: record.measured_weight_kg ?? '',
             harvest_date: String(record.harvest_date).slice(0, 10),
             notes: record.notes || '',
         } : initialForm(products));
@@ -123,12 +124,12 @@ export default function HarvestRecords({ products = [], harvestRecords = [], fil
         setEditorOpen(true);
     }
     function updateForm(key, value) {
-        setForm(current => ({ ...current, [key]: value }));
+        setForm(current => ({ ...current, [key]: value, ...(key === 'unit' && value !== current.unit ? { measured_weight_kg: '' } : {}) }));
         setErrors(current => ({ ...current, [key]: undefined }));
     }
     function chooseProduct(productId) {
         const product = products.find(item => String(item.id) === productId);
-        setForm(current => ({ ...current, product_id: productId, unit: product ? defaultUnit(product.unit) : current.unit }));
+        setForm(current => ({ ...current, product_id: productId, unit: product ? defaultUnit(product.unit) : current.unit, measured_weight_kg: '' }));
         setErrors(current => ({ ...current, product_id: undefined }));
     }
                         async function submit(event) {
@@ -137,6 +138,9 @@ export default function HarvestRecords({ products = [], harvestRecords = [], fil
         if (!form.product_id) nextErrors.product_id = 'Choose one of your existing products.';
         if (!form.quantity || !Number.isFinite(Number(form.quantity)) || Number(form.quantity) <= 0) nextErrors.quantity = 'Enter a harvested quantity greater than zero.';
         if (!form.unit) nextErrors.unit = 'Choose a unit.';
+        if (form.unit !== 'kg' && form.measured_weight_kg !== '' && (!Number.isFinite(Number(form.measured_weight_kg)) || Number(form.measured_weight_kg) <= 0)) {
+            nextErrors.measured_weight_kg = filipino ? 'Ilagay ang aktuwal na kabuuang timbang na higit sa 0 kg.' : 'Enter the measured total weight greater than 0 kg.';
+        }
         if (!form.harvest_date) nextErrors.harvest_date = 'Choose the harvest date.';
         if (form.harvest_date && form.harvest_date > today()) nextErrors.harvest_date = 'Harvest date cannot be in the future.';
         if (Object.keys(nextErrors).length) { setErrors(nextErrors); return; }
@@ -149,7 +153,7 @@ export default function HarvestRecords({ products = [], harvestRecords = [], fil
         const csrfToken = match ? decodeURIComponent(match[2]) : '';
 
         // Safest way for PHP to handle PATCH bodies is to send as POST with _method
-        const payload = { ...form };
+        const payload = { ...form, measured_weight_kg: form.unit === 'kg' || form.measured_weight_kg === '' ? null : form.measured_weight_kg, language: filipino ? 'filipino' : 'english' };
         if (method === 'PATCH') {
             payload._method = 'PATCH';
         }
@@ -230,7 +234,7 @@ export default function HarvestRecords({ products = [], harvestRecords = [], fil
         <div className="seller-stats harvest-stat-grid" aria-label="Harvest record summary">
             <article className="seller-stat seller-stat--sales harvest-stat"><div className="seller-stat-heading"><h2>{filipino ? 'Kabuuang tala ng ani' : 'Total Harvest Records'}</h2><span className="seller-stat-icon"><Icon name="receipt" /></span></div><strong className="seller-stat-value">{harvestRecords.length}</strong><p>{filipino ? 'Aktuwal na tala ng ani' : 'Actual harvest entries'}</p></article>
             <article className="seller-stat seller-stat--sales harvest-stat"><div className="seller-stat-heading"><h2>{filipino ? 'Mga produktong inani' : 'Products Harvested'}</h2><span className="seller-stat-icon"><Icon name="leaf" /></span></div><strong className="seller-stat-value">{new Set(harvestRecords.map(record => record.product_id || record.product_name)).size}</strong><p>{filipino ? 'Magkakaibang produktong may tala' : 'Distinct products recorded'}</p></article>
-            <article className="seller-stat seller-stat--sales harvest-stat"><div className="seller-stat-heading"><h2>{filipino ? 'Pinakahuling ani' : 'Latest Harvest'}</h2><span className="seller-stat-icon"><Icon name="sprout" /></span></div><strong className="seller-stat-value harvest-stat-date">{latestRecord ? formatDate(latestRecord.harvest_date) : 'â€”'}</strong><p>{latestRecord ? latestRecord.product_name : (filipino ? 'Wala pang tala' : 'No records yet')}</p></article>
+            <article className="seller-stat seller-stat--sales harvest-stat"><div className="seller-stat-heading"><h2>{filipino ? 'Pinakahuling ani' : 'Latest Harvest'}</h2><span className="seller-stat-icon"><Icon name="sprout" /></span></div><strong className="seller-stat-value harvest-stat-date">{latestRecord ? formatDate(latestRecord.harvest_date) : '—'}</strong><p>{latestRecord ? latestRecord.product_name : (filipino ? 'Wala pang tala' : 'No records yet')}</p></article>
         </div>
 
         <section className="seller-panel harvest-history-panel" aria-labelledby="harvest-history-title">
@@ -250,11 +254,70 @@ export default function HarvestRecords({ products = [], harvestRecords = [], fil
             {summary.length ? <div className="seller-table-wrap harvest-table-wrap"><table><thead><tr><th>Product</th><th>Total Recorded</th><th>Unit</th><th>Last Harvest</th></tr></thead><tbody>{summary.map(row => <tr key={`${row.product_name}-${row.unit}`}><td data-label="Product"><ProductIdentity productId={row.product_id} productName={row.product_name} products={productsById} /></td><td data-label="Total Recorded"><strong className="harvest-quantity">{formatQuantity(row.quantity)}</strong></td><td data-label="Unit"><span className="harvest-unit">{row.unit}</span></td><td data-label="Last Harvest"><time dateTime={row.harvest_date}>{formatDate(row.harvest_date)}</time></td></tr>)}</tbody></table></div> : <div className="harvest-summary-empty"><Icon name="leaf" /><p>{filipino ? 'Lalabas dito ang mga kabuuan sa sandaling may tala ng ani.' : 'Totals will appear here once harvest records are available.'}</p></div>}
         </section>
 
-        <dialog ref={editor} className="harvest-dialog" aria-labelledby="record-harvest-title" onCancel={event => { event.preventDefault(); closeEditor(); }} onClick={event => { if (!processing && event.target === editor.current) closeEditor(); }}><div className="harvest-dialog-heading"><div><h2 id="record-harvest-title">{editingRecord ? 'Edit Harvest Record' : (filipino ? 'Itala ang ani' : 'Record Harvest')}</h2><p>{editingRecord ? 'Update this actual harvest entry. Available inventory remains unchanged.' : (filipino ? 'Gumawa ng tala mula sa aktuwal na ani, hindi mula sa available na stock.' : 'Create a record from an actual harvest, not from available inventory.')}</p></div><button type="button" className="seller-icon-button" onClick={closeEditor} disabled={processing} aria-label="Close record harvest form"><Icon name="close" /></button></div><form onSubmit={submit} noValidate><fieldset disabled={processing}><div className="harvest-form-grid"><label><span>Product</span><select id="harvest-product" value={form.product_id} onChange={event => chooseProduct(event.target.value)} aria-invalid={Boolean(errors.product_id)} required><option value="">Select a product</option>{products.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}</select>{errors.product_id && <small role="alert">{errors.product_id}</small>}</label><label><span>Quantity</span><input type="number" min="0.001" max="999999999.999" step="0.001" inputMode="decimal" value={form.quantity} onChange={event => updateForm('quantity', event.target.value)} placeholder="0" aria-invalid={Boolean(errors.quantity)} required />{errors.quantity && <small role="alert">{errors.quantity}</small>}</label><label><span>Unit</span><select value={form.unit} onChange={event => updateForm('unit', event.target.value)} aria-invalid={Boolean(errors.unit)} required>{UNITS.map(unit => <option key={unit} value={unit}>{unit}</option>)}</select>{errors.unit ? <small role="alert">{errors.unit}</small> : <em>Defaults to the productâ€™s selling unit when available.</em>}</label><label><span>Harvest Date</span><input type="date" max={today()} value={form.harvest_date} onChange={event => updateForm('harvest_date', event.target.value)} aria-invalid={Boolean(errors.harvest_date)} required />{errors.harvest_date && <small role="alert">{errors.harvest_date}</small>}</label><label className="harvest-notes"><span>Notes <i>(optional)</i></span><textarea rows="4" maxLength="1000" value={form.notes} onChange={event => updateForm('notes', event.target.value)} placeholder="Optional notes about the harvest, condition, or other details" />{errors.notes && <small role="alert">{errors.notes}</small>}</label></div></fieldset><div className="harvest-form-actions"><button type="button" className="seller-outline-button" onClick={closeEditor} disabled={processing}>Cancel</button><button className="seller-save-button" disabled={processing || !products.length}>{processing ? 'Savingâ€¦' : (editingRecord ? 'Save changes' : 'Save Harvest Record')}</button></div></form></dialog>
+        <dialog ref={editor} className="harvest-dialog" aria-labelledby="record-harvest-title"
+            onCancel={event => { event.preventDefault(); closeEditor(); }}
+            onClick={event => { if (!processing && event.target === editor.current) closeEditor(); }}>
+            <div className="harvest-dialog-heading">
+                <div><h2 id="record-harvest-title">{editingRecord ? (filipino ? 'I-edit ang tala ng ani' : 'Edit Harvest Record') : (filipino ? 'Itala ang ani' : 'Record Harvest')}</h2>
+                    <p>{editingRecord ? (filipino ? 'I-update ang tala ng aktuwal na ani.' : 'Update this actual harvest entry. Available inventory remains unchanged.') : (filipino ? 'Gumawa ng tala mula sa aktuwal na ani, hindi mula sa available na stock.' : 'Create a record from an actual harvest, not from available inventory.')}</p></div>
+                <button type="button" className="seller-icon-button" onClick={closeEditor} disabled={processing} aria-label={filipino ? 'Isara ang form ng ani' : 'Close record harvest form'}><Icon name="close" /></button>
+            </div>
+            <form onSubmit={submit} noValidate>
+                <fieldset disabled={processing}><div className="harvest-form-grid">
+                    <label><span>{filipino ? 'Produkto' : 'Product'}</span>
+                        <select id="harvest-product" value={form.product_id} onChange={event => chooseProduct(event.target.value)} aria-invalid={Boolean(errors.product_id)} required>
+                            <option value="">{filipino ? 'Pumili ng produkto' : 'Select a product'}</option>
+                            {products.map(product => <option key={product.id} value={product.id}>{product.name}</option>)}
+                        </select>{errors.product_id && <small role="alert">{errors.product_id}</small>}
+                    </label>
+                    <label><span>{filipino ? 'Dami' : 'Quantity'}</span>
+                        <input type="number" min="0.001" max="999999999.999" step="0.001" inputMode="decimal" value={form.quantity} onChange={event => updateForm('quantity', event.target.value)} placeholder="0" aria-invalid={Boolean(errors.quantity)} required />
+                        {errors.quantity && <small role="alert">{errors.quantity}</small>}
+                    </label>
+                    <label><span>{filipino ? 'Yunit' : 'Unit'}</span>
+                        <select value={form.unit} onChange={event => updateForm('unit', event.target.value)} aria-invalid={Boolean(errors.unit)} required>
+                            <option value="">{filipino ? 'Pumili ng yunit' : 'Choose a unit'}</option>
+                            {[...UNITS, ...(editingRecord && !UNITS.includes(editingRecord.unit) ? [editingRecord.unit] : [])].map(unit => <option key={unit} value={unit}>{unitLabel(unit, filipino)}</option>)}
+                        </select>
+                        {errors.unit ? <small role="alert">{errors.unit}</small> : <em>{filipino ? 'Gamit ang yunit ng produkto kung mayroon.' : 'Defaults to the product’s selling unit when available.'}</em>}
+                    </label>
+                    <label><span>{filipino ? 'Petsa ng ani' : 'Harvest Date'}</span>
+                        <input type="date" max={today()} value={form.harvest_date} onChange={event => updateForm('harvest_date', event.target.value)} aria-invalid={Boolean(errors.harvest_date)} required />
+                        {errors.harvest_date && <small role="alert">{errors.harvest_date}</small>}
+                    </label>
+                    {form.unit && form.unit !== 'kg' && <label className="harvest-weight">
+                        <span>{filipino ? 'Kabuuang timbang ng ani (kg)' : 'Total harvest weight (kg)'} <i>{filipino ? '(opsyonal)' : '(optional)'}</i></span>
+                        <input type="number" min="0.001" max="999999999.999" step="0.001" inputMode="decimal" value={form.measured_weight_kg}
+                            onChange={event => updateForm('measured_weight_kg', event.target.value)} placeholder={filipino ? 'Hal. 5' : 'e.g. 5'}
+                            aria-invalid={Boolean(errors.measured_weight_kg)} aria-describedby="harvest-weight-help" />
+                        <em id="harvest-weight-help">{filipino ? 'Timbangin ang buong ani para sa pagtataya.' : 'Weigh the whole harvest for forecasting.'}</em>
+                        {errors.measured_weight_kg && <small role="alert">{errors.measured_weight_kg}</small>}
+                    </label>}
+                    <label className="harvest-notes"><span>{filipino ? 'Mga tala' : 'Notes'} <i>{filipino ? '(opsyonal)' : '(optional)'}</i></span>
+                        <textarea rows="4" maxLength="1000" value={form.notes} onChange={event => updateForm('notes', event.target.value)} placeholder={filipino ? 'Karagdagang tala tungkol sa ani' : 'Optional notes about the harvest, condition, or other details'} />
+                        {errors.notes && <small role="alert">{errors.notes}</small>}
+                    </label>
+                </div></fieldset>
+                <div className="harvest-form-actions">
+                    <button type="button" className="seller-outline-button" onClick={closeEditor} disabled={processing}>{filipino ? 'Kanselahin' : 'Cancel'}</button>
+                    <button className="seller-save-button" disabled={processing || !products.length}>{processing ? (filipino ? 'Sine-save…' : 'Saving…') : editingRecord ? (filipino ? 'I-save ang pagbabago' : 'Save changes') : (filipino ? 'I-save ang tala ng ani' : 'Save Harvest Record')}</button>
+                </div>
+            </form>
+        </dialog>
 
-        <ConfirmationDialog open={Boolean(deleteTarget)} title="Delete harvest record?" description={deleteTarget ? `Delete the ${formatQuantity(deleteTarget.quantity)} ${deleteTarget.unit} record for ${deleteTarget.product_name}? This cannot be undone.` : ''} confirmLabel="Delete record" cancelLabel="Keep record" workingLabel="Deletingâ€¦" busy={deleting} onConfirm={deleteRecord} onCancel={() => setDeleteTarget(null)} />
+        <ConfirmationDialog open={Boolean(deleteTarget)} title={filipino ? 'Burahin ang tala ng ani?' : 'Delete harvest record?'} description={deleteTarget ? (filipino ? `Burahin ang tala ng ${formatQuantity(deleteTarget.quantity)} ${unitLabel(deleteTarget.unit, true)} para sa ${deleteTarget.product_name}? Hindi ito maibabalik.` : `Delete the ${formatQuantity(deleteTarget.quantity)} ${unitLabel(deleteTarget.unit, false)} record for ${deleteTarget.product_name}? This cannot be undone.`) : ''} confirmLabel={filipino ? 'Burahin ang tala' : 'Delete record'} cancelLabel={filipino ? 'Panatilihin ang tala' : 'Keep record'} workingLabel={filipino ? 'Binubura…' : 'Deleting…'} busy={deleting} onConfirm={deleteRecord} onCancel={() => setDeleteTarget(null)} />
 
-        <dialog ref={detail} className="harvest-dialog harvest-detail-dialog" aria-labelledby="harvest-detail-title" onCancel={() => setViewing(null)}>{viewing && <><div className="harvest-dialog-heading"><div><h2 id="harvest-detail-title">Harvest Record</h2><p>Recorded harvest details</p></div><button type="button" className="seller-icon-button" onClick={() => setViewing(null)} aria-label="Close harvest details"><Icon name="close" /></button></div><dl><div><dt>Product</dt><dd>{viewing.product_name}</dd></div><div><dt>Harvest date</dt><dd>{formatDate(viewing.harvest_date)}</dd></div><div><dt>Quantity</dt><dd>{formatQuantity(viewing.quantity)} {viewing.unit}</dd></div><div><dt>Status</dt><dd><span className="harvest-status"><Icon name="check" size={14} />Recorded</span></dd></div><div className="harvest-detail-notes"><dt>Notes</dt><dd>{viewing.notes || 'No notes were added.'}</dd></div></dl></>}</dialog>
+        <dialog ref={detail} className="harvest-dialog harvest-detail-dialog" aria-labelledby="harvest-detail-title" onCancel={() => setViewing(null)}>{viewing && <>
+            <div className="harvest-dialog-heading"><div><h2 id="harvest-detail-title">{filipino ? 'Tala ng ani' : 'Harvest Record'}</h2><p>{filipino ? 'Detalye ng naitalang ani' : 'Recorded harvest details'}</p></div><button type="button" className="seller-icon-button" onClick={() => setViewing(null)} aria-label={filipino ? 'Isara ang detalye ng ani' : 'Close harvest details'}><Icon name="close" /></button></div>
+            <dl>
+                <div><dt>{filipino ? 'Produkto' : 'Product'}</dt><dd>{viewing.product_name}</dd></div>
+                <div><dt>{filipino ? 'Petsa ng ani' : 'Harvest date'}</dt><dd>{formatDate(viewing.harvest_date)}</dd></div>
+                <div><dt>{filipino ? 'Dami' : 'Quantity'}</dt><dd>{formatQuantity(viewing.quantity)} {unitLabel(viewing.unit, filipino)}</dd></div>
+                {viewing.unit !== 'kg' && viewing.measured_weight_kg !== null && viewing.measured_weight_kg !== undefined && <div><dt>{filipino ? 'Kabuuang timbang ng ani' : 'Total harvest weight'}</dt><dd>{formatQuantity(viewing.measured_weight_kg)} kg</dd></div>}
+                <div><dt>{filipino ? 'Katayuan' : 'Status'}</dt><dd><span className="harvest-status"><Icon name="check" size={14} />{filipino ? 'Naitala' : 'Recorded'}</span></dd></div>
+                <div className="harvest-detail-notes"><dt>{filipino ? 'Mga tala' : 'Notes'}</dt><dd>{viewing.notes || (filipino ? 'Walang karagdagang tala.' : 'No notes were added.')}</dd></div>
+            </dl>
+        </>}</dialog>
                                 {successModalMessage && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
                 <div className="bg-[#1C211A] border border-[#2D3629] rounded-2xl p-8 max-w-sm w-full mx-4 shadow-xl transform scale-100 transition-all text-center animate-modal-pop">

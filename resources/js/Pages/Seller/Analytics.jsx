@@ -86,7 +86,7 @@ function rangeLabel(range, filipino) {
         day: "numeric",
         year: "numeric",
     });
-    return `${formatter.format(range.start)} â€“ ${formatter.format(addDays(range.end, -1))}`;
+    return `${formatter.format(range.start)} – ${formatter.format(addDays(range.end, -1))}`;
 }
 
 function makeTrendPoints(range, period, filipino) {
@@ -145,7 +145,7 @@ function makeTrendPoints(range, period, filipino) {
                     ? new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", {
                           weekday: "short",
                       }).format(start)
-                    : `${start.getDate()}â€“${addDays(end, -1).getDate()}`,
+                    : `${start.getDate()}–${addDays(end, -1).getDate()}`,
             start,
             end,
             value: 0,
@@ -925,7 +925,7 @@ export default function Analytics({
                                                 </td>
                                                 <td>
                                                     {product.stock === undefined
-                                                        ? "â€”"
+                                                        ? "—"
                                                         : `${product.stock} ${unitLabel(product.unit, filipino)}`}
                                                 </td>
                                             </tr>

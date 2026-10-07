@@ -1,0 +1,82 @@
+{
+  "Kamatis": {
+    "rain": 2,
+    "heat": 7
+  },
+  "Talong": {
+    "rain": 5,
+    "heat": 9
+  },
+  "Okra": {
+    "rain": 7,
+    "heat": 10
+  },
+  "Kangkong": {
+    "rain": 10,
+    "heat": 8
+  },
+  "Pechay": {
+    "rain": 2,
+    "heat": 4
+  },
+  "Mustasa": {
+    "rain": 3,
+    "heat": 5
+  },
+  "Kalabasa": {
+    "rain": 4,
+    "heat": 8
+  },
+  "Ampalaya": {
+    "rain": 5,
+    "heat": 8
+  },
+  "Sitaw": {
+    "rain": 4,
+    "heat": 8
+  },
+  "Sili": {
+    "rain": 5,
+    "heat": 9
+  },
+  "Alugbati": {
+    "rain": 6,
+    "heat": 10
+  },
+  "Lettuce": {
+    "rain": 1,
+    "heat": 2
+  },
+  "Labanos": {
+    "rain": 4,
+    "heat": 6
+  },
+  "Patola": {
+    "rain": 6,
+    "heat": 8
+  },
+  "Gabi": {
+    "rain": 9,
+    "heat": 7
+  },
+  "Saluyot": {
+    "rain": 8,
+    "heat": 9
+  },
+  "Spinach": {
+    "rain": 3,
+    "heat": 5
+  },
+  "Kalamansi": {
+    "rain": 7,
+    "heat": 8
+  },
+  "Luya": {
+    "rain": 6,
+    "heat": 7
+  },
+  "Malunggay": {
+    "rain": 9,
+    "heat": 10
+  }
+}

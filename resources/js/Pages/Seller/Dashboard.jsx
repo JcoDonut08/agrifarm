@@ -13,6 +13,7 @@ import Settings from "./Settings";
 import Analytics from "./Analytics";
 import Reports from "./Reports";
 import HarvestRecords from "./HarvestRecords";
+import Forecasting from "./Forecasting";
 import {
     formatMoney,
     getDashboardMetrics,
@@ -47,7 +48,7 @@ const sectionLabels = {
     Products: "Mga Produkto",
     Orders: "Mga Order",
     "Harvest Records": "Mga Talaan ng Ani",
-    Forecasting: "Taya ng Panahon",
+    Forecasting: "Pagtataya ng Ani",
     Analytics: "Pagsusuri",
     Reports: "Mga Ulat",
     "Store Profile": "Profile ng Tindahan",
@@ -272,7 +273,7 @@ export default function Dashboard() {
     };
     return (
         <div className="seller-app">
-            <Head title={`${name} Â· AgriFarm`} />
+            <Head title={`${name} · AgriFarm`} />
             <aside className="seller-sidebar">
                 <div className="seller-brand">
                     <AppMark storefront href="/seller/dashboard" />
@@ -331,8 +332,8 @@ export default function Dashboard() {
                             <strong>{name}</strong>
                             <span>
                                 {filipino
-                                    ? "Katuwang na barangay Â· Pasig City"
-                                    : "Partner barangay Â· Pasig City"}
+                                    ? "Katuwang na barangay · Pasig City"
+                                    : "Partner barangay · Pasig City"}
                             </span>
                         </div>
                     </div>
@@ -425,7 +426,7 @@ export default function Dashboard() {
                                             ? Number(
                                                   reviewSummary.average,
                                               ).toFixed(1)
-                                            : "â€”",
+                                            : "—",
                                         rating: reviewSummary.count
                                             ? Number(reviewSummary.average)
                                             : 0,
@@ -530,6 +531,8 @@ export default function Dashboard() {
                             harvestRecords={harvestRecords}
                             filipino={filipino}
                         />
+                    ) : section === "Forecasting" ? (
+                        <Forecasting filipino={filipino} />
                     ) : section === "Analytics" ? (
                         <Analytics
                             products={products}
@@ -604,7 +607,7 @@ export default function Dashboard() {
                         </>
                     )}
                     <footer className="seller-footer">
-                        AgriFarm Â·{" "}
+                        AgriFarm ·{" "}
                         {filipino ? "Katuwang na barangay" : "Partner barangay"}
                     </footer>
                 </main>

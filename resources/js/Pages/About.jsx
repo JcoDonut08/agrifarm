@@ -108,7 +108,7 @@ function AboutPage() {
                 <div className="about-banner-break">
                     <img src="/images/agrifarm-market-hero.png" alt="Fresh harvest background" className="banner-bg" />
                     <div className="banner-content">
-                        <h2>{filipino ? 'Sariwang Ani Mula Sa Kapwa Mo PasigueÃ±o' : 'Fresh Harvests From Your Neighbors'}</h2>
+                        <h2>{filipino ? 'Sariwang Ani Mula Sa Kapwa Mo Pasigueño' : 'Fresh Harvests From Your Neighbors'}</h2>
                     </div>
                 </div>
 

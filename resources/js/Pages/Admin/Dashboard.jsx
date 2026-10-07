@@ -330,7 +330,7 @@ export default function Dashboard() {
 
     return (
         <div className="admin-app">
-            <Head title={`${section} Â· Pasig CENRO`} />
+            <Head title={`${section} · Pasig CENRO`} />
 
             <aside className="admin-sidebar">
                 <div className="admin-brand">
@@ -485,6 +485,7 @@ export default function Dashboard() {
                             walkInOrders={reportData.walkInOrders ?? []}
                             sellers={reportData.sellers ?? []}
                             pendingRegistrations={reportData.pendingRegistrations ?? []}
+                            barangays={sellerManagement.barangays ?? []}
                             filipino={filipino}
                         />
                     ) : section === "Profile" ? (
@@ -505,7 +506,7 @@ export default function Dashboard() {
                         />
                     )}
                     <footer className="admin-footer">
-                        AgriFarm Â· Pasig City CENRO Administration
+                        AgriFarm · Pasig City CENRO Administration
                     </footer>
                 </main>
             </div>
@@ -702,7 +703,7 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
         },
         {
             label: filipino ? "Nangungunang barangay" : "Leading barangay",
-            value: summary.leadingBarangay?.name || "â€”",
+            value: summary.leadingBarangay?.name || "—",
             detail: summary.leadingBarangay
                 ? filipino
                     ? `${formatCurrency(summary.leadingBarangay.sales)} na nakumpletong benta`
@@ -983,8 +984,8 @@ function AdminTodoPanel({ tasks, filipino }) {
 
     const deleteTask = (task) => {
         const confirmMessage = filipino
-            ? `Burahin ang â€œ${task.title}â€?`
-            : `Delete â€œ${task.title}â€?`;
+            ? `Burahin ang “${task.title}”?`
+            : `Delete “${task.title}”?`;
         if (window.confirm(confirmMessage)) {
             router.delete(`/admin/tasks/${task.id}`, { preserveScroll: true });
         }
@@ -1107,8 +1108,8 @@ function AdminTodoPanel({ tasks, filipino }) {
                         <button type="submit" disabled={form.processing}>
                             {form.processing
                                 ? filipino
-                                    ? "Idinadagdagâ€¦"
-                                    : "Addingâ€¦"
+                                    ? "Idinadagdag…"
+                                    : "Adding…"
                                 : filipino
                                   ? "Idagdag"
                                   : "Add task"}
@@ -1347,7 +1348,7 @@ function MonthlySalesChart({ data }) {
                             x="23"
                             y="21"
                         >
-                            {activePoint.series} Â· {activePoint.month}
+                            {activePoint.series} · {activePoint.month}
                         </text>
                         <text
                             className="admin-chart-tooltip-value"
@@ -1592,10 +1593,10 @@ function formatNumber(value) {
 
 function formatAxisCurrency(value) {
     if (Number(value) >= 1000000)
-        return `â‚±${(Number(value) / 1000000).toFixed(Number(value) % 1000000 ? 1 : 0)}M`;
+        return `₱${(Number(value) / 1000000).toFixed(Number(value) % 1000000 ? 1 : 0)}M`;
     if (Number(value) >= 1000)
-        return `â‚±${(Number(value) / 1000).toFixed(Number(value) % 1000 ? 1 : 0)}K`;
-    return `â‚±${Math.round(Number(value))}`;
+        return `₱${(Number(value) / 1000).toFixed(Number(value) % 1000 ? 1 : 0)}K`;
+    return `₱${Math.round(Number(value))}`;
 }
 
 function formatTaskDate(value) {
@@ -1626,4 +1627,3 @@ function formatRelativeTime(value) {
         day: "numeric",
     }).format(new Date(timestamp));
 }
-

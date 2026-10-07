@@ -1,0 +1,168 @@
+.seller-forecast {
+    --store-green: var(--primary);
+    --surface: var(--card);
+    --surface-alt: var(--muted);
+    --text-muted: var(--muted-foreground);
+    --text-base: var(--foreground);
+    --forecast-peak-bg: #15803d;
+    --forecast-peak-text: #ffffff;
+    --forecast-okay-bg: #fef08a;
+    --forecast-okay-text: #854d0e;
+    --forecast-low-bg: #fecaca;
+    --forecast-low-text: #991b1b;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+}
+.dark .seller-forecast {
+    --forecast-peak-bg: #14532d;
+    --forecast-peak-text: #bbf7d0;
+    --forecast-okay-bg: #facc15;
+    --forecast-okay-text: #422006;
+    --forecast-low-bg: #7f1d1d;
+    --forecast-low-text: #fecaca;
+}
+.seller-forecast .seller-section-header h2 { font-size: clamp(1.4rem, 3vw, 1.8rem); font-weight: 700; margin-bottom: .5rem; }
+.seller-forecast .seller-section-header p { color: var(--text-muted); font-size: .9rem; line-height: 1.6; }
+.forecast-panel { padding: clamp(1rem, 3vw, 2rem); min-width: 0; }
+.forecast-panel > h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: .75rem; }
+.forecast-help { color: var(--text-muted); font-size: .875rem; line-height: 1.6; margin-bottom: 1rem; }
+.forecast-upload-zone {
+    border: 2px dashed var(--border); border-radius: 10px;
+    background: var(--surface); position: relative; min-width: 0;
+    transition: border-color 180ms ease, background-color 180ms ease;
+}
+.forecast-upload-zone:hover, .forecast-upload-zone.is-dragging { border-color: var(--store-green); background: var(--surface-alt); }
+.forecast-upload-icon { width: 40px; height: 40px; color: var(--store-green); background: var(--surface-alt); border-radius: 8px; display: grid; place-items: center; }
+.forecast-upload-icon svg { width: 21px; height: 21px; }
+.forecast-upload-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.forecast-file-picker { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; width: 100%; min-width: 0; min-height: 168px; padding: 1.5rem 3.5rem; border-radius: 10px; text-align: center; cursor: pointer; }
+.forecast-file-copy { display: flex; flex-direction: column; gap: .25rem; min-width: 0; max-width: 640px; width: 100%; }
+.forecast-upload-text, .forecast-file-badge { font-size: .9rem; font-weight: 600; color: var(--text-base); overflow-wrap: anywhere; }
+.forecast-upload-subtext { font-size: .8rem; color: var(--text-muted); }
+.forecast-file-action { font-size: .8rem; font-weight: 600; color: var(--store-green); text-decoration: underline; text-underline-offset: 3px; }
+.forecast-file-remove { position: absolute; top: .5rem; right: .5rem; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 8px; color: var(--text-muted); cursor: pointer; }
+.forecast-file-remove:hover { background: var(--surface-alt); color: var(--text-base); }
+.forecast-upload-form button:disabled { cursor: default; }
+.forecast-upload-form[aria-busy="true"] .forecast-file-picker, .forecast-upload-form[aria-busy="true"] .forecast-file-remove { opacity: .65; cursor: wait; }
+.forecast-generate-button { display: inline-flex; align-items: center; justify-content: center; justify-self: center; gap: .5rem; min-height: 48px; min-width: min(220px, 100%); max-width: 100%; }
+.forecast-generation-status { margin-top: .75rem; color: var(--text-muted); font-size: .875rem; text-align: center; }
+.forecast-generation-status:empty { display: none; }
+.forecast-generation-status p { margin-bottom: .65rem; }
+.forecast-loading-track { display: block; height: 3px; overflow: hidden; border-radius: 3px; background: var(--surface-alt); }
+.forecast-loading-track > span { display: block; height: 100%; width: 30%; border-radius: inherit; background: var(--store-green); animation: forecast-loading-glide 1.8s ease-in-out infinite; }
+.forecast-loading-spinner { width: 16px; height: 16px; flex: 0 0 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: forecast-loading-turn 1s linear infinite; }
+.forecast-upload-form > .forecast-error { grid-column: 1 / -1; margin: 0; scroll-margin-top: 6rem; }
+.forecast-results-reveal { animation: forecast-results-in 420ms cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes forecast-loading-glide { from { transform: translateX(-110%); } to { transform: translateX(340%); } }
+@keyframes forecast-loading-turn { to { transform: rotate(360deg); } }
+@keyframes forecast-results-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.forecast-results { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.forecast-saved { overflow-wrap: anywhere; margin-bottom: 0; }
+.forecast-error { padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--border); color: var(--forecast-low-text); background: var(--forecast-low-bg); border-radius: 8px; }
+.forecast-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem 1rem; margin: 1rem 0; }
+.forecast-rec-card { display: grid; grid-template-rows: subgrid; grid-row: span 8; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; min-width: 0; }
+.forecast-rec-header { display: flex; justify-content: space-between; align-items: flex-start; margin: .5rem 0; gap: .5rem; }
+.forecast-rec-header h4 { font-size: 1.3rem; font-weight: 700; color: var(--text-base); margin: 0; overflow-wrap: anywhere; }
+.forecast-new-crop { font-size: .8rem; color: var(--store-green); }
+.forecast-harvest-date { font-size: .95rem; line-height: 1.5; margin: .75rem 0; }
+.forecast-expected-harvest { margin-top: .75rem; font-size: .9rem; font-weight: 500; }
+.forecast-how-it-works, .forecast-explanation { font-size: .875rem; line-height: 1.7; }
+.forecast-how-it-works h4, .forecast-explanation summary { font-weight: 600; }
+.forecast-explanation summary { cursor: pointer; }
+.forecast-how-it-works p, .forecast-explanation p, .forecast-explanation ul { margin-top: .75rem; }
+.forecast-explanation ul { padding-left: 1.25rem; }
+.forecast-explanation a { color: var(--store-green); text-decoration: underline; }
+.seller-forecast button:focus-visible, .forecast-upload-zone:focus-visible, .forecast-season-grid:focus-visible { outline: 2px solid var(--store-green); outline-offset: 3px; }
+.seller-forecast summary { cursor: pointer; font-weight: 600; line-height: 1.6; }
+.seller-forecast summary:focus-visible { outline: 2px solid var(--store-green); outline-offset: 5px; border-radius: 2px; }
+.forecast-results-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.forecast-results-heading h3 { font-size: 1.2rem; font-weight: 600; scroll-margin-top: 6rem; }
+.forecast-results-heading h3:focus { outline: none; }
+.forecast-results-heading > span, .forecast-updated { color: var(--text-muted); font-size: .875rem; }
+.forecast-rec-card > h4 { font-size: 1.2rem; font-weight: 700; overflow-wrap: anywhere; }
+.forecast-new-crop { display: inline-block; margin-top: .25rem; font-size: .8rem; }
+.forecast-harvest-date { margin: .75rem 0 .25rem; }
+.forecast-growing-time { color: var(--text-muted); font-size: .875rem; margin: .75rem 0; }
+.forecast-growing-time strong { font-size: 1rem; font-weight: 700; color: var(--text-base); white-space: nowrap; }
+.forecast-planting-date { font-size: .95rem; line-height: 1.5; }
+.forecast-plan-button { width: 100%; min-height: 44px; margin-top: 1rem; padding: .6rem .75rem; border: 1px solid var(--primary); border-radius: 8px; background: var(--primary); color: var(--primary-foreground); font-size: .875rem; font-weight: 600; cursor: pointer; }
+.forecast-plan-button:disabled { background: var(--surface-alt); border-color: var(--border); color: var(--text-muted); cursor: default; }
+.forecast-plan-notice { color: var(--store-green); font-size: .875rem; padding: 0 clamp(1rem, 3vw, 2rem); }
+.forecast-planting-plan h3 { scroll-margin-top: 6rem; }
+.forecast-planting-plan h3:focus { outline: none; }
+.forecast-plan-list { list-style: none; padding: 0; margin: 0; }
+.forecast-plan-list li { display: grid; grid-template-columns: minmax(130px, 1fr) minmax(0, 2fr) auto; align-items: center; gap: 1rem; padding: .75rem 0; }
+.forecast-plan-list li + li { border-top: 1px solid var(--border); }
+.forecast-plan-crop { display: flex; align-items: center; gap: .65rem; min-width: 0; font-size: .95rem; }
+.forecast-plan-crop strong { overflow-wrap: anywhere; }
+.forecast-plan-list dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; font-size: .875rem; }
+.forecast-plan-list dt { color: var(--text-muted); }
+.forecast-plan-list dd { margin-top: .15rem; font-weight: 600; }
+.forecast-plan-remove { min-height: 44px; padding: .5rem .75rem; border: 1px solid var(--border); border-radius: 8px; font-size: .875rem; cursor: pointer; }
+.forecast-plan-remove:disabled { opacity: .6; cursor: wait; }
+.forecast-updated { margin-top: .5rem; }
+.forecast-card-details { margin-top: 1rem; font-size: .875rem; line-height: 1.65; border-top: 1px solid var(--border); padding-top: .75rem; }
+.forecast-card-details summary { font-size: .8rem; }
+.forecast-card-details p, .forecast-card-details ul { margin-top: .75rem; }
+.forecast-card-details ul { padding-left: 1.2rem; }
+.forecast-upload-panel .forecast-saved { margin-bottom: 1rem; }
+.forecast-help-sections { padding: 0 clamp(1rem, 3vw, 2rem); }
+.forecast-help-sections > details { padding: .75rem 0; border-top: 1px solid var(--border); }
+.forecast-results + .forecast-upload-panel { margin-top: .25rem; }
+.forecast-crop-picture { display: block; width: 36px; height: 36px; flex: 0 0 auto; border-radius: 6px; background: #faf8f3 url('/images/forecast-crops.png') no-repeat; background-size: 400% 500%; }
+.forecast-crop-picture.is-large { width: 64px; height: 64px; border-radius: 8px; }
+.forecast-crop-picture.is-placeholder { display: grid; place-items: center; background: var(--surface-alt); color: var(--store-green); }
+.forecast-calendar-intro { color: var(--text-muted); font-size: .875rem; line-height: 1.6; margin-top: .5rem; }
+.forecast-history-note { margin-top: .75rem; padding-left: .75rem; border-left: 2px solid var(--border); color: var(--text-muted); font-size: .875rem; line-height: 1.6; }
+.forecast-season-grid { min-width: 0; overflow-x: auto; position: relative; }
+.forecast-dataset-source { font-size: .875rem; color: var(--text-muted); margin: .75rem 0; }
+.forecast-dataset-source strong { color: var(--foreground); font-size: inherit; }
+.forecast-dataset-source small { display: block; margin-top: .25rem; font-size: .8rem; }
+.forecast-season-grid table { width: 100%; min-width: 1020px; table-layout: fixed; border-collapse: separate; border-spacing: 4px 8px; }
+.forecast-season-grid th, .forecast-season-grid td { padding: 0; border: 0; background: transparent; }
+.forecast-season-grid th:first-child { width: 180px; text-align: left; position: sticky; left: 0; z-index: 2; background: var(--surface); padding-right: .5rem; box-shadow: 4px 0 0 var(--surface); }
+.forecast-season-grid thead th { padding: .5rem 0; color: var(--text-muted); font-size: .8rem; font-weight: 500; }
+.forecast-season-grid thead th:not(:first-child) { text-align: center; }
+.forecast-season-grid abbr { text-decoration: none; }
+.forecast-calendar-crop { display: flex; align-items: center; gap: .65rem; color: var(--foreground); font-size: .9rem; font-weight: 600; }
+.forecast-calendar-crop > span { min-width: 0; overflow-wrap: anywhere; }
+.forecast-calendar-crop small { display: block; color: var(--text-muted); font-size: .72rem; font-weight: 400; margin-top: .15rem; }
+.forecast-season-cell { display: block; width: 100%; min-height: 44px; border-radius: 5px; cursor: pointer; border: 2px solid transparent; font-size: 1rem; }
+.forecast-season-cell[aria-pressed="true"] { border-color: var(--foreground); }
+.forecast-season-cell.is-best, .forecast-season-legend .is-best { background: var(--forecast-peak-bg); color: var(--forecast-peak-text); }
+.forecast-season-cell.is-good, .forecast-season-legend .is-good { background: var(--forecast-okay-bg); color: var(--forecast-okay-text); }
+.forecast-season-cell.is-quiet, .forecast-season-legend .is-quiet { background: var(--forecast-low-bg); color: var(--forecast-low-text); }
+.forecast-season-cell.is-unavailable { background: var(--surface-alt); border: 1px dashed var(--border); color: var(--muted-foreground); }
+.forecast-season-legend { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin: .75rem 0; font-size: .8rem; }
+.forecast-season-legend > span { display: inline-flex; align-items: center; gap: .35rem; }
+.forecast-season-legend i { font-style: normal; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 4px; }
+.forecast-month-detail { position: sticky; top: 6rem; z-index: 3; border: 1px solid var(--border); padding: .75rem 1rem; margin-top: 1rem; background: var(--surface-alt); border-radius: 8px; font-size: .875rem; line-height: 1.6; }
+.forecast-rec-header { justify-content: flex-start; align-items: center; margin: 0; gap: .75rem; }
+.forecast-rec-header h4 { font-size: 1.15rem; }
+.forecast-rec-summary { list-style: none; padding: 0; margin: 1rem 0; font-size: .875rem; line-height: 1.65; }
+.forecast-rec-summary li + li { color: var(--text-muted); }
+/* Share content rows so wrapped month lists keep dates and actions aligned. */
+.forecast-rec-card > p, .forecast-rec-card > ul, .forecast-rec-card > button, .forecast-rec-card > details { margin: 0; }
+.forecast-calendar-scroll-hint { display: none; color: var(--text-muted); font-size: .8rem; margin-bottom: .5rem; }
+@media (max-width: 1100px) {
+    .forecast-calendar-scroll-hint { display: block; }
+}
+@media (max-width: 600px) {
+    .forecast-season-grid table { border-spacing: 2px 7px; }
+    .forecast-season-grid th:first-child { width: 150px; }
+    .forecast-calendar-crop { gap: .4rem; font-size: .8rem; }
+    .forecast-calendar-crop small { font-size: .68rem; }
+    .forecast-calendar-crop .forecast-crop-picture { width: 28px; height: 28px; }
+    .forecast-season-grid thead th { font-size: .7rem; }
+    .forecast-season-legend { gap: .5rem .75rem; font-size: .75rem; }
+    .forecast-card-grid { grid-template-columns: minmax(0, 1fr); row-gap: 1rem; }
+    .forecast-rec-card { grid-template-rows: none; grid-row: auto; row-gap: .75rem; }
+    .forecast-plan-list li { grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
+    .forecast-plan-list dl { grid-column: 1 / -1; grid-row: 2; }
+    .forecast-file-picker { padding: 1.25rem 2.75rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .forecast-upload-zone { transition: none; }
+    .forecast-loading-spinner, .forecast-loading-track > span, .forecast-results-reveal { animation: none; }
+    .forecast-loading-track > span { width: 100%; transform: none; opacity: .5; }
+}

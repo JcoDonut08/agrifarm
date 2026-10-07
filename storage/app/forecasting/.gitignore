@@ -1,0 +1,5 @@
+*
+!.gitignore
+!crop_metadata.json
+!seasonal_profiles.json
+!crop_weather_tolerance.json

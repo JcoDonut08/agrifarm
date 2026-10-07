@@ -22,6 +22,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('seller-forecast-uploads', function (Request $request): Limit {
+            $seller = $request->user()?->getAuthIdentifier() ?? $request->ip();
+
+            return Limit::perMinute(5)->by('seller-forecast-uploads:'.$seller);
+        });
         RateLimiter::for('seller-order-status', function (Request $request): Limit {
             $seller = $request->user()?->getAuthIdentifier() ?? $request->ip();
 

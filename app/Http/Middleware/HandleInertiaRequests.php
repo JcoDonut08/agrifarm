@@ -53,6 +53,8 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'flash' => [
+                'error' => fn () => $request->session()->get('error'),
+                'forecastError' => fn () => $request->session()->get('forecastError'),
                 'status' => fn () => $request->session()->get('status'),
                 'id' => fn () => $request->session()->has('status') ? (string) Str::uuid() : null,
             ],

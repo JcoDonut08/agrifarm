@@ -72,6 +72,7 @@
 .harvest-form-actions .seller-outline-button, .harvest-form-actions .seller-save-button { width: auto; min-width: 120px; padding: 0 13px; }
 .harvest-detail-dialog dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; margin: 0; padding: 7px 22px 22px; }
 .harvest-detail-dialog dl > div { padding: 14px 0; border-bottom: 1px solid #e8eee8; }
+.harvest-weight { grid-column: 1 / -1; }
 .harvest-detail-dialog dt { margin-bottom: 4px; color: #718177; font-size: 11px; font-weight: 700; }
 .harvest-detail-dialog dd { margin: 0; color: #284432; font-size: 13px; font-weight: 650; }
 .harvest-detail-dialog .harvest-detail-notes { grid-column: 1 / -1; border-bottom: 0; }
