@@ -1,8 +1,11 @@
-﻿import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import Pagination from '../Seller/Pagination';
 
-import { Search, ChevronDown, CheckCircle2, ShieldAlert, BadgeCheck, Eye, Trash2, X, RefreshCw, MapPin, Store, Tag, Package } from 'lucide-react';
+import { Search, ChevronDown, ShieldAlert, BadgeCheck, X, Eye, Trash2, RefreshCw, MapPin, Store, Tag, Package } from 'lucide-react';
 
 import { router } from '@inertiajs/react';
+import ConfirmationDialog from '../../Components/ConfirmationDialog';
+import FormStatus from '../../Components/FormStatus';
 
 
 
@@ -17,11 +20,15 @@ export default function AdminProducts({ productManagement, filipino }) {
     const [categoryFilter, setCategoryFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [confirmModal, setConfirmModal] = useState(null);
-    const [successModal, setSuccessModal] = useState(null);
+    const [notice, setNotice] = useState(null);
+    const [actionError, setActionError] = useState('');
+    const [updating, setUpdating] = useState(false);
+    const [dismissTarget, setDismissTarget] = useState(null);
+    const [dismissing, setDismissing] = useState(false);
 
     const [page, setPage] = useState(1);
 
-    const pageSize = 10;
+    const [pageSize, setPageSize] = useState(5);
 
 
 
@@ -58,22 +65,42 @@ export default function AdminProducts({ productManagement, filipino }) {
         return filtered.slice(start, start + pageSize);
 
     }, [filtered, page, pageSize]);
+    useEffect(() => {
+        const lastPage = Math.max(1, Math.ceil(filtered.length / pageSize));
+        if (page > lastPage) setPage(lastPage);
+    }, [filtered.length, page, pageSize]);
 
 
 
     const updateStatus = (product, action) => {
-        setConfirmModal({ product, action });
+        if (updating) return;
+        setActionError('');
+        if (action === 'delist') setConfirmModal({ product, action });
+        else performAction(product, action);
     };
 
     const confirmAction = () => {
         if (!confirmModal) return;
         const { product, action } = confirmModal;
+        performAction(product, action);
+    };
+
+    const performAction = (product, action) => {
+        if (updating) return;
+        setUpdating(true);
+        const failed = () => { setActionError(filipino ? 'Hindi ma-update ang produkto. Pakisubukan muli.' : 'The product could not be updated. Please try again.'); return false; };
         router.post(`/admin/products/${product.id}/${action}`, {}, {
             preserveScroll: true,
             onSuccess: () => {
                 setConfirmModal(null);
-                setSuccessModal({ action, product });
-            }
+                setNotice({ id: Date.now(), message: action === 'delist'
+                    ? (filipino ? 'Itinago ang produkto sa marketplace.' : 'Product hidden from the marketplace.')
+                    : (filipino ? 'Ibinalik ang produkto sa marketplace.' : 'Product restored to the marketplace.') });
+            },
+            onError: failed,
+            onNetworkError: failed,
+            onHttpException: failed,
+            onFinish: () => setUpdating(false),
         });
     };
 
@@ -81,11 +108,7 @@ export default function AdminProducts({ productManagement, filipino }) {
 
     const dismissReport = (id) => {
 
-        if (confirm(filipino ? 'Sigurado ka bang gusto mong i-dismiss ang mga report para sa produktong ito?' : 'Are you sure you want to dismiss reports for this product?')) {
-
-            router.post(`/admin/products/${id}/dismiss`, {}, { preserveScroll: true });
-
-        }
+        setDismissTarget(id);
 
     };
 
@@ -94,6 +117,8 @@ export default function AdminProducts({ productManagement, filipino }) {
     return (
 
         <section className="admin-sellers-page" aria-label={filipino ? "Direktoryo ng mga Produkto" : "Products Directory"}>
+            <FormStatus dismissible messageId={notice?.id} dismissLabel={filipino ? 'Isara ang mensahe' : 'Dismiss message'}>{notice?.message}</FormStatus>
+            {actionError && !confirmModal && <FormStatus tone="error">{actionError}</FormStatus>}
 
             <div className="admin-page-header" style={{ marginBottom: '24px' }}>
                 <div>
@@ -306,14 +331,14 @@ export default function AdminProducts({ productManagement, filipino }) {
 
                                     <div className="admin-seller-actions">
                                         {product.display_status !== 'delisted' ? (
-                                            <button type="button" onClick={() => updateStatus(product, 'delist')} className="admin-action-btn admin-action-btn--suspend" title="Hide product">
+                                            <button type="button" disabled={updating} onClick={() => updateStatus(product, 'delist')} className="admin-action-btn admin-action-btn--suspend" title={filipino ? 'Itago ang produkto' : 'Hide product'}>
                                                 <Trash2 aria-hidden="true" />
-                                                <span>Hide</span>
+                                                <span>{filipino ? 'Itago' : 'Hide'}</span>
                                             </button>
                                         ) : (
-                                            <button type="button" onClick={() => updateStatus(product, 'relist')} className="admin-action-btn admin-action-btn--reinstate" title="Restore product">
+                                            <button type="button" disabled={updating} onClick={() => updateStatus(product, 'relist')} className="admin-action-btn admin-action-btn--reinstate" title={filipino ? 'Ibalik ang produkto' : 'Restore product'}>
                                                 <RefreshCw aria-hidden="true" />
-                                                <span>Restore</span>
+                                                <span>{filipino ? 'Ibalik' : 'Restore'}</span>
                                             </button>
                                         )}
                                     </div>
@@ -325,37 +350,7 @@ export default function AdminProducts({ productManagement, filipino }) {
 
 
 
-                        <div className="admin-table-pagination" aria-label="Products table pagination">
-
-                            <span className="admin-pagination-info">
-
-                                Showing <strong>{(page - 1) * pageSize + 1}</strong> - <strong>{Math.min(page * pageSize, filtered.length)}</strong> of <strong>{filtered.length}</strong> products
-
-                            </span>
-
-                            <div className="admin-pagination-controls">
-
-                                <button type="button" className="admin-pagination-btn" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
-
-                                    <span>&lsaquo; Previous</span>
-
-                                </button>
-
-                                <span className="admin-pagination-current">
-
-                                    Page <strong>{page}</strong> of <strong>{Math.ceil(filtered.length / pageSize) || 1}</strong>
-
-                                </span>
-
-                                <button type="button" className="admin-pagination-btn" disabled={page >= Math.ceil(filtered.length / pageSize)} onClick={() => setPage(p => Math.min(Math.ceil(filtered.length / pageSize), p + 1))}>
-
-                                    <span>Next &rsaquo;</span>
-
-                                </button>
-
-                            </div>
-
-                        </div>
+                        <Pagination page={page} pageSize={pageSize} totalItems={filtered.length} onPageChange={setPage} onPageSizeChange={setPageSize} filipino={filipino} label="Products table pagination" itemLabel={filipino ? "tala" : "products"} />
 
                     </div>
 
@@ -383,139 +378,21 @@ export default function AdminProducts({ productManagement, filipino }) {
                     </div>
 
                 )}
-            {confirmModal && (
-                <Dialog
-                    title={filipino ? "Kumpirmahin ang Aksyon" : "Confirm Action"}
-                    icon={confirmModal.action === 'delist' ? Trash2 : RefreshCw}
-                    variant={confirmModal.action === 'delist' ? 'danger' : 'default'}
-                    onClose={() => setConfirmModal(null)}
-                    filipino={filipino}
-                >
-                    <div className={`admin-dialog-alert admin-dialog-alert--${confirmModal.action === 'delist' ? 'danger' : 'default'}`}>
-                        {confirmModal.action === 'delist' ? <ShieldAlert aria-hidden="true" /> : <RefreshCw aria-hidden="true" />}
-                        <div>
-                            <strong>{filipino ? "Tandaan" : "Action impact notice"}</strong>
-                            <p>
-                                {confirmModal.action === 'delist' 
-                                    ? (filipino ? `Sigurado ka bang gusto mong itago ang produktong "${confirmModal.product.name}"? Hindi na ito makikita ng mga mamimili sa marketplace.` : `Are you sure you want to hide "${confirmModal.product.name}"? Customers will no longer be able to see or purchase it.`)
-                                    : (filipino ? `Sigurado ka bang gusto mong ibalik ang produktong "${confirmModal.product.name}" sa marketplace?` : `Are you sure you want to restore "${confirmModal.product.name}"? It will become visible on the marketplace again.`)}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="admin-dialog-actions">
-                        <button type="button" className="admin-secondary-button" onClick={() => setConfirmModal(null)}>
-                            {filipino ? "Kanselahin" : "Cancel"}
-                        </button>
-                        <button type="button" className={confirmModal.action === 'delist' ? "admin-danger-button" : "admin-primary-button"} onClick={confirmAction}>
-                            {filipino ? "Kumpirmahin" : "Confirm"}
-                        </button>
-                    </div>
-                </Dialog>
-            )}
-
-            {successModal && (
-                <Dialog
-                    title={filipino ? "Tagumpay" : "Success"}
-                    icon={CheckCircle2}
-                    onClose={() => setSuccessModal(null)}
-                    filipino={filipino}
-                >
-                    <div className="admin-dialog-alert admin-dialog-alert--success">
-                        <BadgeCheck aria-hidden="true" />
-                        <div>
-                            <strong>{filipino ? "Aksyon Tagumpay" : "Action Successful"}</strong>
-                            <p>
-                                {successModal.action === 'delist' 
-                                    ? (filipino ? `Ang produktong "${successModal.product.name}" ay matagumpay na itinago.` : `The product "${successModal.product.name}" has been successfully hidden from the marketplace.`)
-                                    : (filipino ? `Ang produktong "${successModal.product.name}" ay matagumpay na ibinalik.` : `The product "${successModal.product.name}" has been successfully restored and is now visible.`)}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="admin-dialog-actions">
-                        <button type="button" className="admin-secondary-button" onClick={() => setSuccessModal(null)}>
-                            {filipino ? "Isara" : "Close"}
-                        </button>
-                    </div>
-                </Dialog>
-            )}
+            <ConfirmationDialog open={Boolean(confirmModal)} title={filipino ? 'Itago ang produkto?' : 'Hide product?'}
+                description={filipino ? `Hindi makikita o mabibili ng mga customer ang “${confirmModal?.product.name || ''}”. Maaari mo itong ibalik sa ibang pagkakataon.` : `Customers will no longer see or purchase “${confirmModal?.product.name || ''}”. You can restore it later.`}
+                confirmLabel={filipino ? 'Itago ang produkto' : 'Hide product'} cancelLabel={filipino ? 'Kanselahin' : 'Cancel'} workingLabel={filipino ? 'Itinatago…' : 'Hiding…'} busy={updating}
+                onCancel={() => setConfirmModal(null)} onConfirm={confirmAction}>
+                {actionError && <FormStatus tone="error">{actionError}</FormStatus>}
+            </ConfirmationDialog>
 
             
 
 
+                <ConfirmationDialog open={dismissTarget !== null} title={filipino ? 'I-dismiss ang mga report?' : 'Dismiss reports?'} description={filipino ? 'I-clear ang mga report ng customer para sa produktong ito.' : 'Clear the customer reports for this product.'} confirmLabel={filipino ? 'I-dismiss ang mga report' : 'Dismiss reports'} cancelLabel={filipino ? 'Kanselahin' : 'Cancel'} workingLabel={filipino ? 'Dini-dismiss…' : 'Dismissing…'} busy={dismissing} onCancel={() => setDismissTarget(null)} onConfirm={() => { if (dismissTarget === null || dismissing) return; router.post(`/admin/products/${dismissTarget}/dismiss`, {}, { preserveScroll: true, onStart: () => setDismissing(true), onSuccess: () => setDismissTarget(null), onFinish: () => setDismissing(false) }); }} />
             </section>
 
         </section>
 
     );
 
-}
-
-
-
-
-
-function Dialog({
-    title,
-    subtitle,
-    icon: Icon,
-    children,
-    onClose,
-    variant = "default",
-    filipino = false
-}) {
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.key === "Escape") {
-                onClose();
-            }
-        };
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [onClose]);
-
-    return (
-        <div
-            className="admin-dialog-backdrop"
-            role="presentation"
-            onMouseDown={onClose}
-        >
-            <section
-                className={`admin-dialog admin-dialog--${variant}`}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="admin-dialog-title"
-                onMouseDown={(event) => event.stopPropagation()}
-            >
-                <header className="admin-dialog-header">
-                    <div className="admin-dialog-heading">
-                        {Icon && (
-                            <span
-                                className={`admin-dialog-icon admin-dialog-icon--${variant}`}
-                                aria-hidden="true"
-                            >
-                                <Icon />
-                            </span>
-                        )}
-                        <div>
-                            <h2 id="admin-dialog-title">{title}</h2>
-                            {subtitle && (
-                                <p className="admin-dialog-subtitle">
-                                    {subtitle}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                    <button
-                        type="button"
-                        className="admin-dialog-close"
-                        aria-label={filipino ? "Isara" : "Close dialog"}
-                        onClick={onClose}
-                    >
-                        <X aria-hidden="true" />
-                    </button>
-                </header>
-                <div className="admin-dialog-body">{children}</div>
-            </section>
-        </div>
-    );
 }

@@ -5,6 +5,7 @@ import PasswordField from '../../Components/PasswordField';
 import { useEffect, useRef, useState } from 'react';
 import Avatar from './Avatar';
 import SellerFlashStatus from './SellerFlashStatus';
+import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import { localizeMessage } from './SellerLocale';
 
 export default function ProfileForm({ filipino = false }) {
@@ -14,6 +15,7 @@ export default function ProfileForm({ filipino = false }) {
     const photo = useForm({ photo: null });
     const fileInput = useRef(null);
     const [preview, setPreview] = useState(null);
+    const [removingPhoto, setRemovingPhoto] = useState(false);
     useEffect(() => {
         if (!photo.data.photo) { setPreview(null); return; }
         const url = URL.createObjectURL(photo.data.photo);
@@ -46,9 +48,9 @@ export default function ProfileForm({ filipino = false }) {
                 <Avatar user={{ ...auth.user, avatar_url: preview || auth.user.avatar_url }} className="seller-profile-photo" filipino={filipino} />
                 <label htmlFor="profile-photo">{filipino ? 'Pumili ng larawan sa profile' : 'Choose profile photo'}</label>
                 <input ref={fileInput} id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-error" aria-invalid={Boolean(photo.errors.photo)} onChange={event => { photo.clearErrors(); photo.setData('photo', event.target.files?.[0] || null); }} />
-                <p id="photo-help">JPG, PNG o WebP. {filipino ? 'Hanggang 2 MB.' : 'Maximum 2 MB.'}</p>
+                <p id="photo-help">{filipino ? 'JPG, PNG o WebP. Hanggang 2 MB.' : 'JPG, PNG or WebP. Up to 2 MB.'}</p>
                 {photo.errors.photo && <p id="photo-error" role="alert" className="seller-photo-error">{localizeMessage(photo.errors.photo, filipino)}</p>}
-                <div className="seller-photo-actions"><button className="seller-save-button" disabled={!photo.data.photo || photo.processing}>{filipino ? (photo.processing ? 'Sine-save…' : 'I-save ang larawan') : (photo.processing ? 'Saving…' : 'Save photo')}</button>{photo.data.photo && <button type="button" className="seller-outline-button" onClick={clearPhoto} disabled={photo.processing}>{filipino ? 'Kanselahin' : 'Cancel'}</button>}{auth.user.avatar_url && <button type="button" className="seller-outline-button" disabled={photo.processing} onClick={() => photo.delete('/seller/profile/photo', { preserveScroll: true, onSuccess: clearPhoto })}>{filipino ? 'Alisin ang larawan' : 'Remove photo'}</button>}</div>
+                <div className="seller-photo-actions"><button className="seller-save-button" disabled={!photo.data.photo || photo.processing}>{filipino ? (photo.processing ? 'Sine-save…' : 'I-save ang larawan') : (photo.processing ? 'Saving…' : 'Save photo')}</button>{photo.data.photo && <button type="button" className="seller-outline-button" onClick={clearPhoto} disabled={photo.processing}>{filipino ? 'Kanselahin' : 'Cancel'}</button>}{auth.user.avatar_url && <button type="button" className="seller-danger-button" disabled={photo.processing} onClick={() => setRemovingPhoto(true)}>{filipino ? 'Alisin ang larawan' : 'Remove photo'}</button>}</div>
             </div>
         </form>
         <form onSubmit={saveProfile} noValidate className="seller-settings-section">
@@ -69,5 +71,6 @@ export default function ProfileForm({ filipino = false }) {
                 <div className="seller-form-actions"><button className="seller-save-button" disabled={password.processing}>{filipino ? (password.processing ? 'Ina-update…' : 'I-update ang password') : (password.processing ? 'Updating…' : 'Update password')}</button></div>
             </div>
         </form>
+        <ConfirmationDialog open={removingPhoto} title={filipino ? 'Alisin ang larawan sa profile?' : 'Remove profile photo?'} description={filipino ? 'Maaari kang mag-upload ng bagong larawan anumang oras.' : 'You can upload a new photo at any time.'} confirmLabel={filipino ? 'Alisin ang larawan' : 'Remove photo'} cancelLabel={filipino ? 'Kanselahin' : 'Cancel'} workingLabel={filipino ? 'Inaalis…' : 'Removing…'} busy={photo.processing} onCancel={() => setRemovingPhoto(false)} onConfirm={() => photo.delete('/seller/profile/photo', { preserveScroll: true, onSuccess: () => { clearPhoto(); setRemovingPhoto(false); } })} />
     </div>;
 }

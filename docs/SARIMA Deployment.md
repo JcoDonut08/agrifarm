@@ -88,6 +88,8 @@ PHP-FPM's `request_terminate_timeout` can terminate an overlong request. Nginx's
 
 ## Release verification
 
+For HTTPS, debug mode, password-reset delivery, private uploads, and the current local verification results, see [Deployment Verification](Deployment%20Verification.md). Server checks remain pending until a deployed URL and server access are available.
+
 1. Back up the application database and run the `forecast_runs`, `planting_plans` and measured harvest weight migrations without development seeders.
 2. Verify dependencies and `forecast:check` under the PHP service account.
 3. Upload a one-year CSV: reference labels and percentages appear; the kg view explicitly says no estimate.

@@ -30,6 +30,24 @@
 }
 
 :root {
+    --ui-action: #0f783e;
+    --ui-action-hover: #09562d;
+    --ui-danger: #a63d34;
+    --ui-danger-hover: #8f3029;
+    --ui-control-height: 44px;
+    --ui-control-radius: 10px;
+    --ui-control-font: 14px;
+    --ui-control-weight: 600;
+    --ui-heading-font: 25px;
+    --ui-surface: #ffffff;
+    --ui-soft: #f3f5f3;
+    --ui-ink: #132f24;
+    --ui-muted: #53635a;
+    --ui-error-ink: #b42318;
+    --ui-border: #ccd8cf;
+    --ui-success-bg: #edf7ef;
+    --ui-success-ink: #245b37;
+    --ui-success-border: #bfd9c6;
     --radius: 0.625rem;
     --background: #fffdf5;
     --foreground: #17382b;
@@ -52,6 +70,19 @@
 }
 
 .dark {
+    --ui-action: #168044;
+    --ui-action-hover: #106335;
+    --ui-danger: #b74b41;
+    --ui-danger-hover: #9f3c33;
+    --ui-surface: #202622;
+    --ui-soft: #2b3730;
+    --ui-ink: #edf2ee;
+    --ui-muted: #b0bbb4;
+    --ui-error-ink: #ffaaaa;
+    --ui-border: #3d4941;
+    --ui-success-bg: #20392a;
+    --ui-success-ink: #d9f0df;
+    --ui-success-border: #3f654b;
     --background: #151a17;
     --foreground: #edf2ee;
     --card: #202722;
@@ -129,4 +160,163 @@
     ::selection {
         @apply bg-harvest-400 text-forest-950;
     }
+}
+
+/* Shared action controls across customer, seller, and admin workspaces. */
+:is(.storefront, .seller-app, .admin-app) :is(.store-button, .checkout-outline-button, .seller-save-button, .seller-outline-button, .seller-danger-button, .admin-primary-button, .admin-secondary-button, .admin-danger-button, .report-generate-button, .forecast-plan-button),
+:is(.storefront, .seller-app, .admin-app) .report-preview-toolbar button,
+.app-primary-button,
+.app-secondary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--ui-control-height);
+    max-width: 100%;
+    padding: 10px 18px;
+    border-radius: var(--ui-control-radius);
+    font-family: var(--font-sans);
+    font-size: var(--ui-control-font);
+    font-weight: var(--ui-control-weight);
+    line-height: 1.4;
+    text-align: center;
+    transition: background-color .18s, border-color .18s, color .18s;
+}
+:is(.storefront, .seller-app, .admin-app) :is(.store-button, .seller-save-button, .admin-primary-button, .report-generate-button, .forecast-plan-button):not(:disabled),
+:is(.storefront, .seller-app, .admin-app) .report-preview-toolbar button,
+.app-primary-button {
+    background: var(--ui-action);
+    color: #fff;
+}
+:is(.storefront, .seller-app, .admin-app) :is(.store-button, .seller-save-button, .admin-primary-button, .report-generate-button, .forecast-plan-button):not(:disabled):hover,
+:is(.storefront, .seller-app, .admin-app) .report-preview-toolbar button:hover,
+.app-primary-button:hover {
+    background: var(--ui-action-hover);
+}
+.dark :is(.storefront, .seller-app, .admin-app) :is(.store-button, .seller-save-button, .admin-primary-button, .report-generate-button, .forecast-plan-button):not(:disabled) {
+    background: var(--ui-action);
+    color: #fff;
+}
+.dark :is(.storefront, .seller-app, .admin-app) :is(.store-button, .seller-save-button, .admin-primary-button, .report-generate-button, .forecast-plan-button):not(:disabled):hover {
+    background: var(--ui-action-hover);
+}
+:is(.storefront, .seller-app, .admin-app) :is(.checkout-outline-button, .seller-outline-button, .admin-secondary-button),
+.dark :is(.storefront, .seller-app, .admin-app) :is(.checkout-outline-button, .seller-outline-button, .admin-secondary-button) {
+    border: 1px solid var(--ui-border);
+    background: var(--ui-surface);
+    color: var(--ui-ink);
+}
+:is(.storefront, .seller-app, .admin-app) :is(.checkout-outline-button, .seller-outline-button, .admin-secondary-button):hover,
+.dark :is(.storefront, .seller-app, .admin-app) :is(.checkout-outline-button, .seller-outline-button, .admin-secondary-button):hover {
+    background: var(--ui-soft);
+    border-color: var(--ui-action);
+}
+:is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button),
+.dark :is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button) {
+    background: var(--ui-danger);
+    color: #fff;
+}
+:is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button):hover,
+.dark :is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button):hover {
+    background: var(--ui-danger-hover);
+}
+:is(.storefront, .seller-app, .admin-app) :is(button, a, input, select, textarea):focus-visible {
+    outline: 2px solid var(--ui-action);
+    outline-offset: 3px;
+}
+:is(.seller-app, .admin-app) button:disabled,
+.app-primary-button:disabled {
+    cursor: not-allowed;
+    opacity: .6;
+}
+.app-form-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border: 1px solid var(--ui-success-border);
+    border-radius: var(--ui-control-radius);
+    background: var(--ui-success-bg);
+    color: var(--ui-success-ink);
+    font-size: 14px;
+    line-height: 1.5;
+}
+.app-form-status > svg { flex-shrink: 0; }
+.app-form-status svg { width: 18px; height: 18px; }
+.app-form-status > span:not(.app-status-icon) { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.app-status-icon { display: grid; place-items: center; flex: 0 0 20px; }
+.app-form-status .app-status-dismiss {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    margin: -10px -8px -10px 0;
+    border-radius: 8px;
+    color: inherit;
+    cursor: pointer;
+}
+.app-form-status .app-status-dismiss:hover { background: var(--ui-soft); }
+.app-form-status--toast {
+    position: fixed;
+    left: 50%;
+    bottom: max(24px, calc(env(safe-area-inset-bottom) + 16px));
+    transform: translateX(-50%);
+    z-index: 10000;
+    width: max-content;
+    max-width: min(420px, calc(100vw - 32px));
+    margin: 0;
+    padding: 10px 12px;
+    gap: 10px;
+    border-color: var(--ui-border);
+    background: var(--ui-surface);
+    color: var(--ui-ink);
+    box-shadow: 0 4px 16px #0b1d1314;
+    animation: app-status-enter .18s ease-out;
+    font-family: var(--font-sans);
+}
+.app-form-status--toast .app-status-icon { color: var(--ui-success-ink); }
+.app-form-status--toast .app-status-dismiss { color: var(--ui-muted); }
+.app-form-status--error { border-color: var(--ui-danger); color: var(--ui-error-ink); background: var(--ui-surface); }
+.app-form-status--error .app-status-icon { color: var(--ui-error-ink); }
+.app-field-error { margin: 6px 0 12px; color: var(--ui-error-ink); font-size: 13px; line-height: 1.5; }
+.app-status-action a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 600; text-decoration: underline; }
+@keyframes app-status-enter { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+@media (max-width: 600px) {
+    .app-form-status--toast { bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px)); width: max-content; flex-wrap: wrap; }
+    .app-form-status--toast > span:not(.app-status-icon) { flex-basis: calc(100% - 84px); }
+    body:has(.help-widget-container) .app-form-status--toast { left: 16px; transform: none; max-width: calc(100vw - 112px); }
+    .app-status-action { order: 4; margin-left: 30px; }
+}
+@media (prefers-reduced-motion: reduce) { .app-form-status--toast { animation: none; } }
+.app-secondary-button { border: 1px solid var(--ui-border); background: var(--ui-surface); color: var(--ui-ink); }
+.app-secondary-button:hover { border-color: var(--ui-action); background: var(--ui-soft); }
+:is(.storefront, .seller-app, .admin-app) :is(input, select, textarea):not([type='checkbox'], [type='radio'], [type='file'], [type='range'], [type='hidden'], [type='color']) {
+    min-height: var(--ui-control-height);
+    border-radius: var(--ui-control-radius);
+    font-size: var(--ui-control-font);
+}
+:is(.storefront, .seller-app, .admin-app) :is(.customer-profile-actions, .seller-form-actions, .seller-photo-actions, .admin-photo-actions) { gap: 12px; }
+:is(.storefront, .seller-app, .admin-app) :is(.seller-page-title, .admin-page-title, .admin-page-heading h1, .customer-profile-heading h1, .customer-settings-header h1, .seller-preferences-header h1, .admin-preferences-header h2):is(h1, h2) {
+    font-size: var(--ui-heading-font);
+    font-weight: 750;
+    line-height: 1.25;
+    letter-spacing: -.4px;
+}
+:is(.customer-profile-page, .seller-profile-form, .admin-profile-form) label {
+    font-size: 13px;
+    font-weight: 600;
+}
+:is(.storefront, .seller-app, .admin-app) :is(p, small, div)[role='alert'],
+.dark :is(.storefront, .seller-app, .admin-app) :is(p, small, div)[role='alert'] {
+    color: var(--ui-error-ink);
+}
+@media (max-width: 620px) {
+    :root { --ui-heading-font: 23px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .app-primary-button,
+    .app-secondary-button,
+    :is(.storefront, .seller-app, .admin-app) :is(.store-button, .checkout-outline-button, .seller-save-button, .seller-outline-button, .seller-danger-button, .admin-primary-button, .admin-secondary-button, .admin-danger-button, .report-generate-button, .forecast-plan-button) { transition: none; }
 }

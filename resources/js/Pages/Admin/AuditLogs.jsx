@@ -1,11 +1,10 @@
 import { router } from "@inertiajs/react";
+import Pagination from '../Seller/Pagination';
 import { useEffect, useMemo, useState } from "react";
 import {
     ArrowRight,
     ArrowUpDown,
     Calendar,
-    ChevronLeft,
-    ChevronRight,
     FilePenLine,
     MapPin,
     RotateCcw,
@@ -118,7 +117,6 @@ function AuditDetails({ details, filipino }) {
     return <span className="admin-audit-details-text">{details}</span>;
 }
 
-const PAGE_SIZE = 10;
 
 const FILTER_OPTIONS = [
     { key: "all", label: "All actions" },
@@ -136,6 +134,7 @@ export default function AuditLogs({ logs = [], filipino }) {
     const [dateTo, setDateTo] = useState("");
     const [sortDesc, setSortDesc] = useState(true);
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
 
     useEffect(() => {
         const interval = window.setInterval(() => {
@@ -192,11 +191,14 @@ export default function AuditLogs({ logs = [], filipino }) {
         return result;
     }, [logs, filterType, search, dateFrom, dateTo, sortDesc]);
 
-    const totalPages = Math.ceil(filteredLogs.length / PAGE_SIZE) || 1;
+    const totalPages = Math.ceil(filteredLogs.length / pageSize) || 1;
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
     const paginated = useMemo(() => {
-        const start = (page - 1) * PAGE_SIZE;
-        return filteredLogs.slice(start, start + PAGE_SIZE);
-    }, [filteredLogs, page]);
+        const start = (page - 1) * pageSize;
+        return filteredLogs.slice(start, start + pageSize);
+    }, [filteredLogs, page, pageSize]);
 
     const hasFilters = Boolean(
         search || filterType !== "all" || dateFrom || dateTo,
@@ -344,10 +346,10 @@ export default function AuditLogs({ logs = [], filipino }) {
                 {/* Meta bar */}
                 <div className="admin-directory-meta-bar">
                     <p className="admin-directory-count" role="status">
-                        Showing <strong>{filteredLogs.length}</strong>{" "}
-                        {filteredLogs.length === 1 ? "entry" : "entries"}
+                        <strong>{filteredLogs.length}</strong>{" "}
+                        {filipino ? 'tala' : filteredLogs.length === 1 ? "entry" : "entries"}
                         {hasFilters && (
-                            <span className="admin-filtered-tag">filtered</span>
+                            <span className="admin-filtered-tag">{filipino ? 'na-filter' : 'filtered'}</span>
                         )}
                     </p>
                     {/* Sort toggle */}
@@ -444,55 +446,7 @@ export default function AuditLogs({ logs = [], filipino }) {
                         </div>
 
                         {/* Pagination */}
-                        <div
-                            className="admin-table-pagination"
-                            aria-label="Audit logs pagination"
-                        >
-                            <span className="admin-pagination-info">
-                                Showing{" "}
-                                <strong>{(page - 1) * PAGE_SIZE + 1}</strong>–
-                                <strong>
-                                    {Math.min(
-                                        page * PAGE_SIZE,
-                                        filteredLogs.length,
-                                    )}
-                                </strong>{" "}
-                                of <strong>{filteredLogs.length}</strong>{" "}
-                                entries
-                            </span>
-                            <div className="admin-pagination-controls">
-                                <button
-                                    type="button"
-                                    className="admin-pagination-btn"
-                                    disabled={page <= 1}
-                                    onClick={() =>
-                                        setPage((p) => Math.max(1, p - 1))
-                                    }
-                                    aria-label={filipino ? "Nakaraang pahina" : "Previous page"
-                                }>
-                                    <ChevronLeft aria-hidden="true" />
-                                    <span>Previous</span>
-                                </button>
-                                <span className="admin-pagination-current">
-                                    Page <strong>{page}</strong> of{" "}
-                                    <strong>{totalPages}</strong>
-                                </span>
-                                <button
-                                    type="button"
-                                    className="admin-pagination-btn"
-                                    disabled={page >= totalPages}
-                                    onClick={() =>
-                                        setPage((p) =>
-                                            Math.min(totalPages, p + 1),
-                                        )
-                                    }
-                                    aria-label={filipino ? "Susunod na pahina" : "Next page"
-                                }>
-                                    <span>Next</span>
-                                    <ChevronRight aria-hidden="true" />
-                                </button>
-                            </div>
-                        </div>
+                        <Pagination page={page} pageSize={pageSize} totalItems={filteredLogs.length} onPageChange={setPage} onPageSizeChange={setPageSize} filipino={filipino} label={filipino ? "Mga pahina ng audit log" : "Audit logs pagination"} itemLabel={filipino ? "tala" : "entries"} />
                     </div>
                 ) : (
                     <div className="admin-empty admin-seller-empty">

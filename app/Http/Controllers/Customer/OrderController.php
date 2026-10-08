@@ -34,6 +34,8 @@ class OrderController extends Controller
                             'price' => (float) $item->unit_price,
                             'total' => (float) $item->total,
                             'status' => strtolower($item->status),
+                            'cancellation_reason' => $item->cancellation_reason,
+                            'cancellation_note' => $item->cancellation_note,
                             'seller_name' => $item->seller?->name ?? 'Unknown Seller',
                             'photoUrl' => $item->product_id ? '/marketplace/products/'.$item->product_id.'/photo' : null,
                         ];

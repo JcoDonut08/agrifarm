@@ -1,0 +1,44 @@
+/* One confirmation dialog for customer, seller, and administrator actions. */
+.seller-confirmation-dialog {
+    width: min(440px, calc(100vw - 28px));
+    max-width: none;
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: 0;
+    overflow: auto;
+    color: var(--ui-ink);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border);
+    border-radius: 14px;
+    font-family: var(--font-sans);
+    box-shadow: 0 24px 70px #0b1d1340;
+}
+.seller-confirmation-dialog::backdrop { background: #0c1d16a6; }
+.seller-confirmation-content {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 16px;
+    padding: 24px 24px 20px;
+}
+.seller-confirmation-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    border-radius: 50%;
+    color: #9c332c;
+    background: #fbeae7;
+}
+.seller-confirmation-content h2 { margin: 0; color: var(--ui-ink); font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -.35px; }
+.seller-confirmation-content p { margin: 8px 0 0; color: var(--ui-muted); font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.seller-confirmation-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; background: var(--ui-soft); border-top: 1px solid var(--ui-border); }
+.seller-confirmation-actions button { min-width: 108px; width: auto; }
+.seller-confirmation-fields { grid-column: 1 / -1; }
+.dark .seller-confirmation-icon { color: #ffb5ad; background: #492e2b; }
+@media (max-width: 500px) {
+    .seller-confirmation-content { grid-template-columns: 40px minmax(0, 1fr); gap: 12px; padding: 20px 16px; }
+    .seller-confirmation-icon { width: 40px; height: 40px; }
+    .seller-confirmation-content h2 { font-size: 18px; }
+    .seller-confirmation-actions { display: grid; grid-template-columns: 1fr 1fr; padding: 16px; }
+    .seller-confirmation-actions button { width: 100%; min-width: 0; }
+}

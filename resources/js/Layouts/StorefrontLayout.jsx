@@ -6,6 +6,7 @@ import Icon from '../Components/Storefront/Icon';
 import { marketHref } from '../Components/Storefront/catalog';
 import { useShop } from '../Components/Storefront/ShopContext';
 import HelpWidget from '../Components/Storefront/HelpWidget';
+import FormStatus from '../Components/FormStatus';
 import '../../css/storefront.css';
 
 export default function StorefrontLayout({ children, market }) {
@@ -13,7 +14,7 @@ export default function StorefrontLayout({ children, market }) {
     const user = props.auth?.user;
     const pathname = url.split('?')[0];
     const currentPage = pathname === '/contact' ? 'contact' : pathname === '/customer' ? 'profile' : new URLSearchParams(url.split('?')[1] || '').get('page') || 'home';
-    const { filipino, count, favorites, panel, setPanel, notice, noticeId, noticeTarget, dismissNotice, setNoticePaused } = useShop();
+    const { filipino, count, favorites, panel, setPanel, notice, noticeId, noticeTarget, noticeTone, dismissNotice } = useShop();
     const [menuOpen, setMenuOpen] = useState(false);
     const destination = user ? ({ customer: '/customer', seller: '/seller/dashboard', cenro_admin: '/admin/dashboard' }[user.role] || '/') : '/login';
     const links = [{ label: filipino ? 'Home' : 'Home', href: '/', active: currentPage === 'home' }, { label: filipino ? 'Pamilihan' : 'Marketplace', href: marketHref(), active: market }, { label: filipino ? 'Tungkol' : 'About', href: '/about', active: currentPage === 'about' }];
@@ -75,10 +76,11 @@ export default function StorefrontLayout({ children, market }) {
                     </div>
                 </div>
             </footer>
-            <div className={`store-toast ${notice ? 'visible' : ''}`} onMouseEnter={() => setNoticePaused(true)} onMouseLeave={() => setNoticePaused(false)} onFocus={() => setNoticePaused(true)} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setNoticePaused(false); }}>
-                <div className="toast-announcement" role="status" aria-live="polite" aria-atomic="true">{notice && <span key={noticeId} className="toast-message"><Icon name={noticeTarget === 'favorites' ? 'heart' : 'check'} />{notice}</span>}</div>
-                {notice && <>{noticeTarget && <Link href={`/?page=${noticeTarget}`}>View {noticeTarget === 'cart' ? 'cart' : 'favorites'} <Icon name="arrow" size={16} /></Link>}<button type="button" className="toast-dismiss" aria-label="Dismiss notification" onClick={dismissNotice}><Icon name="close" size={18} /></button></>}
-            </div>
+            <FormStatus dismissible messageId={noticeId} onDismiss={dismissNotice} tone={noticeTone}
+                dismissLabel={filipino ? 'Isara ang mensahe' : 'Dismiss message'}
+                action={noticeTarget && <Link href={`/?page=${noticeTarget}`}>{filipino ? (noticeTarget === 'cart' ? 'Tingnan ang basket' : 'Tingnan ang mga paborito') : `View ${noticeTarget === 'cart' ? 'cart' : 'favorites'}`} <Icon name="arrow" size={16} /></Link>}>
+                {notice}
+            </FormStatus>
             <ShopDialog />
               <HelpWidget />
         </div>

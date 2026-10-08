@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import Pagination from './Pagination';
+import useTablePagination from '../../Components/useTablePagination';
 import Icon from "../../Components/Storefront/Icon";
 import { categoryLabel, unitLabel } from "./SellerLocale";
 import { formatMoney } from "./DashboardCards";
@@ -350,6 +352,8 @@ export default function Analytics({
         });
         return [...performance.values()].sort((a, b) => b.value - a.value);
     }, [completedOrders, productById]);
+
+    const performancePages = useTablePagination(productPerformance, `${period}|${from}|${to}|${productFilter}|${categoryFilter}`);
 
     const categoryPerformance = useMemo(() => {
         const totals = new Map();
@@ -839,7 +843,7 @@ export default function Analytics({
                         </div>
                     </div>
                     {productPerformance.length ? (
-                        <div className="seller-table-wrap">
+                        <><div className="seller-table-wrap">
                             <table>
                                 <thead>
                                     <tr>
@@ -859,14 +863,14 @@ export default function Analytics({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {productPerformance.map(
+                                    {performancePages.visibleItems.map(
                                         (product, index) => (
                                             <tr
                                                 key={`${product.name}-${product.unit}`}
                                             >
                                                 <td>
                                                     <div className="analytics-product-name">
-                                                        {index === 0 && (
+                                                        {index === 0 && performancePages.page === 1 && (
                                                             <Icon
                                                                 name="trophy"
                                                                 size={15}
@@ -934,6 +938,7 @@ export default function Analytics({
                                 </tbody>
                             </table>
                         </div>
+                        <Pagination page={performancePages.page} pageSize={performancePages.pageSize} totalItems={productPerformance.length} onPageChange={performancePages.setPage} onPageSizeChange={performancePages.setPageSize} filipino={filipino} label="Product performance pagination" itemLabel={filipino ? 'produkto' : 'products'} /></>
                     ) : (
                         <EmptyAnalytics
                             title={

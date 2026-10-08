@@ -4,6 +4,7 @@ import ConfirmationDialog from '../ConfirmationDialog';
 import { ThumbsUp, ThumbsDown, ImagePlus, X } from "lucide-react";
 import Icon from './Icon';
 import { reviewHref } from './catalog';
+import { useShop } from './ShopContext';
 
 const stars = [5, 4, 3, 2, 1];
 
@@ -13,16 +14,9 @@ function StarRating({ rating, label }) {
     </span>;
 }
 
-function ReviewForm({ product, existing = null, status = null, onCancel }) {
-    const [localStatus, setLocalStatus] = useState(status);
-
-    useEffect(() => {
-        setLocalStatus(status);
-        if (status) {
-            const timer = setTimeout(() => setLocalStatus(null), 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [status]);
+function ReviewForm({ product, existing = null, onCancel }) {
+    const { notify, filipino } = useShop();
+    const attachmentInput = useRef(null);
 
     const form = useForm({ product_key: product.id, rating: existing?.rating || 0, comment: existing?.comment || '', anonymous: existing?.anonymous || false, attachment: null });
     const trimmedCommentLength = form.data.comment.trim().length;
@@ -41,9 +35,21 @@ function ReviewForm({ product, existing = null, status = null, onCancel }) {
 
     function submit(event) {
         event.preventDefault();
+        form.clearErrors();
+        const failed = () => {
+            form.setError('submit', filipino ? 'Hindi ma-save ang review. Pakisubukan muli.' : 'The review could not be saved. Please try again.');
+            return false;
+        };
         const options = {
             preserveScroll: true,
+            onNetworkError: failed,
+            onHttpException: response => {
+                if (response.status !== 429) return failed();
+                form.setError('submit', filipino ? 'Maghintay muna ng isang minuto bago subukan muli.' : 'Please wait a minute before trying again.');
+                return false;
+            },
             onSuccess: () => {
+                notify(filipino ? (existing ? 'Na-update ang review.' : 'Naipost ang review.') : (existing ? 'Review updated.' : 'Review posted.'));
                 if (existing) onCancel?.();
                 else form.reset();
             },
@@ -57,7 +63,6 @@ function ReviewForm({ product, existing = null, status = null, onCancel }) {
 
     return <div className={`review-form-panel ${existing ? 'is-editing' : ''}`}>
         <div className="review-form-heading"><div><h3>{existing ? 'Edit review' : 'Write a review'}</h3><p>{existing ? 'Update this review without affecting your other posts.' : 'You may post another review whenever you have more to share.'}</p></div>{existing && <button type="button" className="review-text-button" onClick={onCancel}>Cancel</button>}</div>
-        {localStatus && <p className="review-status" role="status">{localStatus}</p>}
         <form onSubmit={submit}>
             <fieldset className="review-rating-input"><legend>Your rating</legend><div className="review-rating-options">{[1, 2, 3, 4, 5].map((star) => <button type="button" key={star} aria-label={`Rate ${star} ${star === 1 ? 'star' : 'stars'}`} aria-pressed={form.data.rating === star} className={form.data.rating >= star ? 'is-selected' : ''} onClick={() => form.setData('rating', star)}>★</button>)}</div></fieldset>
             {form.errors.rating && <p className="review-error">{form.errors.rating}</p>}
@@ -66,10 +71,10 @@ function ReviewForm({ product, existing = null, status = null, onCancel }) {
                 <textarea id="review-comment" value={form.data.comment} onChange={(event) => form.setData('comment', event.target.value)} minLength={10} maxLength={2000} rows={4} placeholder="What did you like? How was the produce?" required />
                 <div className="review-textarea-footer">
                     <div className="review-textarea-attachment">
-                        <input id="review-attachment" type="file" accept="image/*,video/*" onChange={(e) => form.setData('attachment', e.target.files[0])} style={{ display: 'none' }} />
-                        <label htmlFor="review-attachment" aria-label="Attach image or video" title="Attach image or video">
-                            <ImagePlus size={18} />
-                        </label>
+                        <input ref={attachmentInput} id="review-attachment" type="file" accept="image/*,video/*" onChange={(e) => form.setData('attachment', e.target.files[0])} style={{ display: 'none' }} />
+                        <button type="button" aria-label="Attach image or video" title="Attach image or video" onClick={() => attachmentInput.current?.click()}>
+                            <ImagePlus size={18} aria-hidden="true" />
+                        </button>
                         {form.data.attachment && <div className="attachment-name">
                             <span>{form.data.attachment.name}</span>
                             <button type="button" aria-label="Remove attachment" onClick={() => form.setData('attachment', null)}><X size={14} /></button>
@@ -82,6 +87,7 @@ function ReviewForm({ product, existing = null, status = null, onCancel }) {
             {form.errors.attachment && <p className="review-error">{form.errors.attachment}</p>}
             <label className="review-anonymous"><input type="checkbox" checked={form.data.anonymous} onChange={(event) => form.setData('anonymous', event.target.checked)} /><span><strong>Post anonymously</strong><small>Your name will be hidden from other shoppers. Your account remains linked so you can edit or delete this review.</small></span></label>
             {form.errors.anonymous && <p className="review-error">{form.errors.anonymous}</p>}
+            {form.errors.submit && <p className="app-field-error" role="alert">{form.errors.submit}</p>}
             <div className="review-form-actions"><button type="submit" className="store-button" disabled={form.processing || !canSubmit} aria-describedby={requirementId}>{form.processing ? 'Saving…' : existing ? 'Save changes' : 'Post review'}</button></div>
             <p id={requirementId} className={`review-submit-requirement ${canSubmit ? 'is-ready' : ''}`} aria-live="polite">{submitRequirement}</p>
         </form>
@@ -89,6 +95,7 @@ function ReviewForm({ product, existing = null, status = null, onCancel }) {
 }
 
 export default function ProductReviews({ product, feed, user }) {
+    const { notify, filipino } = useShop();
     const summary = feed?.summary || { count: 0, average: null };
     const filter = feed?.filter || null;
     const reviews = feed?.reviews || [];
@@ -115,13 +122,14 @@ export default function ProductReviews({ product, feed, user }) {
             onSuccess: () => {
                 if (editingReview?.id === reviewToDelete.id) setEditingReview(null);
                 setReviewToDelete(null);
+                notify(filipino ? 'Nabura ang review.' : 'Review deleted.');
             },
             onFinish: () => setDeleting(false),
         });
     }
 
     const reviewAction = user?.role === 'customer'
-        ? <div>{(!editingReview) && <ReviewForm key="new" product={product} status={feed?.status} />}</div>
+        ? <div>{(!editingReview) && <ReviewForm key="new" product={product} />}</div>
         : <div className="review-signin">
             <h3>{user ? 'Customer reviews only' : 'Bought or tried this product?'}</h3>
             <p>{user ? 'Reviews are posted from customer accounts. Seller and administrator accounts can still read every review.' : 'Log in with a customer account to rate this product. You can post anonymously and manage each review later.'}</p>

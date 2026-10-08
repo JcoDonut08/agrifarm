@@ -86,8 +86,8 @@ for (const viewport of viewports) {
         await expect(
             page.getByRole("button", { name: `Reopen ${taskTitle}` }),
         ).toBeVisible();
-        page.once("dialog", (dialog) => dialog.accept());
         await page.getByRole("button", { name: `Delete ${taskTitle}` }).click();
+        await page.getByRole('dialog', { name: 'Delete task?' }).getByRole('button', { name: 'Delete task', exact: true }).click();
         await expect(page.getByText(taskTitle)).toHaveCount(0);
 
         const forecastDays = page.locator(".seller-weather-days button");
@@ -284,7 +284,7 @@ for (const viewport of viewports) {
             .fill("Starter123");
         await page.getByLabel("Confirm temporary password").fill("Starter123");
         await page.getByRole("button", { name: "Create seller" }).click();
-        await expect(page.getByText(`Farm ${viewport.name}`)).toBeVisible();
+        await expect(page.getByText(`Farm ${viewport.name}`, { exact: true })).toBeVisible();
         await expect(
             page.getByText(`farm-${viewport.name}@example.test`),
         ).toBeVisible();
@@ -292,7 +292,7 @@ for (const viewport of viewports) {
         await page
             .getByPlaceholder("Search name, email, or barangay...")
             .fill(`Farm ${viewport.name}`);
-        await expect(page.getByText(`Farm ${viewport.name}`)).toBeVisible();
+        await expect(page.getByText(`Farm ${viewport.name}`, { exact: true })).toBeVisible();
         await page.getByLabel("Clear search input").click();
 
         await page

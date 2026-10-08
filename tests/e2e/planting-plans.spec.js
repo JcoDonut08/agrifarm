@@ -101,6 +101,9 @@ test('seller saves and removes planting choices with dated cards in both languag
 
     await page.getByRole('button', { name: `Remove ${firstCrop} from planting plan`, exact: true }).focus();
     await page.keyboard.press('Enter');
+    const removal = page.getByRole('dialog', { name: 'Remove planting plan?' });
+    await expect(removal).toBeVisible();
+    await removal.getByRole('button', { name: 'Remove plan', exact: true }).click();
     await expect(page.locator('.forecast-plan-list li')).toHaveCount(1);
     await expect(firstCard.locator('.forecast-plan-button')).toBeEnabled();
     await page.reload();
@@ -126,8 +129,10 @@ test('seller saves and removes planting choices with dated cards in both languag
         await page.locator('.forecast-planting-plan').screenshot({ path: testInfo.outputPath(`planting-plan-filipino-${width}.png`) });
     }
     await page.locator('.forecast-plan-remove').first().click();
+    await page.getByRole('dialog', { name: 'Alisin ang plano sa pagtatanim?' }).getByRole('button', { name: 'Alisin ang plano', exact: true }).click();
     await expect(page.locator('.forecast-plan-list li')).toHaveCount(1);
     await page.locator('.forecast-plan-remove').first().click();
+    await page.getByRole('dialog', { name: 'Alisin ang plano sa pagtatanim?' }).getByRole('button', { name: 'Alisin ang plano', exact: true }).click();
     await expect(page.locator('.forecast-planting-plan')).toHaveCount(0);
     await page.reload();
     await expect(page.locator('.forecast-planting-plan')).toHaveCount(0);
@@ -144,6 +149,7 @@ test('seller saves and removes planting choices with dated cards in both languag
     await expect(page.locator('.forecast-plan-list li')).toHaveCount(1);
     await expect(page.getByRole('alert')).toHaveCount(0);
     await page.locator('.forecast-plan-remove').click();
+    await page.getByRole('dialog', { name: 'Alisin ang plano sa pagtatanim?' }).getByRole('button', { name: 'Alisin ang plano', exact: true }).click();
     await expect(page.locator('.forecast-planting-plan')).toHaveCount(0);
     expect(errors).toEqual([]);
 });

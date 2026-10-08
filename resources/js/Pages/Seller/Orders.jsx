@@ -6,6 +6,7 @@ import SellerFlashStatus from "./SellerFlashStatus";
 import Pagination from "./Pagination";
 import { localizeMessage, unitLabel } from "./SellerLocale";
 import ConfirmationDialog from "../../Components/ConfirmationDialog";
+import OrderCancellationReason, { cancellationReasons } from '../../Components/OrderCancellationReason';
 import "../../../css/seller-orders.css";
 
 const statuses = [
@@ -184,7 +185,6 @@ const receiptDateTime = (value, filipino) =>
 const orderNumber = (order) =>
     order.checkout?.reference_number ||
     `#WALK-${String(order.id).padStart(5, "0")}`;
-const ORDERS_PER_PAGE = 10;
 
 export default function Orders({
     products = [],
@@ -194,12 +194,20 @@ export default function Orders({
     const { auth, flash } = usePage().props;
     const [filter, setFilter] = useState("all");
     const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [adding, setAdding] = useState(false);
     const [viewingOrder, setViewingOrder] = useState(null);
     const [receiptOrder, setReceiptOrder] = useState(null);
     const [processingOrderId, setProcessingOrderId] = useState(null);
     const [cancellingOrder, setCancellingOrder] = useState(null);
+    const [cancellationReason, setCancellationReason] = useState('');
+    const [cancellationNote, setCancellationNote] = useState('');
+    const [cancellationInventorySource, setCancellationInventorySource] = useState('');
+    const [cancellationErrors, setCancellationErrors] = useState({});
     const [actionError, setActionError] = useState("");
+    const needsCancellationInventorySource = Boolean(cancellingOrder?.product_id)
+        && !['stock', 'expected_yield'].includes(cancellingOrder?.inventory_source)
+        && !['pending', 'reservation'].includes(cancellingOrder?.status);
     const [data, setData] = useState({
         customer_name: "",
         product_id: "",
@@ -223,11 +231,11 @@ export default function Orders({
             : orders.filter((order) => order.status === filter);
     const totalPages = Math.max(
         1,
-        Math.ceil(filteredOrders.length / ORDERS_PER_PAGE),
+        Math.ceil(filteredOrders.length / rowsPerPage),
     );
     const visibleOrders = filteredOrders.slice(
-        (currentPage - 1) * ORDERS_PER_PAGE,
-        currentPage * ORDERS_PER_PAGE,
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage,
     );
     const counts = useMemo(
         () =>
@@ -350,6 +358,10 @@ export default function Orders({
 
     function changeStatus(order, nextStatus) {
         if (nextStatus === "cancelled") {
+            setCancellationReason('');
+            setCancellationNote('');
+            setCancellationInventorySource('');
+            setCancellationErrors({});
             setCancellingOrder(order);
             return;
         }
@@ -357,25 +369,30 @@ export default function Orders({
         performStatusChange(order, nextStatus);
     }
 
-    function performStatusChange(order, nextStatus) {
+    function performStatusChange(order, nextStatus, cancellation = {}) {
         setActionError("");
         setProcessingOrderId(order.id);
         router.patch(
             `/seller/orders/${order.id}/status`,
-            { status: nextStatus },
+            { status: nextStatus, ...cancellation },
             {
                 preserveScroll: true,
-                onError: (serverErrors) =>
+                onError: (serverErrors) => {
+                    if (nextStatus === 'cancelled') {
+                        setCancellationErrors(serverErrors);
+                        return;
+                    }
                     setActionError(
                         filipino
                             ? localizeMessage(serverErrors.status, true) ||
                                   "Hindi na-update ang order."
                             : serverErrors.status ||
                                   "The order could not be updated.",
-                    ),
+                    );
+                },
+                onSuccess: () => setCancellingOrder(null),
                 onFinish: () => {
                     setProcessingOrderId(null);
-                    setCancellingOrder(null);
                 },
             },
         );
@@ -493,8 +510,8 @@ export default function Orders({
                         </h2>
                         <p>
                             {filipino
-                                ? `${orders.length} order ang ipinapakita`
-                                : `${orders.length} ${orders.length === 1 ? "order" : "orders"} shown`}
+                                ? `${orders.length} order sa kabuuan`
+                                : `${orders.length} ${orders.length === 1 ? "order" : "orders"} in total`}
                         </p>
                     </div>
                     <button
@@ -557,7 +574,7 @@ export default function Orders({
                     </p>
                 )}
 
-                <div className="orders-table-wrap">
+                <div className={`orders-table-wrap${filteredOrders.length ? '' : ' is-empty'}`}>
                     <table className="orders-table">
                         <thead>
                             <tr>
@@ -606,8 +623,7 @@ export default function Orders({
                                                     />
                                                     <div className="order-product-copy">
                                                         <strong>
-                                                            {product?.name ||
-                                                                order.product_name}
+                                                            {order.product_name}
                                                         </strong>
                                                         <span>
                                                             {filipino
@@ -710,7 +726,8 @@ export default function Orders({
                 </div>
                 <Pagination
                     page={currentPage}
-                    pageSize={ORDERS_PER_PAGE}
+                    pageSize={rowsPerPage}
+                    onPageSizeChange={setRowsPerPage}
                     totalItems={filteredOrders.length}
                     onPageChange={setCurrentPage}
                     label={
@@ -734,8 +751,8 @@ export default function Orders({
                 title={filipino ? "Kanselahin ang order?" : "Cancel order?"}
                 description={
                     filipino
-                        ? `Sigurado ka bang kakanselahin ang ${cancellingOrder ? orderNumber(cancellingOrder) : ""}? Ibabalik sa imbentaryo ang nakalaang stock.`
-                        : `Are you sure you want to cancel ${cancellingOrder ? orderNumber(cancellingOrder) : ""}? Its reserved stock will be returned to inventory.`
+                        ? `Pumili ng dahilan para sa ${cancellingOrder ? orderNumber(cancellingOrder) : ""}. Makikita ito ng customer. Ibabalik ang daming inilaan para sa order na ito.`
+                        : `Choose a reason for ${cancellingOrder ? orderNumber(cancellingOrder) : ""}. It will be shared with the customer. The quantity reserved for this order will be restored.`
                 }
                 cancelLabel={filipino ? "Panatilihin ang order" : "Keep order"}
                 confirmLabel={
@@ -746,9 +763,41 @@ export default function Orders({
                 icon="close"
                 onCancel={() => setCancellingOrder(null)}
                 onConfirm={() =>
-                    performStatusChange(cancellingOrder, "cancelled")
+                    performStatusChange(cancellingOrder, "cancelled", {
+                        cancellation_reason: cancellationReason,
+                        cancellation_note: cancellationNote,
+                        ...(needsCancellationInventorySource ? { cancellation_inventory_source: cancellationInventorySource } : {}),
+                    })
                 }
-            />
+            >
+                <div className="order-cancel-fields">
+                    {needsCancellationInventorySource && <div>
+                        <label htmlFor="cancel-order-inventory-source">{filipino ? 'Saan ibabalik ang dami?' : 'Return reserved quantity to'}</label>
+                        <select id="cancel-order-inventory-source" value={cancellationInventorySource} onChange={event => { setCancellationInventorySource(event.target.value); setCancellationErrors(current => ({ ...current, cancellation_inventory_source: null })); }} disabled={Boolean(processingOrderId)} aria-invalid={Boolean(cancellationErrors.cancellation_inventory_source)} aria-describedby="cancel-inventory-help cancel-inventory-error">
+                            <option value="">{filipino ? 'Pumili ng orihinal na pinagkunan' : 'Choose the original source'}</option>
+                            <option value="stock">{filipino ? 'Available na stock' : 'Available stock'}</option>
+                            <option value="expected_yield">{filipino ? 'Inaasahang ani' : 'Future harvest'}</option>
+                        </select>
+                        <small id="cancel-inventory-help">{filipino ? 'Para sa mas lumang order na ito, piliin kung sa stock o sa inaasahang ani inilaan ang dami.' : 'For this older order, choose whether the quantity was reserved from stock or a future harvest.'}</small>
+                        {cancellationErrors.cancellation_inventory_source && <p id="cancel-inventory-error" role="alert">{localizeMessage(cancellationErrors.cancellation_inventory_source, filipino)}</p>}
+                    </div>}
+                    <div>
+                        <label htmlFor="cancel-order-reason">{filipino ? 'Dahilan' : 'Reason'}</label>
+                        <select id="cancel-order-reason" value={cancellationReason} onChange={event => { setCancellationReason(event.target.value); setCancellationErrors(current => ({ ...current, cancellation_reason: null })); }} disabled={Boolean(processingOrderId)} aria-invalid={Boolean(cancellationErrors.cancellation_reason)} aria-describedby={cancellationErrors.cancellation_reason ? 'cancel-reason-error' : undefined}>
+                            <option value="">{filipino ? 'Pumili ng dahilan' : 'Choose a reason'}</option>
+                            {cancellationReasons.map(reason => <option key={reason.value} value={reason.value}>{reason[filipino ? 'filipino' : 'english']}</option>)}
+                        </select>
+                    </div>
+                    {cancellationErrors.cancellation_reason && <p id="cancel-reason-error" role="alert">{localizeMessage(cancellationErrors.cancellation_reason, filipino)}</p>}
+                    <div>
+                        <label htmlFor="cancel-order-note">{filipino ? (cancellationReason === 'other' ? 'Paliwanag' : 'Karagdagang detalye (opsyonal)') : (cancellationReason === 'other' ? 'Explanation' : 'Additional details (optional)')}</label>
+                        <textarea id="cancel-order-note" rows={3} maxLength={500} value={cancellationNote} onChange={event => { setCancellationNote(event.target.value); setCancellationErrors(current => ({ ...current, cancellation_note: null })); }} disabled={Boolean(processingOrderId)} aria-invalid={Boolean(cancellationErrors.cancellation_note)} aria-describedby={cancellationErrors.cancellation_note ? 'cancel-note-error' : 'cancel-note-hint'} placeholder={filipino ? 'Ipaalam sa customer kung bakit kinansela.' : 'Let the customer know why the order was cancelled.'} />
+                        <small id="cancel-note-hint">{cancellationNote.length} / 500</small>
+                    </div>
+                    {cancellationErrors.cancellation_note && <p id="cancel-note-error" role="alert">{localizeMessage(cancellationErrors.cancellation_note, filipino)}</p>}
+                    {cancellationErrors.status && <p role="alert">{localizeMessage(cancellationErrors.status, filipino)}</p>}
+                </div>
+            </ConfirmationDialog>
 
             <dialog
                 ref={addModal}
@@ -997,9 +1046,7 @@ export default function Orders({
                                         {filipino ? "Produkto" : "Product"}
                                     </span>
                                     <strong>
-                                        {productById.get(
-                                            Number(viewingOrder.product_id),
-                                        )?.name || viewingOrder.product_name}
+                                        {viewingOrder.product_name}
                                     </strong>
                                     <small>
                                         {filipino
@@ -1094,6 +1141,7 @@ export default function Orders({
                                     <dd>{money(viewingOrder.total)}</dd>
                                 </div>
                             </dl>
+                            <OrderCancellationReason order={viewingOrder} filipino={filipino} />
                         </div>
                         <div className="walk-in-modal-actions">
                             <button
@@ -1212,10 +1260,7 @@ export default function Orders({
                                 <tr>
                                     <td>
                                         <strong>
-                                            {productById.get(
-                                                Number(receiptOrder.product_id),
-                                            )?.name ||
-                                                receiptOrder.product_name}
+                                            {receiptOrder.product_name}
                                         </strong>
                                         <span>
                                             {money(receiptOrder.unit_price)} /{" "}

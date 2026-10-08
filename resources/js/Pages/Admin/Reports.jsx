@@ -6,7 +6,6 @@ import HarvestForecastExport from "./HarvestForecastExport";
 import "../../../css/seller-reports.css";
 
 const DAY = 86400000;
-const REPORT_ROWS_PER_PAGE = 8;
 
 function startOfDay(value) {
     const date = new Date(value);
@@ -111,6 +110,7 @@ export default function AdminReports({
     const [formats, setFormats] = useState({ barangay: "pdf", harvest: "pdf", registration: "pdf" });
     const [isExporting, setIsExporting] = useState(false);
     const [previewPage, setPreviewPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [from, setFrom] = useState(() => inputDate(new Date(today.getFullYear(), today.getMonth(), 1)));
     const [to, setTo] = useState(() => inputDate(today));
 
@@ -228,8 +228,8 @@ export default function AdminReports({
     const periodLabel = `${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium" }).format(range.start)} \u2013 ${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium" }).format(new Date(range.end.getTime() - DAY))}`;
     const generatedLabel = new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium" }).format(today);
     const format = reportType ? formats[reportType] : "pdf";
-    const reportPageCount = Math.max(1, Math.ceil(report.rows.length / REPORT_ROWS_PER_PAGE));
-    const visibleReportRows = report.rows.slice((previewPage - 1) * REPORT_ROWS_PER_PAGE, previewPage * REPORT_ROWS_PER_PAGE);
+    const reportPageCount = Math.max(1, Math.ceil(report.rows.length / rowsPerPage));
+    const visibleReportRows = report.rows.slice((previewPage - 1) * rowsPerPage, previewPage * rowsPerPage);
     const reportNote = filipino
         ? "Opisyal na ulat ng AgriFarm para sa Pasig CENRO. Batay sa datos na nasa sistema noong ginawa ang ulat."
         : "Official AgriFarm report for Pasig CENRO. Based on data available in the system at the time of generation.";
@@ -405,15 +405,16 @@ export default function AdminReports({
                             <table>
                                 <thead><tr>{report.headers.map((h) => <th key={h}>{h}</th>)}</tr></thead>
                                 <tbody>
-                                    {report.rows.length ? report.rows.map((row, ri) => (
-                                        <tr key={`${row[0]}-${(previewPage-1)*REPORT_ROWS_PER_PAGE+ri}`}>
+                                    {visibleReportRows.map((row, ri) => (
+                                        <tr key={`${row[0]}-${(previewPage-1)*rowsPerPage+ri}`}>
                                             {row.map((cell, i) => <td key={i}>{cell}</td>)}
                                         </tr>
-                                    )) : null}
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
                         {!report.rows.length && <p className="report-empty-message">{filipino ? "Walang datos para sa napiling panahon." : "No data found for the selected period."}</p>}
+                        <Pagination page={previewPage} pageSize={rowsPerPage} totalItems={report.rows.length} onPageChange={setPreviewPage} onPageSizeChange={setRowsPerPage} filipino={filipino} label={filipino ? 'Mga pahina ng report' : 'Report preview pagination'} itemLabel={filipino ? 'tala' : 'records'} className="report-pagination" />
                         <footer>{reportNote}</footer>
                     </article>
                 </section>

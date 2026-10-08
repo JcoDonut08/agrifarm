@@ -50,11 +50,34 @@ class ProductController extends Controller
         unset($data['photo']);
 
         try {
-            $product->update($data);
-            WalkInOrder::where('product_id', $product->id)->update([
-                'product_name' => $product->name,
-                'unit' => $product->unit,
-            ]);
+            DB::transaction(function () use ($product, $data, &$previousPath): void {
+                $currentProduct = Product::whereKey($product->id)->lockForUpdate()->firstOrFail();
+                if ($data['unit'] !== $currentProduct->unit && WalkInOrder::where('product_id', $currentProduct->id)
+                    ->whereIn('status', ['pending', 'reservation', 'preparing', 'out_for_delivery'])->exists()) {
+                    throw ValidationException::withMessages([
+                        'unit' => 'Finish or cancel open orders before changing the selling unit.',
+                    ]);
+                }
+                $inventoryErrors = [];
+                foreach (['stock', 'expected_yield'] as $field) {
+                    if (! array_key_exists($field, $data)) {
+                        continue;
+                    }
+                    $original = (int) $data['original_'.$field];
+                    if ((int) $data[$field] === $original) {
+                        unset($data[$field]);
+                    } elseif ((int) $currentProduct->{$field} !== $original) {
+                        $label = $field === 'stock' ? 'Available stock' : 'Expected harvest quantity';
+                        $inventoryErrors[$field] = "{$label} changed. Current quantity: {$currentProduct->{$field}}. Review it before saving.";
+                    }
+                }
+                if ($inventoryErrors !== []) {
+                    throw ValidationException::withMessages($inventoryErrors);
+                }
+                unset($data['original_stock'], $data['original_expected_yield']);
+                $previousPath = $currentProduct->photo_path;
+                $currentProduct->update($data);
+            });
         } catch (\Throwable $exception) {
             if ($replacementPath) {
                 Storage::disk('local')->delete($replacementPath);
@@ -113,18 +136,30 @@ class ProductController extends Controller
     {
         $request->merge(['name' => trim((string) $request->input('name'))]);
 
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'category' => ['required', Rule::in(self::CATEGORIES)],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'numeric', 'min:0.01', 'max:99999999.99', 'decimal:0,2'],
             'unit' => ['required', Rule::in(self::UNITS)],
-            'stock' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'stock' => [$photoRequired ? 'required' : 'sometimes', 'integer', 'min:0', 'max:1000000'],
             'threshold' => ['required', 'integer', 'min:0', 'max:1000000'],
             'expected_yield' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'harvest_date' => ['nullable', 'date', 'after_or_equal:today'],
             'photo' => [$photoRequired ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240', 'dimensions:max_width=6000,max_height=6000'],
+            ...($photoRequired ? [] : [
+                'original_stock' => [Rule::requiredIf($request->exists('stock')), 'integer', 'min:0', 'max:1000000'],
+                'original_expected_yield' => [Rule::requiredIf($request->exists('expected_yield')), 'integer', 'min:0', 'max:1000000'],
+            ]),
+        ], [
+            'original_stock.required' => 'Refresh this product before changing its stock.',
+            'original_expected_yield.required' => 'Refresh this product before changing its expected harvest quantity.',
         ]);
+        if (array_key_exists('expected_yield', $data)) {
+            $data['expected_yield'] = (int) $data['expected_yield'];
+        }
+
+        return $data;
     }
 
     private function ensureOwner(Request $request, Product $product): void

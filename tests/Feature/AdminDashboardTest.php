@@ -53,12 +53,12 @@ class AdminDashboardTest extends TestCase
                 ->where('dashboard.barangays.0.orders', 2)
                 ->where('dashboard.barangays.0.completedOrders', 1)
                 ->where('dashboard.barangays.0.products', 1)
-                ->has('dashboard.monthlySales.months', 6)
+                ->has('dashboard.monthlySales.months', 12)
                 ->has('dashboard.monthlySales.series', 2)
                 ->where('dashboard.monthlySales.series.0.name', 'Rosario')
-                ->where('dashboard.monthlySales.series.0.sales.4', 250)
+                ->where('dashboard.monthlySales.series.0.sales.10', 250)
                 ->where('dashboard.monthlySales.series.1.name', 'Maybunga')
-                ->where('dashboard.monthlySales.series.1.sales.5', 125)
+                ->where('dashboard.monthlySales.series.1.sales.11', 125)
                 ->has('dashboard.todo', 1)
                 ->where('dashboard.todo.0.title', 'Review seller records')
                 ->where('dashboard.todo.0.completed', false)
@@ -83,13 +83,39 @@ class AdminDashboardTest extends TestCase
                 ->where('dashboard.summary.totalOrders', 0)
                 ->where('dashboard.summary.leadingBarangay', null)
                 ->has('dashboard.barangays', 0)
-                ->has('dashboard.monthlySales.months', 6)
+                ->has('dashboard.monthlySales.months', 12)
                 ->has('dashboard.monthlySales.series', 0)
                 ->has('dashboard.todo', 0)
                 ->where('dashboard.attention.recentSellers', 0)
                 ->where('dashboard.attention.pendingOrders', 0)
                 ->where('dashboard.attention.lowStockProducts', 0)
                 ->has('dashboard.recentActivity', 0));
+    }
+
+    public function test_monthly_sales_includes_the_whole_twelve_month_window_and_only_delivered_orders(): void
+    {
+        $this->travelTo(now()->startOfMonth()->addDays(6));
+        $this->withoutVite();
+        $weather = Mockery::mock(WeatherService::class);
+        $weather->shouldReceive('current')->once()->andReturn(null);
+        $this->app->instance(WeatherService::class, $weather);
+        $admin = User::factory()->cenroAdmin()->create();
+        $seller = User::factory()->seller()->create(['barangay' => 'Rosario']);
+        $product = $this->product($seller, 'Pechay', 12, 3);
+
+        $this->order($seller, $product, '100.00', 'delivered', now()->startOfMonth()->subMonths(11));
+        $this->order($seller, $product, '200.00', 'delivered', now()->subMonths(8));
+        $this->order($seller, $product, '25.00', 'delivered', now());
+        $this->order($seller, $product, '999.00', 'delivered', now()->startOfMonth()->subMonths(11)->subSecond());
+        $this->order($seller, $product, '888.00', 'pending', now()->subMonths(8));
+
+        $this->actingAs($admin)->get('/admin/dashboard')->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('dashboard.monthlySales.months', 12)
+                ->where('dashboard.monthlySales.months.0.key', now()->subMonths(11)->format('Y-m'))
+                ->where('dashboard.monthlySales.months.11.key', now()->format('Y-m'))
+                ->has('dashboard.monthlySales.series', 1)
+                ->where('dashboard.monthlySales.series.0.sales', [100, 0, 0, 200, 0, 0, 0, 0, 0, 0, 0, 25]));
     }
 
     public function test_cenro_administrator_can_create_complete_reopen_and_delete_personal_tasks(): void

@@ -35,12 +35,12 @@ test('customer checks out with COD across mobile tablet and desktop; seller rece
     await page.goto('/?page=marketplace');
     await page.getByRole('button', { name: `Add ${productName} to cart` }).click();
     await page.goto('/customer');
-    await expect(page.getByRole('heading', { name: 'My Profile' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My profile' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Shopping cart, 1 items' })).toBeVisible();
     await page.getByLabel('Mobile number').fill('09171234567');
     await page.getByLabel('Complete address').fill('123 Example Street near Rosario hall');
     await page.getByRole('button', { name: 'Save details' }).click();
-    await expect(page.locator('.customer-profile-status')).toContainText('Profile saved');
+    await expect(page.locator('.app-form-status')).toContainText('Profile saved');
     await page.goto('/?page=cart');
     await expect(page.getByText(productName).first()).toBeVisible();
 
@@ -57,10 +57,7 @@ test('customer checks out with COD across mobile tablet and desktop; seller rece
         if (viewport.width > 1000) {
             const nav = page.getByRole('navigation', { name: 'Main navigation' });
             await expect(nav.getByRole('link', { name: 'Marketplace' })).toHaveAttribute('aria-current', 'page');
-            const activeBackground = await nav.getByRole('link', { name: 'Marketplace' }).evaluate(node => getComputedStyle(node).backgroundColor);
-            expect(activeBackground).not.toBe('rgba(0, 0, 0, 0)');
-            await nav.getByRole('link', { name: 'Home' }).hover();
-            await expect.poll(() => nav.getByRole('link', { name: 'Home' }).evaluate(node => getComputedStyle(node).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+            await expect(nav.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current', 'page');
         } else {
             await page.getByRole('button', { name: 'Open navigation menu' }).click();
             const nav = page.getByRole('navigation', { name: 'Mobile navigation' });

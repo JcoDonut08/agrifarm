@@ -24,6 +24,11 @@ shadcn/ui components used in AgriFarm are customized through Tailwind CSS and th
 
 ## Implemented behavior
 
+- Consistent action feedback: destructive actions ask for confirmation; saves, uploads, product moderation, harvest records, reviews, and reports show small success notifications. Notifications close after six seconds and pause on hover/focus. Validation errors stay with their fields.
+
+- Sellers must choose a cancellation reason for orders and reservations; "Other reason" requires an explanation. Customers see it in order history, in-app notifications, and order-update emails. Existing cancelled orders without a reason show "No reason recorded." Run `php artisan migrate` to add the cancellation fields.
+  Older accepted orders with an unknown reservation source ask the seller to confirm available stock or future harvest before returning the quantity. New orders use their recorded source automatically.
+
 - Customer registration, email verification, password recovery, and role-aware login for customers, sellers, and CENRO admins
 - CENRO Farmers & Sellers administration: create individual farmer-seller accounts, assign barangays, edit store details, and review account status/history
 - Admin-created sellers begin active with a temporary password that must be replaced before seller-dashboard access; suspended sellers cannot sign in and their public shop/listings are hidden
@@ -82,6 +87,16 @@ npm run test:e2e
 ```
 
 PHP tests use isolated SQLite. Playwright uses `database/playwright.sqlite`, seeds development users, starts Laravel on port 8010, and checks responsive behavior in Chrome.
+
+The photo resizing test requires PHP GD. Enable GD in your PHP configuration, or run `php -d extension=gd vendor/bin/phpunit` to include it for one test run. Passing the flag to `artisan test` does not enable it in the separate PHPUnit process.
+
+After pulling database changes, run `php artisan migrate`. The product status repair migration adds the missing column on older databases and preserves existing hidden products. Its rollback deliberately retains the column and moderation history.
+
+New customer and walk-in orders remember whether they reserve available stock or expected harvest yield. Cancellation restores that original quantity once. The inventory source migration identifies older pending orders and reservations. Older accepted orders cannot be identified reliably; an administrator must verify and set their `inventory_source` to `stock` or `expected_yield` before cancellation. Do not infer it from current inventory. New checkouts reject admin-hidden products, including those in an older cart.
+
+Product edits preserve inventory fields that were not changed in the form. To update `stock` or `expected_yield`, include the quantity seen when opening the editor as `original_stock` or `original_expected_yield`. The server checks deliberate inventory changes while locking the product; outdated changes are rejected, and the editor shows current quantities for review. Zero stock and manual restocking remain available. Metadata-only requests can omit both inventory fields.
+
+Existing orders and receipts retain their original product name, selling unit, quantity, price, and total when a listing is edited. Selling-unit changes are blocked while the product has pending, reserved, preparing, or out-for-delivery orders; name, price, and other listing corrections remain available. After orders are delivered or cancelled, the unit can be changed and new orders use the updated listing. Previously overwritten order details cannot be reconstructed automatically.
 
 ## Development boundaries
 

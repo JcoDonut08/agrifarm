@@ -1,0 +1,18 @@
+.order-cancellation-reason { margin-top: 16px; padding: 12px 16px; border-left: 3px solid var(--ui-danger); background: var(--ui-soft); color: var(--ui-ink); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.order-cancellation-reason strong { display: block; font-size: 13px; font-weight: 600; }
+.order-cancellation-reason p { margin: 4px 0 0; }
+.order-cancellation-note { white-space: pre-wrap; }
+.order-cancel-fields { display: grid; gap: 16px; font-size: 14px; }
+.order-cancel-fields label { display: grid; gap: 8px; font-size: 13px; font-weight: 600; }
+.order-cancel-fields > div { display: grid; gap: 8px; }
+.order-cancel-fields select, .order-cancel-fields textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--ui-border); background: var(--ui-surface); color: var(--ui-ink); }
+.order-cancel-fields textarea { resize: vertical; font-weight: 400; }
+.order-cancel-fields [aria-invalid='true'] { border-color: var(--ui-danger); }
+.order-cancel-fields [role='alert'] { margin: 0; color: var(--ui-error-ink); font-size: 13px; }
+.order-cancel-fields small { color: var(--ui-muted); font-size: 12px; font-weight: 400; line-height: 1.5; }
+.customer-notifications { display: grid; gap: 16px; max-width: 900px; }
+.customer-notification { padding: 20px; border: 1px solid var(--ui-border); border-radius: 14px; background: var(--ui-surface); color: var(--ui-ink); }
+.customer-notification h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.customer-notification > p { margin: 8px 0; font-size: 14px; overflow-wrap: anywhere; }
+.customer-notification time { display: block; color: var(--ui-muted); font-size: 12px; }
+.customer-notification > a { margin-top: 16px; }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\WalkInOrder;
+use App\Notifications\OrderStatusUpdated;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +51,7 @@ class WalkInOrderController extends Controller
             ]);
             $order->user_id = $request->user()->id;
             $order->product_id = $product->id;
+            $order->inventory_source = $isPreorder ? 'expected_yield' : 'stock';
             $order->save();
             if ($isPreorder) {
                 $product->decrement('expected_yield', $data['quantity']);
@@ -65,13 +67,24 @@ class WalkInOrderController extends Controller
     {
         abort_unless($walkInOrder->user_id === $request->user()->id, 404);
 
+        $request->merge(['cancellation_note' => trim((string) $request->input('cancellation_note')) ?: null]);
         $data = $request->validate([
             'status' => ['required', 'string', Rule::in(array_keys(self::TRANSITIONS))],
+            'cancellation_reason' => ['exclude_unless:status,cancelled', 'required', Rule::in(array_keys(WalkInOrder::CANCELLATION_REASONS))],
+            'cancellation_note' => ['exclude_unless:status,cancelled', 'nullable', 'required_if:cancellation_reason,other', 'string', 'min:5', 'max:500'],
+            'cancellation_inventory_source' => ['exclude_unless:status,cancelled', 'nullable', Rule::in(['stock', 'expected_yield'])],
+        ], [
+            'cancellation_reason.required' => 'Choose a reason for cancelling this order.',
+            'cancellation_reason.in' => 'Choose a valid cancellation reason.',
+            'cancellation_note.required_if' => 'Explain why you are cancelling this order.',
+            'cancellation_note.min' => 'Use at least 5 characters for the explanation.',
+            'cancellation_note.max' => 'Keep the explanation within 500 characters.',
+            'cancellation_inventory_source.in' => 'Choose available stock or future harvest.',
         ]);
 
         $nextStatus = $data['status'];
 
-        DB::transaction(function () use ($walkInOrder, $nextStatus): void {
+        DB::transaction(function () use ($walkInOrder, $nextStatus, $data): void {
             $order = WalkInOrder::whereKey($walkInOrder->id)->lockForUpdate()->firstOrFail();
 
             if (! in_array($nextStatus, self::TRANSITIONS[$order->status] ?? [], true)) {
@@ -80,18 +93,40 @@ class WalkInOrderController extends Controller
                 ]);
             }
 
+            $inventorySource = $order->inventory_source ?? match ($order->status) {
+                'reservation' => 'expected_yield',
+                'pending' => 'stock',
+                default => null,
+            };
+
             if ($nextStatus === 'cancelled' && $order->product_id) {
+                if (! in_array($inventorySource, ['stock', 'expected_yield'], true)) {
+                    // Older accepted orders did not retain their reservation source.
+                    // The owner must confirm it; today's stock cannot identify it.
+                    $inventorySource = $data['cancellation_inventory_source'] ?? null;
+                    if ($inventorySource === null) {
+                        throw ValidationException::withMessages([
+                            'cancellation_inventory_source' => 'Choose where this order originally reserved its quantity.',
+                        ]);
+                    }
+                }
                 Product::where('user_id', $order->user_id)
                     ->whereKey($order->product_id)
                     ->lockForUpdate()
                     ->first()
-                    ?->increment('stock', $order->quantity);
+                    ?->increment($inventorySource, $order->quantity);
             }
 
-            $order->update(['status' => $nextStatus]);
+            $order->inventory_source = $inventorySource;
+            $order->status = $nextStatus;
+            if ($nextStatus === 'cancelled') {
+                $order->cancellation_reason = $data['cancellation_reason'];
+                $order->cancellation_note = $data['cancellation_note'] ?? null;
+            }
+            $order->save();
 
             if ($order->checkout && $order->checkout->customer) {
-                $order->checkout->customer->notify(new \App\Notifications\OrderStatusUpdated($order));
+                $order->checkout->customer->notify(new OrderStatusUpdated($order));
             }
         });
 
@@ -99,7 +134,7 @@ class WalkInOrderController extends Controller
             'preparing' => 'Order accepted and moved to preparing.',
             'out_for_delivery' => 'Order marked for delivery.',
             'delivered' => 'Delivery confirmed.',
-            'cancelled' => 'Order cancelled and stock restored.',
+            'cancelled' => 'Order cancelled.',
             default => 'Order status updated.',
         };
 

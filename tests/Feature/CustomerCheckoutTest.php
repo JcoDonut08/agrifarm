@@ -9,6 +9,7 @@ use App\Models\WalkInOrder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class CustomerCheckoutTest extends TestCase
@@ -81,6 +82,77 @@ class CustomerCheckoutTest extends TestCase
         $this->assertCount(2, $references);
         $this->assertCount(2, $references->unique());
         $this->assertTrue($references->every(fn ($reference) => (bool) preg_match('/^AgFrm-[A-Z][0-9][A-Z0-9]{10}$/', $reference)));
+    }
+
+    #[DataProvider('mixedCartOrderings')]
+    public function test_mixed_checkout_reserves_each_products_correct_inventory(bool $preorderCreatedFirst, bool $preorderSubmittedFirst): void
+    {
+        $seller = User::factory()->seller()->create();
+        $buyer = User::factory()->create();
+        if ($preorderCreatedFirst) {
+            $preorder = $this->product($seller, 0, '30.00');
+            $available = $this->product($seller, 5);
+        } else {
+            $available = $this->product($seller, 5);
+            $preorder = $this->product($seller, 0, '30.00');
+        }
+        $available->update(['name' => 'Available Pechay', 'expected_yield' => 7]);
+        $preorder->update(['name' => 'Preorder Tomatoes', 'expected_yield' => 10, 'harvest_date' => now()->addMonth()->toDateString()]);
+        $availableLine = ['product_id' => $available->id, 'quantity' => 2];
+        $preorderLine = ['product_id' => $preorder->id, 'quantity' => 3];
+        $payload = array_replace($this->payload($available), [
+            'items' => $preorderSubmittedFirst ? [$preorderLine, $availableLine] : [$availableLine, $preorderLine],
+        ]);
+
+        $this->actingAs($buyer)->post('/checkout', $payload)
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/?page=order-success&order='.$payload['checkout_id']);
+
+        $this->assertDatabaseHas('walk_in_orders', ['customer_checkout_id' => $payload['checkout_id'], 'product_id' => $available->id, 'user_id' => $seller->id, 'quantity' => 2, 'status' => 'pending', 'total' => '97.00']);
+        $this->assertDatabaseHas('walk_in_orders', ['customer_checkout_id' => $payload['checkout_id'], 'product_id' => $preorder->id, 'user_id' => $seller->id, 'quantity' => 3, 'status' => 'reservation', 'total' => '90.00']);
+        $this->assertDatabaseHas('customer_checkouts', ['id' => $payload['checkout_id'], 'goods_total' => '187.00']);
+        $this->assertSame(3, $available->fresh()->stock);
+        $this->assertSame(7, $available->fresh()->expected_yield);
+        $this->assertSame(0, $preorder->fresh()->stock);
+        $this->assertSame(7, $preorder->fresh()->expected_yield);
+
+        // Retrying the same checkout must not reserve either inventory twice.
+        $this->post('/checkout', $payload)->assertRedirect('/?page=order-success&order='.$payload['checkout_id']);
+        $this->assertSame(1, CustomerCheckout::count());
+        $this->assertSame(2, WalkInOrder::count());
+        $this->assertSame(3, $available->fresh()->stock);
+        $this->assertSame(7, $available->fresh()->expected_yield);
+        $this->assertSame(0, $preorder->fresh()->stock);
+        $this->assertSame(7, $preorder->fresh()->expected_yield);
+    }
+
+    public static function mixedCartOrderings(): array
+    {
+        return [
+            'available created and submitted first' => [false, false],
+            'available created first, preorder submitted first' => [false, true],
+            'preorder created first, available submitted first' => [true, false],
+            'preorder created and submitted first' => [true, true],
+        ];
+    }
+
+    public function test_unavailable_preorder_rejects_the_whole_mixed_checkout(): void
+    {
+        $seller = User::factory()->seller()->create();
+        $buyer = User::factory()->create();
+        $available = $this->product($seller, 5);
+        $preorder = $this->product($seller, 0);
+        $preorder->update(['expected_yield' => 1]);
+        $payload = $this->payload($available);
+        $payload['items'][] = ['product_id' => $preorder->id, 'quantity' => 2];
+
+        $this->actingAs($buyer)->post('/checkout', $payload)->assertSessionHasErrors('items');
+
+        $this->assertSame(0, CustomerCheckout::count());
+        $this->assertSame(0, WalkInOrder::count());
+        $this->assertSame(5, $available->fresh()->stock);
+        $this->assertSame(0, $preorder->fresh()->stock);
+        $this->assertSame(1, $preorder->fresh()->expected_yield);
     }
 
     public function test_checkout_rejects_non_customer_unavailable_stock_and_online_payment(): void

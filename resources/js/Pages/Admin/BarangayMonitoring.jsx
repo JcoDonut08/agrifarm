@@ -2,8 +2,6 @@ import { useState } from "react";
 import {
     AlertCircle,
     BarChart3,
-    ChevronLeft,
-    ChevronRight,
     CircleAlert,
     Eye,
     FileText,
@@ -15,8 +13,10 @@ import {
 } from "lucide-react";
 import { router } from "@inertiajs/react";
 import ConfirmationDialog from "../../Components/ConfirmationDialog";
+import FormStatus from "../../Components/FormStatus";
+import Pagination from '../Seller/Pagination';
+import useTablePagination from '../../Components/useTablePagination';
 
-const PAGE_SIZE = 6;
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 2 });
 const count = new Intl.NumberFormat("en-PH");
 
@@ -25,6 +25,8 @@ export default function BarangayMonitoring({ monitoringData, filipino }) {
     const [compareBy, setCompareBy] = useState("harvest");
     const [tablePage, setTablePage] = useState(1);
     const [reportPage, setReportPage] = useState(1);
+    const [tableSize, setTableSize] = useState(5);
+    const [reportSize, setReportSize] = useState(5);
     const [report, setReport] = useState(null);
 
     if (!monitoringData) return <Message title="Loading Barangay Monitoring" text="Please wait while monitoring records load." />;
@@ -39,8 +41,8 @@ export default function BarangayMonitoring({ monitoringData, filipino }) {
         setTablePage(1);
         setReportPage(1);
     };
-    const statusRows = page(data.statusTable || [], tablePage);
-    const reports = page(data.reports || [], reportPage);
+    const statusRows = page(data.statusTable || [], tablePage, tableSize);
+    const reports = page(data.reports || [], reportPage, reportSize);
 
     return (
         <div className="barangay-monitoring">
@@ -69,18 +71,20 @@ export default function BarangayMonitoring({ monitoringData, filipino }) {
                     rows={statusRows}
                     currentPage={tablePage}
                     setPage={setTablePage}
+                    setPageSize={setTableSize}
                     compareBy={compareBy}
                     setCompareBy={setCompareBy}
                     onView={updateBarangay}
                     filipino={filipino}
                 />
-            ) : <BarangayDetails data={data} filipino={filipino} />}
+            ) : <BarangayDetails key={barangay} data={data} filipino={filipino} />}
 
             <Reports
                 rows={reports}
                 allCount={(data.reports || []).length}
                 pageNumber={reportPage}
                 setPage={setReportPage}
+                setPageSize={setReportSize}
                 selected={selected}
                 onView={setReport}
                 filipino={filipino}
@@ -90,7 +94,7 @@ export default function BarangayMonitoring({ monitoringData, filipino }) {
     );
 }
 
-function AllBarangays({ data, rows, currentPage, setPage, compareBy, setCompareBy, onView, filipino }) {
+function AllBarangays({ data, rows, currentPage, setPage, setPageSize, compareBy, setCompareBy, onView, filipino }) {
     const summary = data.overview || {};
     return (
         <>
@@ -130,7 +134,7 @@ function AllBarangays({ data, rows, currentPage, setPage, compareBy, setCompareB
                             </table>
                         </div>
                         {!data.comparisonData?.harvest?.some(h => h > 0) && <DataNote text="A recorded-harvest data source is not available in the database yet." />}
-                        <Pager pagination={rows} setPage={setPage} label="barangays" />
+                        <Pager pagination={rows} setPage={setPage} setPageSize={setPageSize} label="barangays" filipino={filipino} />
                     </>}
                 </article>
                 <article className="admin-panel">
@@ -165,7 +169,7 @@ function BarangayDetails({ data, filipino }) {
             </section>
             <section className="admin-panel">
                 <Title icon={Package} title="Product & Harvest Monitoring" description="Available and sold quantities come from actual inventory and order records." />
-                <Products rows={data.products || []} />
+                <Products rows={data.products || []} barangay={data.name} filipino={filipino} />
             </section>
         </>
     );
@@ -180,12 +184,13 @@ function Metrics({ items }) {
     </section>;
 }
 
-function Products({ rows }) {
+function Products({ rows, barangay, filipino }) {
+    const { page, pageSize, setPage, setPageSize, visibleItems } = useTablePagination(rows, barangay);
     if (!rows.length) return <Empty icon={Package} text="No products have been listed for this barangay yet." />;
-    return <div className="barangay-monitoring__table-wrap">
+    return <><div className="barangay-monitoring__table-wrap">
         <table className="barangay-monitoring__table">
             <thead><tr><th>Product</th><th>Harvested</th><th>Available</th><th>Sold</th><th>Status</th></tr></thead>
-            <tbody>{rows.map((row) => <tr key={row.id}>
+            <tbody>{visibleItems.map((row) => <tr key={row.id}>
                 <td data-label="Product"><strong>{row.name}</strong></td><td data-label="Harvested">{integer(row.harvested) + " " + row.unit}</td>
                 <td data-label="Available">{integer(row.available) + " " + row.unit}</td>
                 <td data-label="Sold">{integer(row.sold) + " " + row.unit}</td>
@@ -193,7 +198,7 @@ function Products({ rows }) {
             </tr>)}</tbody>
         </table>
         
-    </div>;
+    </div><Pagination page={page} pageSize={pageSize} totalItems={rows.length} onPageChange={setPage} onPageSizeChange={setPageSize} filipino={filipino} label="Product monitoring pagination" itemLabel={filipino ? 'produkto' : 'products'} /></>;
 }
 
 function Comparison({ data = {}, metric }) {
@@ -230,25 +235,28 @@ function Trend({ title, description, chart = {}, formatter, color, line }) {
     </article>;
 }
 
-function Reports({ rows, allCount, pageNumber, setPage, selected, onView }) {
-    const [successModalMessage, setSuccessModalMessage] = useState(null);
+function Reports({ rows, allCount, pageNumber, setPage, setPageSize, selected, onView, filipino }) {
+    const [notice, setNotice] = useState(null);
+    const [deleteError, setDeleteError] = useState('');
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
 
     function deleteReport() {
-        if (!deleteTarget) return;
+        if (!deleteTarget || deleting) return;
         setDeleting(true);
         router.delete('/admin/reports/' + deleteTarget.id, {
             preserveScroll: true,
             onSuccess: () => {
-                setSuccessModalMessage('deleted');
+                setNotice({ id: Date.now(), message: filipino ? 'Nabura ang report.' : 'Report deleted.' });
                 setDeleteTarget(null);
             },
+            onError: () => setDeleteError(filipino ? 'Hindi mabura ang report. Pakisubukan muli.' : 'The report could not be deleted. Please try again.'),
             onFinish: () => setDeleting(false)
         });
     }
 
     return <section className="admin-panel barangay-monitoring__reports">
+        <FormStatus dismissible messageId={notice?.id} dismissLabel={filipino ? 'Isara ang mensahe' : 'Dismiss message'}>{notice?.message}</FormStatus>
         <Title icon={FileText} title="Barangay Reports" description={selected ? "Reports from all barangays." : "Reports for the selected barangay."} />
         {!rows.items.length ? <Empty icon={FileText} text="No reports have been recorded yet. They will appear when CENRO reporting records are connected." /> :
             <><div className="barangay-monitoring__table-wrap"><table className="barangay-monitoring__table">
@@ -258,47 +266,24 @@ function Reports({ rows, allCount, pageNumber, setPage, selected, onView }) {
                     <td data-label="Report Type">{entry.type}</td><td data-label="Reported By">{entry.reportedBy}</td>
                     <td data-label="Action" style={{ textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                         <button type="button" className="admin-action-btn admin-action-btn--view barangay-monitoring__view" onClick={() => onView(entry)} title="View"><Eye size={16} /></button>
-                        <button type="button" className="admin-action-btn admin-action-btn--view barangay-monitoring__view" onClick={() => setDeleteTarget(entry)} title="Delete" style={{ color: '#d32f2f' }}><Trash2 size={16} /></button>
+                        <button type="button" className="admin-action-btn admin-action-btn--view barangay-monitoring__view" onClick={() => { setDeleteError(''); setDeleteTarget(entry); }} title={filipino ? 'Burahin ang report' : 'Delete report'} style={{ color: 'var(--ui-danger)' }}><Trash2 size={16} /></button>
                     </td>
                 </tr>)}</tbody>
-            </table></div><Pager pagination={{ ...rows, total: allCount, page: pageNumber }} setPage={setPage} label="reports" /></>}
+            </table></div><Pager pagination={rows} setPage={setPage} setPageSize={setPageSize} label="reports" filipino={filipino} /></>}
             
             <ConfirmationDialog 
                 open={Boolean(deleteTarget)} 
-                title="Delete report?" 
-                description={deleteTarget ? `Are you sure you want to delete the report for ${deleteTarget.product || 'this product'}? This action cannot be undone.` : ''} 
-                confirmLabel="Delete report" 
-                cancelLabel="Cancel" 
-                workingLabel="Deleting..." 
+                title={filipino ? 'Burahin ang report?' : 'Delete report?'}
+                description={filipino ? 'Permanenteng buburahin ang report na ito. Hindi ito maibabalik.' : 'This report will be permanently deleted. This cannot be undone.'}
+                confirmLabel={filipino ? 'Burahin ang report' : 'Delete report'}
+                cancelLabel={filipino ? 'Kanselahin' : 'Cancel'}
+                workingLabel={filipino ? 'Binubura…' : 'Deleting…'}
                 busy={deleting} 
                 onConfirm={deleteReport} 
                 onCancel={() => setDeleteTarget(null)} 
-            />
-            {successModalMessage && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity" style={{ zIndex: 100 }}>
-                    <div className="bg-white dark:bg-[#1C211A] border border-gray-200 dark:border-[#2D3629] rounded-2xl p-8 max-w-sm w-full mx-4 shadow-xl transform scale-100 transition-all text-center animate-modal-pop">
-                        
-                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100/50 dark:bg-[#1b5e20]/30 mb-6 border border-green-500/30 dark:border-[#4caf50]/40">
-                            <svg className="h-8 w-8 text-green-600 dark:text-[#4caf50] checkmark-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" className="checkmark-path" />
-                            </svg>
-                        </div>
-                        
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Success!</h3>
-                        <p className="text-gray-500 dark:text-gray-400 mb-8 font-medium">
-                            The report has been successfully deleted.
-                        </p>
-                        
-                        <button 
-                            type="button"
-                            onClick={() => setSuccessModalMessage(null)}
-                            className="w-full py-2.5 px-4 bg-green-600 hover:bg-green-700 dark:bg-[#239920] dark:hover:bg-[#1D821A] text-white rounded-lg font-medium transition-colors"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            )}
+            >
+                {deleteError && <FormStatus tone="error">{deleteError}</FormStatus>}
+            </ConfirmationDialog>
     </section>;
 }
 
@@ -335,20 +320,15 @@ function DataNote({ text }) {
 function Message({ title, text }) {
     return <div className="admin-panel barangay-monitoring__message"><CircleAlert /><div><h1 className="admin-page-title">{title}</h1><p>{text}</p></div></div>;
 }
-function Pager({ pagination, setPage, label }) {
-    if (pagination.pages <= 1) return null;
-    return <nav className="admin-table-pagination barangay-monitoring__pagination" aria-label={"Pagination for " + label}>
-        <span className="admin-pagination-info">Showing <strong>{pagination.start + "–" + pagination.end}</strong> of <strong>{pagination.total}</strong> {label}</span>
-        <div className="admin-pagination-controls"><button type="button" className="admin-pagination-btn" disabled={pagination.page === 1} onClick={() => setPage(pagination.page - 1)} aria-label="Previous page"><ChevronLeft />Previous</button>
-            <button type="button" className="admin-pagination-btn" disabled={pagination.page === pagination.pages} onClick={() => setPage(pagination.page + 1)} aria-label="Next page">Next<ChevronRight /></button></div>
-    </nav>;
+function Pager({ pagination, setPage, setPageSize, label, filipino }) {
+    return <Pagination page={pagination.page} pageSize={pagination.size} totalItems={pagination.total} onPageChange={setPage} onPageSizeChange={setPageSize} label={"Pagination for " + label} itemLabel={filipino ? 'tala' : label} filipino={filipino} />;
 }
-function page(items, requested) {
+function page(items, requested, size) {
     const total = items.length;
-    const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const pages = Math.max(1, Math.ceil(total / size));
     const current = Math.min(requested, pages);
-    const offset = (current - 1) * PAGE_SIZE;
-    return { items: items.slice(offset, offset + PAGE_SIZE), page: current, pages, total, start: total ? offset + 1 : 0, end: Math.min(offset + PAGE_SIZE, total) };
+    const offset = (current - 1) * size;
+    return { items: items.slice(offset, offset + size), size, page: current, pages, total };
 }
 function money(value) { return peso.format(Number(value) || 0); }
 function integer(value) { return count.format(Number(value) || 0); }

@@ -1,4 +1,5 @@
 import { useForm } from "@inertiajs/react";
+import Pagination from '../Seller/Pagination';
 import {
     ArrowLeft,
     ShieldCheck,
@@ -6,8 +7,6 @@ import {
     FilePenLine,
     BadgeCheck,
     Camera,
-    ChevronLeft,
-    ChevronRight,
     Eye,
     History,
     ImagePlus,
@@ -52,7 +51,7 @@ export default function FarmersSellers({ management = {}, filipino }) {
     const [mode, setMode] = useState(null);
     const [selected, setSelected] = useState(null);
     const [page, setPage] = useState(1);
-    const pageSize = 10;
+    const [pageSize, setPageSize] = useState(5);
 
     const stats = useMemo(() => {
         const total = sellers.length;
@@ -82,6 +81,9 @@ export default function FarmersSellers({ management = {}, filipino }) {
     }, [search, barangay, status]);
 
     const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
     const paginated = useMemo(() => {
         const start = (page - 1) * pageSize;
         return filtered.slice(start, start + pageSize);
@@ -302,11 +304,11 @@ export default function FarmersSellers({ management = {}, filipino }) {
 
                     <div className="admin-directory-meta-bar">
                         <p className="admin-directory-count" role="status">
-                            Showing <strong>{filtered.length}</strong>{" "}
-                            {filtered.length === 1 ? "seller" : "sellers"}
+                            <strong>{filtered.length}</strong>{" "}
+                            {filipino ? 'nagbebenta' : filtered.length === 1 ? "seller" : "sellers"}
                             {hasFilters && (
                                 <span className="admin-filtered-tag">
-                                    filtered
+                                    {filipino ? 'na-filter' : 'filtered'}
                                 </span>
                             )}
                         </p>
@@ -433,64 +435,7 @@ export default function FarmersSellers({ management = {}, filipino }) {
                             </div>
 
                             {/* Table Pagination */}
-                            <div
-                                className="admin-table-pagination"
-                                aria-label="Sellers table pagination"
-                            >
-                                <span className="admin-pagination-info">
-                                    Showing{" "}
-                                    <strong>{(page - 1) * pageSize + 1}</strong>
-                                    –
-                                    <strong>
-                                        {Math.min(
-                                            page * pageSize,
-                                            filtered.length,
-                                        )}
-                                    </strong>{" "}
-                                    of <strong>{filtered.length}</strong>{" "}
-                                    sellers
-                                </span>
-                                <div className="admin-pagination-controls">
-                                    <button
-                                        type="button"
-                                        className="admin-pagination-btn"
-                                        disabled={page <= 1}
-                                        onClick={() =>
-                                            setPage((p) => Math.max(1, p - 1))
-                                        }
-                                        aria-label={
-                                            filipino
-                                                ? "Nakaraang pahina"
-                                                : "Previous page"
-                                        }
-                                    >
-                                        <ChevronLeft aria-hidden="true" />
-                                        <span>Previous</span>
-                                    </button>
-                                    <span className="admin-pagination-current">
-                                        Page <strong>{page}</strong> of{" "}
-                                        <strong>{totalPages}</strong>
-                                    </span>
-                                    <button
-                                        type="button"
-                                        className="admin-pagination-btn"
-                                        disabled={page >= totalPages}
-                                        onClick={() =>
-                                            setPage((p) =>
-                                                Math.min(totalPages, p + 1),
-                                            )
-                                        }
-                                        aria-label={
-                                            filipino
-                                                ? "Susunod na pahina"
-                                                : "Next page"
-                                        }
-                                    >
-                                        <span>Next</span>
-                                        <ChevronRight aria-hidden="true" />
-                                    </button>
-                                </div>
-                            </div>
+                            <Pagination page={page} pageSize={pageSize} totalItems={filtered.length} onPageChange={setPage} onPageSizeChange={setPageSize} filipino={filipino} label="Sellers table pagination" itemLabel={filipino ? "tala" : "sellers"} />
                         </div>
                     ) : (
                         <div className="admin-empty admin-seller-empty">
@@ -867,8 +812,8 @@ function SellerForm({ seller, barangays, onClose, filipino }) {
                 <DialogActions
                     onClose={onClose}
                     processing={form.processing}
-                    action={filipino ? "I-suspend ang account" : "Suspend account"}
-                    danger={true}
+                    action={creating ? (filipino ? 'Gumawa ng seller account' : 'Create seller') : (filipino ? 'I-save ang pagbabago' : 'Save changes')}
+                    filipino={filipino}
                 />
             </form>
         </Dialog>
@@ -1031,7 +976,7 @@ function SuspendDialog({ seller, onClose, filipino }) {
 
     return (
         <Dialog
-            title={filipino ? "I-suspend ang nagbebenta" : "Suspend seller"}
+            title={filipino ? 'I-suspend ang account ng nagbebenta' : 'Suspend seller account'}
             subtitle={seller.name}
             icon={ShieldAlert}
             onClose={onClose}
@@ -1091,6 +1036,7 @@ function SuspendDialog({ seller, onClose, filipino }) {
                     processing={form.processing}
                     action={filipino ? "I-suspend ang account" : "Suspend account"}
                     danger={true}
+                    filipino={filipino}
                 />
             </form>
         </Dialog>
@@ -1107,7 +1053,7 @@ function ReinstateDialog({ seller, onClose, filipino }) {
 
     return (
         <Dialog
-            title={filipino ? "Ibalik ang nagbebenta" : "Reinstate seller"}
+            title={filipino ? 'Ibalik ang account ng nagbebenta' : 'Reinstate seller account'}
             subtitle={seller.name}
             icon={ShieldCheck}
             onClose={onClose}
@@ -1138,6 +1084,7 @@ function ReinstateDialog({ seller, onClose, filipino }) {
                     onClose={onClose}
                     processing={form.processing}
                     action={filipino ? "Ibalik ang account" : "Reinstate account"}
+                    filipino={filipino}
                 />
             </form>
         </Dialog>
@@ -1163,6 +1110,7 @@ function DialogActions({
     action,
     danger = false,
     onAction,
+    filipino = false,
 }) {
     return (
         <div className="admin-dialog-actions">
@@ -1172,7 +1120,7 @@ function DialogActions({
                 onClick={onClose}
                 disabled={processing}
             >
-                Cancel
+                {filipino ? 'Kanselahin' : 'Cancel'}
             </button>
             {onAction ? (
                 <button
@@ -1183,7 +1131,7 @@ function DialogActions({
                     disabled={processing}
                     onClick={onAction}
                 >
-                    {action}
+                    {processing ? (filipino ? 'Pinoproseso…' : 'Working…') : action}
                 </button>
             ) : (
                 <button
@@ -1193,7 +1141,7 @@ function DialogActions({
                     }
                     disabled={processing}
                 >
-                    {action}
+                    {processing ? (filipino ? 'Pinoproseso…' : 'Working…') : action}
                 </button>
             )}
         </div>

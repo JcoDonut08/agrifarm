@@ -32,10 +32,12 @@ test('seller listing appears in customer homepage, marketplace, detail, and cart
     await orderDialog.getByLabel('Quantity').fill('2');
     await orderDialog.getByRole('button', { name: 'Add order' }).click();
     await expect(orderDialog).not.toBeVisible();
+    await page.getByRole('button', { name: 'Sign out' }).click();
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'No best sellers yet' })).toBeVisible();
     await expect(page.getByText('BEST BARANGAY · RANKING PENDING')).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('ranking-pending-desktop.png'), fullPage: true });
+    await signIn(page, 'brgyrosario@gmail.com');
     await page.goto('/seller/dashboard?section=orders');
     await page.getByRole('button', { name: 'Accept order' }).click();
     await page.getByRole('button', { name: 'Mark for delivery' }).click();

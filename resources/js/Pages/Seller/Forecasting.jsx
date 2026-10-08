@@ -1,6 +1,8 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import Icon from '../../Components/Storefront/Icon';
+import FormStatus from '../../Components/FormStatus';
+import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import { unitLabel } from './SellerLocale';
 import '../../../css/seller-forecast.css';
 
@@ -88,6 +90,8 @@ export default function Forecasting({ filipino = false }) {
     const planForm = useForm({ crop: '', planting_month: '' });
     const [planAction, setPlanAction] = useState(null);
     const [planNotice, setPlanNotice] = useState('');
+    const [planNoticeId, setPlanNoticeId] = useState(0);
+    const [planToRemove, setPlanToRemove] = useState(null);
     const hasForecast = Boolean(forecastData?.forecast_months?.length);
     const barangay = forecastData?.dataset?.scope === 'barangay' ? forecastData.dataset.barangay : null;
     const resultsHeadingRef = useRef(null);
@@ -234,6 +238,7 @@ export default function Forecasting({ filipino = false }) {
             preserveState: true,
             onSuccess: () => {
                 setPlanNotice(text('Saved to your planting plan.', 'Na-save sa iyong plano sa pagtatanim.'));
+                setPlanNoticeId(id => id + 1);
                 requestAnimationFrame(() => {
                     plantingPlanHeadingRef.current?.focus({ preventScroll: true });
                     plantingPlanHeadingRef.current?.scrollIntoView({ block: 'start' });
@@ -244,13 +249,18 @@ export default function Forecasting({ filipino = false }) {
     }
 
     function removePlan(plan) {
+        if (planForm.processing) return;
         planForm.clearErrors();
         setPlanNotice('');
         setPlanAction({ type: 'remove', id: plan.id });
         planForm.delete(`/seller/planting-plans/${plan.id}`, {
             preserveScroll: true,
             preserveState: true,
-            onSuccess: () => setPlanNotice(text('Removed from your planting plan.', 'Inalis sa iyong plano sa pagtatanim.')),
+            onSuccess: () => {
+                setPlanToRemove(null);
+                setPlanNotice(text('Removed from your planting plan.', 'Inalis sa iyong plano sa pagtatanim.'));
+                setPlanNoticeId(id => id + 1);
+            },
             onFinish: () => setPlanAction(null),
         });
     }
@@ -330,9 +340,14 @@ export default function Forecasting({ filipino = false }) {
 
             </div>}
 
-            {(planNotice || planForm.errors.crop || planForm.errors.planting_month) && <p className={planForm.hasErrors ? 'forecast-error' : 'forecast-plan-notice'} role={planForm.hasErrors ? 'alert' : 'status'}>
-                {planForm.errors.crop || planForm.errors.planting_month || planNotice}
+            <FormStatus dismissible messageId={planNoticeId} dismissLabel={text('Dismiss message', 'Isara ang mensahe')}>{planNotice}</FormStatus>
+            {(planForm.errors.crop || planForm.errors.planting_month) && <p className="forecast-error" role="alert">
+                {planForm.errors.crop || planForm.errors.planting_month}
             </p>}
+            <ConfirmationDialog open={Boolean(planToRemove)} title={text('Remove planting plan?', 'Alisin ang plano sa pagtatanim?')}
+                description={text(`Remove ${planToRemove?.crop || ''} from your planting plan?`, `Alisin ang ${planToRemove?.crop || ''} sa iyong plano sa pagtatanim?`)}
+                confirmLabel={text('Remove plan', 'Alisin ang plano')} cancelLabel={text('Keep plan', 'Panatilihin ang plano')} workingLabel={text('Removing…', 'Inaalis…')}
+                busy={planForm.processing} onCancel={() => setPlanToRemove(null)} onConfirm={() => removePlan(planToRemove)} />
 
             {plantingPlans.length > 0 && <section className="seller-panel forecast-panel forecast-planting-plan">
                 <h3 ref={plantingPlanHeadingRef} tabIndex={-1}>{text('Your planting plan', 'Iyong plano sa pagtatanim')}</h3>
@@ -345,7 +360,7 @@ export default function Forecasting({ filipino = false }) {
                         </dl>
                         <button type="button" className="forecast-plan-remove" disabled={planForm.processing}
                             aria-label={text(`Remove ${plan.crop} from planting plan`, `Alisin ang ${plan.crop} sa plano sa pagtatanim`)}
-                            onClick={() => removePlan(plan)}>
+                            onClick={() => setPlanToRemove(plan)}>
                             {planAction?.type === 'remove' && planAction.id === plan.id ? text('Removing…', 'Inaalis…') : text('Remove', 'Alisin')}
                         </button>
                     </li>)}

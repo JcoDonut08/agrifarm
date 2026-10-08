@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
+import { useShop } from './ShopContext';
 
 export default function ReportModal({ product, onClose }) {
+    const { notify, filipino } = useShop();
     const [data, setData] = useState({
         product_id: product?.id && typeof product.id === 'string' && product.id.startsWith('seller-') ? parseInt(product.id.replace('seller-', ''), 10) : (typeof product?.id === 'number' ? product.id : null),
         product_name: product?.name || '',
@@ -12,10 +14,29 @@ export default function ReportModal({ product, onClose }) {
     });
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
+    const [errors, setErrors] = useState({});
+    const dialog = useRef(null);
+
+    useEffect(() => {
+        const element = dialog.current;
+        const overflow = document.body.style.overflow;
+        element.showModal();
+        document.body.style.overflow = 'hidden';
+        return () => { element.close(); document.body.style.overflow = overflow; };
+    }, []);
+    useEffect(() => {
+        const invalid = dialog.current?.querySelector('[aria-invalid="true"]');
+        invalid?.focus();
+    }, [errors]);
 
     async function submit(e) {
         e.preventDefault();
+        if (processing) return;
+        const validation = {};
+        if (!data.type) validation.type = filipino ? 'Pumili ng dahilan.' : 'Choose a reason.';
+        if (!data.description.trim()) validation.description = filipino ? 'Ipaliwanag ang nangyari.' : 'Describe what happened.';
+        setErrors(validation);
+        if (Object.keys(validation).length) return;
         setProcessing(true);
         setError('');
 
@@ -36,99 +57,84 @@ export default function ReportModal({ product, onClose }) {
             });
 
             if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.message || 'Failed to submit report');
+                const errData = await res.json().catch(() => ({}));
+                if (errData.errors) {
+                    setErrors(Object.fromEntries(Object.entries(errData.errors).map(([field, messages]) => [field, Array.isArray(messages) ? messages[0] : messages])));
+                    return;
+                }
+                throw new Error('report-failed');
             }
 
-            setSuccess(true);
+            notify(filipino ? 'Naipadala ang report sa CENRO para sa pagsusuri.' : 'Report sent to CENRO for review.');
+            onClose();
         } catch (err) {
-            setError(err.message);
+            setError(filipino ? 'Hindi maipadala ang report. Pakisubukan muli.' : 'The report could not be sent. Please try again.');
         } finally {
             setProcessing(false);
         }
     }
 
-    if (success) {
-        return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity" onMouseDown={onClose}>
-                <div className="bg-[var(--store-bg)] border border-[var(--store-border)] rounded-2xl p-8 max-w-sm w-full mx-4 shadow-xl transform scale-100 transition-all text-center animate-modal-pop" onMouseDown={(e) => e.stopPropagation()}>
-                    
-                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-[var(--store-soft)] mb-6 border border-[#4caf50]/40">
-                        <svg className="h-8 w-8 text-[var(--store-green)] checkmark-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" className="checkmark-path" />
-                        </svg>
-                    </div>
-                    
-                    <h3 className="text-xl font-bold text-[var(--store-ink)] mb-2">Success!</h3>
-                    <p className="text-[var(--store-muted)] mb-8 font-medium">
-                        Your report has been forwarded to CENRO for review.
-                    </p>
-                    
-                    <button 
-                        type="button"
-                        onClick={onClose}
-                        className="w-full py-2.5 px-4 bg-[var(--store-green)] hover:bg-[var(--store-green-dark)] text-white rounded-lg font-medium transition-colors"
-                    >
-                        Close
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="modal-backdrop" onMouseDown={onClose}>
-            <div className="modal-container" onMouseDown={(e) => e.stopPropagation()}>
+        <dialog ref={dialog} className="modal-container report-dialog" aria-labelledby="report-issue-title" aria-busy={processing}
+            onCancel={event => { event.preventDefault(); if (!processing) onClose(); }}
+            onClick={event => {
+                if (processing || event.target !== dialog.current) return;
+                const bounds = dialog.current.getBoundingClientRect();
+                if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) onClose();
+            }}>
                 <header className="modal-header">
-                    <h2>Report Issue</h2>
-                    <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
-                        <Icon name="x" size={20} />
+                    <h2 id="report-issue-title">{filipino ? 'I-report ang problema' : 'Report an issue'}</h2>
+                    <button type="button" className="modal-close" disabled={processing} onClick={onClose} aria-label={filipino ? 'Isara' : 'Close'}>
+                        <Icon name="close" size={20} />
                     </button>
                 </header>
 
-                <form onSubmit={submit} className="modal-body">
+                <form onSubmit={submit} className="modal-body" noValidate>
                     <p className="report-intro">
-                        Please provide details about the issue you encountered with <strong>{product?.name || 'this seller'}</strong>.
-                        Your report will be forwarded directly to the CENRO admin for review.
+                        {filipino ? 'Ilarawan ang problema sa ' : 'Describe the issue with '}<strong>{product?.name || (filipino ? 'seller na ito' : 'this seller')}</strong>.
+                        {filipino ? ' Susuriin ng CENRO ang iyong report.' : ' CENRO will review your report.'}
                     </p>
 
-                    {error && <div className="form-error" style={{ marginBottom: '16px', color: '#a14436', background: '#fbe7e5', padding: '10px', borderRadius: '6px' }}>{error}</div>}
+                    {error && <p role="alert" className="app-field-error">{error}</p>}
 
                     <label className="form-field">
-                        <span>Reason for reporting</span>
+                        <span>{filipino ? 'Dahilan ng report' : 'Reason for reporting'}</span>
                         <select
+                            id="report-type" aria-label={filipino ? 'Dahilan ng report' : 'Reason for reporting'} disabled={processing} aria-invalid={Boolean(errors.type)} aria-describedby={errors.type ? 'report-type-error' : undefined}
                             value={data.type}
-                            onChange={(e) => setData({...data, type: e.target.value})}
+                            onChange={(e) => { setData({...data, type: e.target.value}); setErrors(current => ({ ...current, type: null })); }}
                             required
                         >
-                            <option value="" disabled>Select an issue...</option>
-                            <option value="Product quality issue">Product quality issue</option>
-                            <option value="Inaccurate product description">Inaccurate product description</option>
-                            <option value="Unresponsive seller">Unresponsive seller</option>
-                            <option value="Inappropriate content">Inappropriate content</option>
-                            <option value="Other">Other</option>
+                            <option value="" disabled>{filipino ? 'Pumili ng problema' : 'Select an issue'}</option>
+                            <option value="Product quality issue">{filipino ? 'Problema sa kalidad ng produkto' : 'Product quality issue'}</option>
+                            <option value="Inaccurate product description">{filipino ? 'Maling paglalarawan ng produkto' : 'Inaccurate product description'}</option>
+                            <option value="Unresponsive seller">{filipino ? 'Hindi sumasagot ang seller' : 'Unresponsive seller'}</option>
+                            <option value="Inappropriate content">{filipino ? 'Hindi angkop na nilalaman' : 'Inappropriate content'}</option>
+                            <option value="Other">{filipino ? 'Ibang dahilan' : 'Other'}</option>
                         </select>
                     </label>
+                    {errors.type && <p id="report-type-error" role="alert" className="app-field-error">{errors.type}</p>}
 
                     <label className="form-field">
-                        <span>Description</span>
+                        <span>{filipino ? 'Paglalarawan' : 'Description'}</span>
                         <textarea
+                            id="report-description" maxLength={1000} disabled={processing} aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? 'report-description-error' : undefined}
                             value={data.description}
-                            onChange={(e) => setData({...data, description: e.target.value})}
-                            placeholder="Please explain what happened in detail..."
+                            onChange={(e) => { setData({...data, description: e.target.value}); setErrors(current => ({ ...current, description: null })); }}
+                            placeholder={filipino ? 'Ipaliwanag ang nangyari' : 'Explain what happened'}
                             rows="4"
                             required
                         ></textarea>
                     </label>
+                    {errors.description && <p id="report-description-error" role="alert" className="app-field-error">{errors.description}</p>}
 
                     <div className="form-actions">
-                        <button type="button" className="store-button store-button--ghost" onClick={onClose}>Cancel</button>
+                        <button type="button" className="store-button store-button--ghost" disabled={processing} onClick={onClose}>{filipino ? 'Kanselahin' : 'Cancel'}</button>
                         <button type="submit" className="store-button" disabled={processing}>
-                            {processing ? 'Submitting...' : 'Submit Report'}
+                            {processing ? (filipino ? 'Ipinapadala…' : 'Sending…') : (filipino ? 'Ipadala ang report' : 'Submit report')}
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </dialog>
     );
 }

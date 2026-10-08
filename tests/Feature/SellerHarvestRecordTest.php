@@ -11,11 +11,51 @@ use App\Services\WeatherService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class SellerHarvestRecordTest extends TestCase
 {
     use RefreshDatabase;
+
+    #[DataProvider('harvestRequestHeaders')]
+    public function test_harvest_changes_support_inertia_redirects_and_json_clients(array $headers, bool $inertia): void
+    {
+        $seller = User::factory()->seller()->create();
+        $product = $this->product($seller, 'Pechay', 'kg', 12);
+        $payload = ['product_id' => $product->id, 'quantity' => 5, 'unit' => 'kg', 'harvest_date' => now()->toDateString()];
+        $this->actingAs($seller)->withHeaders($headers)->from('/seller/dashboard?section=harvest-records');
+        $response = $this->post(route('seller.harvest-records.store'), $payload)->assertSessionHasNoErrors();
+        if ($inertia) {
+            $response->assertRedirect('/seller/dashboard?section=harvest-records')->assertSessionHas('status');
+        } else {
+            $response->assertOk()->assertJson(['status' => 'success']);
+        }
+        $record = HarvestRecord::query()->sole();
+        $response = $this->patch(route('seller.harvest-records.update', $record), [...$payload, 'quantity' => 6])->assertSessionHasNoErrors();
+        if ($inertia) {
+            $response->assertRedirect('/seller/dashboard?section=harvest-records')->assertSessionHas('status', 'Harvest record updated successfully.');
+        } else {
+            $response->assertOk()->assertJson(['status' => 'success']);
+        }
+        $this->assertSame('6.000', $record->fresh()->quantity);
+        $response = $this->delete(route('seller.harvest-records.destroy', $record));
+        if ($inertia) {
+            $response->assertRedirect('/seller/dashboard?section=harvest-records')->assertSessionHas('status', 'Harvest record for Pechay deleted successfully.');
+        } else {
+            $response->assertOk()->assertJson(['status' => 'success']);
+        }
+        $this->assertDatabaseCount('harvest_records', 0);
+        $this->assertSame(12, $product->fresh()->stock);
+    }
+
+    public static function harvestRequestHeaders(): array
+    {
+        return [
+            'Inertia form' => [['X-Inertia' => 'true', 'X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'text/html'], true],
+            'JSON client' => [['X-Requested-With' => 'XMLHttpRequest', 'Accept' => 'application/json'], false],
+        ];
+    }
 
     public function test_seller_can_record_a_harvest_without_changing_available_stock(): void
     {
@@ -23,7 +63,7 @@ class SellerHarvestRecordTest extends TestCase
         $seller = User::factory()->seller()->create(['barangay' => 'Bagong Ilog']);
         $product = $this->product($seller, 'Fresh Pechay', 'kg', 12);
 
-        $this->actingAs($seller)->post('/seller/harvest-records', [
+        $this->actingAs($seller)->from('/seller/dashboard?section=harvest-records')->post(route('seller.harvest-records.store'), [
             'product_id' => $product->id,
             'quantity' => '7.500',
             'unit' => 'kg',
@@ -53,7 +93,7 @@ class SellerHarvestRecordTest extends TestCase
         $otherSeller = User::factory()->seller()->create();
         $otherProduct = $this->product($otherSeller, 'Other Pechay', 'kg', 8);
 
-        $this->actingAs($seller)->post('/seller/harvest-records', [
+        $this->actingAs($seller)->post(route('seller.harvest-records.store'), [
             'product_id' => $otherProduct->id,
             'quantity' => '-0.5',
             'unit' => 'invalid',
@@ -61,7 +101,7 @@ class SellerHarvestRecordTest extends TestCase
         ])->assertSessionHasErrors(['product_id', 'quantity', 'unit', 'harvest_date']);
 
         $this->assertDatabaseCount('harvest_records', 0);
-        $this->actingAs(User::factory()->create(['role' => UserRole::Customer]))->post('/seller/harvest-records', [
+        $this->actingAs(User::factory()->create(['role' => UserRole::Customer]))->post(route('seller.harvest-records.store'), [
             'product_id' => $otherProduct->id,
             'quantity' => 2,
             'unit' => 'kg',
@@ -75,7 +115,7 @@ class SellerHarvestRecordTest extends TestCase
         $product = $this->product($seller, 'Kangkong', 'bunch', 12);
         $record = $this->harvestRecord($seller, $product, '2.5', 'bundles', now()->subDay());
 
-        $this->actingAs($seller)->patch("/seller/harvest-records/{$record->id}", [
+        $this->actingAs($seller)->patch(route('seller.harvest-records.update', $record), [
             'product_id' => $product->id,
             'quantity' => '0.500',
             'unit' => 'bundles',
@@ -87,7 +127,7 @@ class SellerHarvestRecordTest extends TestCase
         $this->assertDatabaseHas('harvest_records', ['id' => $record->id, 'quantity' => '0.500', 'notes' => 'Updated entry']);
         $this->assertSame(12, $product->fresh()->stock);
 
-        $this->actingAs($seller)->delete("/seller/harvest-records/{$record->id}")
+        $this->actingAs($seller)->delete(route('seller.harvest-records.destroy', $record))
             ->assertSessionHas('status', 'Harvest record for Kangkong deleted successfully.');
         $this->assertDatabaseMissing('harvest_records', ['id' => $record->id]);
     }
@@ -99,13 +139,13 @@ class SellerHarvestRecordTest extends TestCase
         $product = $this->product($otherSeller, 'Lettuce', 'piece', 8);
         $record = $this->harvestRecord($otherSeller, $product, '2', 'pieces', now());
 
-        $this->actingAs($seller)->patch("/seller/harvest-records/{$record->id}", [
+        $this->actingAs($seller)->patch(route('seller.harvest-records.update', $record), [
             'product_id' => $product->id,
             'quantity' => '1',
             'unit' => 'pieces',
             'harvest_date' => now()->toDateString(),
         ])->assertNotFound();
-        $this->actingAs($seller)->delete("/seller/harvest-records/{$record->id}")->assertNotFound();
+        $this->actingAs($seller)->delete(route('seller.harvest-records.destroy', $record))->assertNotFound();
 
         $this->assertDatabaseHas('harvest_records', ['id' => $record->id, 'quantity' => '2.000']);
     }

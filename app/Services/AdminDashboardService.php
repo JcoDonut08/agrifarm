@@ -91,7 +91,7 @@ class AdminDashboardService
         $orders = WalkInOrder::query()
             ->whereIn('user_id', $sellers->pluck('id'))
             ->where('status', 'delivered')
-            ->where('created_at', '>=', now()->startOfMonth()->subMonths(5))
+            ->where('created_at', '>=', now()->startOfMonth()->subMonths(11))
             ->get(['user_id', 'total', 'created_at']);
 
         $series = $sellers->groupBy(fn (User $seller) => $this->barangayName($seller))

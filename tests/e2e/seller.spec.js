@@ -105,7 +105,7 @@ for (const [email, name, width] of accounts) {
         await editPechay.click();
         const editProductModal = page.getByRole('dialog', { name: 'Edit product' });
         await expect(editProductModal).toBeVisible();
-        await expect(editProductModal.locator('.product-preview-image img')).toBeVisible();
+        await expect(editProductModal.getByRole('img', { name: 'Selected product' })).toBeVisible();
         await editProductModal.getByLabel('Description', { exact: false }).fill('Updated harvest from our barangay garden.');
         await editProductModal.getByRole('button', { name: 'Save changes' }).click();
         await expect(editProductModal).not.toBeVisible();
@@ -157,7 +157,8 @@ for (const [email, name, width] of accounts) {
                 await walkInModal.getByRole('button', { name: 'Add order', exact: true }).click();
                 await expect(walkInModal).not.toBeVisible();
                 await expect(page.getByRole('status')).toHaveText('Walk-in order added successfully.');
-                await expect(page.getByRole('status')).toHaveCount(0, { timeout: 4500 });
+                await page.getByRole('button', { name: 'Dismiss message' }).click();
+                await expect(page.getByRole('status')).toHaveCount(0);
                 await expect(page.getByText(/^#WALK-\d{5}$/)).toBeVisible();
                 await expect(page.getByText('Walk-in buyer')).toBeVisible();
                 const ordersPagination = page.getByRole('navigation', { name: 'Orders pagination' });
@@ -365,6 +366,10 @@ for (const [email, name, width] of accounts) {
                 await page.getByRole('button', { name: 'Week', exact: true }).click();
                 await page.screenshot({ path: testInfo.outputPath(`dashboard-live-${width}.png`), fullPage: true });
             }
+            else if (section === 'Forecasting') {
+                await expect(page.getByRole('heading', { name: 'Harvest Forecast', exact: true })).toBeVisible();
+                await expect(page.getByRole('button', { name: 'Generate', exact: true })).toBeDisabled();
+            }
             else await expect(page.getByRole('heading', { name: section, exact: true })).toBeVisible();
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
         }
@@ -386,7 +391,7 @@ for (const [email, name, width] of accounts) {
         await expect(page.locator('#seller-notification-panel')).toHaveCount(0);
         await page.getByLabel('Choose profile photo').setInputFiles({ name: 'profile.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
         await page.getByRole('button', { name: 'Save photo', exact: true }).click();
-        await expect(page.getByRole('status')).toContainText('Profile photo updated successfully.');
+        await expect(page.getByRole('status')).toContainText('Profile photo updated.');
         await page.reload();
         await expect(page.locator('.seller-account img')).toBeVisible();
         expect(await page.locator('.seller-account img').evaluate(img => img.complete && img.naturalWidth > 0)).toBeTruthy();
@@ -411,11 +416,12 @@ for (const [email, name, width] of accounts) {
         await page.getByRole('button', { name: 'Switch to light mode' }).click();
         await expect(page.locator('html')).not.toHaveClass(/dark/);
         await page.getByRole('button', { name: 'Remove photo' }).click();
+        await page.getByRole('dialog', { name: 'Remove profile photo?' }).getByRole('button', { name: 'Remove photo', exact: true }).click();
         await expect(page.getByRole('status')).toContainText('Profile photo removed.');
         await expect(page.locator('.seller-account img')).toHaveCount(0);
         await page.getByLabel('Barangay / store name').fill(`${name} Urban Farm`);
         await page.getByRole('button', { name: 'Save profile', exact: true }).click();
-        await expect(page.getByRole('status')).toContainText('Profile updated successfully.');
+        await expect(page.getByRole('status')).toContainText('Profile saved.');
         await page.reload();
         await expect(page.getByLabel('Barangay / store name')).toHaveValue(`${name} Urban Farm`);
         await page.getByLabel('Current password', { exact: true }).fill('incorrect');
@@ -427,7 +433,7 @@ for (const [email, name, width] of accounts) {
         await page.getByRole('button', { name: 'Show new password', exact: true }).click();
         await expect(page.getByLabel('New password', { exact: true })).toHaveAttribute('type', 'text');
         await page.getByRole('button', { name: 'Update password', exact: true }).click();
-        await expect(page.getByRole('status')).toContainText('Password updated successfully.');
+        await expect(page.getByRole('status')).toContainText('Password updated.');
         await expect(page.getByLabel('New password', { exact: true })).toHaveValue('');
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
         await page.screenshot({ path: testInfo.outputPath(`profile-${width}.png`), fullPage: true });

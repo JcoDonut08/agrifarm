@@ -53,9 +53,18 @@ for (const [email, width] of sellers) {
         await expect(recordModal.getByText('Enter a harvested quantity greater than zero.')).toBeVisible();
         await recordModal.getByRole('spinbutton', { name: /Quantity/ }).fill('7.5');
         await recordModal.getByLabel('Notes', { exact: false }).fill('Morning garden harvest.');
+        if (width === 390) {
+            await page.route('**/seller/crop-yields', route => route.request().method() === 'POST' ? route.abort() : route.continue());
+            await recordModal.getByRole('button', { name: 'Save Harvest Record', exact: true }).click();
+            await expect(recordModal).toBeVisible();
+            await expect(recordModal.getByRole('alert')).toContainText('Please try again.');
+            await expect(recordModal.getByRole('button', { name: 'Save Harvest Record', exact: true })).toBeEnabled();
+            await expect(recordModal.getByRole('spinbutton', { name: /Quantity/ })).toHaveValue('7.5');
+            await page.unroute('**/seller/crop-yields');
+        }
         await recordModal.getByRole('button', { name: 'Save Harvest Record', exact: true }).click();
         await expect(recordModal).not.toBeVisible();
-        await expect(page.getByRole('status')).toHaveText(/Harvest recorded successfully\. 7\.5 kg of Fresh Pechay were recorded for/);
+        await expect(page.getByRole('status')).toContainText('Harvest recorded.');
         await expect(page.locator('.harvest-history-panel')).toContainText('Fresh Pechay');
         await expect(page.locator('.harvest-history-panel .harvest-product-thumb img')).toBeVisible();
         await expect.poll(() => page.locator('.harvest-history-panel .harvest-product-thumb img').evaluate(image => image.complete && image.naturalWidth > 0)).toBeTruthy();
@@ -72,14 +81,14 @@ for (const [email, width] of sellers) {
         await editModal.getByRole('spinbutton', { name: /Quantity/ }).fill('0.5');
         await editModal.getByRole('button', { name: 'Save changes', exact: true }).click();
         await expect(editModal).not.toBeVisible();
-        await expect(page.getByRole('status')).toHaveText('Harvest record updated successfully.');
+        await expect(page.getByRole('status')).toContainText('Harvest record updated.');
         await expect(page.locator('.harvest-summary-panel')).toContainText('0.5');
         await page.getByRole('button', { name: 'Delete', exact: true }).click();
         const deleteDialog = page.getByRole('dialog', { name: 'Delete harvest record?' });
         await expect(deleteDialog).toContainText('0.5 kg record for Fresh Pechay');
         await deleteDialog.getByRole('button', { name: 'Delete record', exact: true }).click();
         await expect(deleteDialog).not.toBeVisible();
-        await expect(page.getByRole('status')).toHaveText('Harvest record for Fresh Pechay deleted successfully.');
+        await expect(page.getByRole('status')).toContainText('Harvest record deleted.');
         await expect(page.getByText('No harvest records yet')).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
         await page.screenshot({ path: testInfo.outputPath(`harvest-records-${width}.png`), fullPage: true });

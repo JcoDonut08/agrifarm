@@ -9,7 +9,6 @@ import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import '../../../css/seller-products.css';
 
 const initial = { name: '', category: '', description: '', price: '', unit: 'kg', stock: '', threshold: '5',  harvest_date: '', expected_yield: '0' };
-const PRODUCTS_PER_PAGE = 8;
 export default function Products({ filipino = false }) {
     const { auth, products = [], flash } = usePage().props;
     const [editing, setEditing] = useState(false);
@@ -21,6 +20,7 @@ export default function Products({ filipino = false }) {
     const [processing, setProcessing] = useState(false);
     const [selectedIds, setSelectedIds] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [deleting, setDeleting] = useState(null);
     const [confirmation, setConfirmation] = useState(null);
     const [managementError, setManagementError] = useState('');
@@ -29,8 +29,8 @@ export default function Products({ filipino = false }) {
     const modal = useRef(null);
     const selectAllInput = useRef(null);
     const allSelected = products.length > 0 && selectedIds.length === products.length;
-    const totalPages = Math.max(1, Math.ceil(products.length / PRODUCTS_PER_PAGE));
-    const visibleProducts = products.slice((currentPage - 1) * PRODUCTS_PER_PAGE, currentPage * PRODUCTS_PER_PAGE);
+    const totalPages = Math.max(1, Math.ceil(products.length / rowsPerPage));
+    const visibleProducts = products.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
     useEffect(() => {
         if (!editing) { modal.current?.close(); return; }
         const previousOverflow = document.body.style.overflow;
@@ -54,6 +54,20 @@ export default function Products({ filipino = false }) {
     useEffect(() => {
         if (selectAllInput.current) selectAllInput.current.indeterminate = selectedIds.length > 0 && !allSelected;
     }, [allSelected, selectedIds.length]);
+    useEffect(() => {
+        if (!editing || !editingProduct) return;
+        const stockChanged = errors.stock?.startsWith('Available stock changed.');
+        const yieldChanged = errors.expected_yield?.startsWith('Expected harvest quantity changed.');
+        if (!stockChanged && !yieldChanged) return;
+        const latest = products.find(product => product.id === editingProduct.id);
+        if (!latest || (latest.stock === editingProduct.stock && Number(latest.expected_yield || 0) === Number(editingProduct.expected_yield || 0))) return;
+        setData(current => ({
+            ...current,
+            stock: stockChanged || Number(current.stock) === Number(editingProduct.stock) ? String(latest.stock) : current.stock,
+            expected_yield: yieldChanged || Number(current.expected_yield) === Number(editingProduct.expected_yield || 0) ? String(latest.expected_yield || 0) : current.expected_yield,
+        }));
+        setEditingProduct(latest);
+    }, [editing, editingProduct, products, errors.stock, errors.expected_yield]);
 
     function openCreate() {
         setEditingProduct(null);
@@ -79,6 +93,16 @@ export default function Products({ filipino = false }) {
         setErrors(current => ({ ...current, [key]: undefined }));
 
     }
+    function focusFirstError() {
+        requestAnimationFrame(() => {
+            const field = form.current?.querySelector('[aria-invalid="true"]');
+            field?.focus({ preventScroll: true });
+            field?.scrollIntoView({ block: 'center' });
+        });
+    }
+    useEffect(() => {
+        if (editing && Object.values(errors).some(Boolean)) focusFirstError();
+    }, [editing, errors]);
     function choosePhoto(file) {
 
         if (!file) return;
@@ -113,13 +137,17 @@ export default function Products({ filipino = false }) {
         if (!Object.keys(next).length && !processing) {
             setProcessing(true);
             const endpoint = editingProduct ? `/seller/products/${editingProduct.id}` : '/seller/products';
-            const payload = editingProduct ? { ...data, photo, _method: 'patch' } : { ...data, photo };
+            const payload = editingProduct ? {
+                ...data, photo, _method: 'patch',
+                original_stock: editingProduct.stock,
+                original_expected_yield: editingProduct.expected_yield || 0,
+            } : { ...data, photo };
             router.post(endpoint, payload, {
                 forceFormData: true,
                 preserveScroll: true,
                 onError: serverErrors => {
                     setErrors(serverErrors);
-                    requestAnimationFrame(() => form.current?.querySelector('[aria-invalid="true"]')?.focus());
+                    focusFirstError();
                 },
                 onSuccess: () => {
                     if (!editingProduct) setCurrentPage(1);
@@ -133,7 +161,7 @@ export default function Products({ filipino = false }) {
                 onFinish: () => setProcessing(false),
             });
         }
-        if (Object.keys(next).length) requestAnimationFrame(() => form.current?.querySelector('[aria-invalid="true"]')?.focus());
+        if (Object.keys(next).length) focusFirstError();
     }
     function toggleProduct(productId) {
         setSelectedIds(current => current.includes(productId) ? current.filter(id => id !== productId) : [...current, productId]);
@@ -194,7 +222,8 @@ export default function Products({ filipino = false }) {
             })}</div>
             <Pagination
                 page={currentPage}
-                pageSize={PRODUCTS_PER_PAGE}
+                pageSize={rowsPerPage}
+                onPageSizeChange={setRowsPerPage}
                 totalItems={products.length}
                 onPageChange={setCurrentPage}
                 label={filipino ? 'Paglipat ng pahina ng mga produkto' : 'Products pagination'}
@@ -233,7 +262,7 @@ export default function Products({ filipino = false }) {
                 </section>
                 <section className="seller-panel product-section"><div className="product-section-title"><Icon name="tag" /><div><h2>{filipino ? 'Presyo at imbentaryo' : 'Price & inventory'}</h2><p>{filipino ? 'Itakda ang presyo ng bawat unit na ibebenta.' : 'Set the price for one selling unit.'}</p></div></div><div className="seller-settings-fields product-fields-grid">
                     <FormField id="product-price" label={filipino ? 'Presyo (PHP)' : 'Price (PHP)'} type="number" min="0.01" step="0.01" placeholder="0.00" inputMode="decimal" value={data.price} onChange={event => update('price', event.target.value)} error={localizeMessage(errors.price, filipino)} required />
-                    <div><label htmlFor="product-unit">{filipino ? 'Unit ng bentahan' : 'Selling unit'}</label><select id="product-unit" value={data.unit} onChange={event => update('unit', event.target.value)}>{['kg', 'bunch', 'piece', 'head', 'pack'].map(unit => <option value={unit} key={unit}>{unitLabel(unit, filipino)}</option>)}</select></div>
+                    <div><label htmlFor="product-unit">{filipino ? 'Unit ng bentahan' : 'Selling unit'}</label><select id="product-unit" value={data.unit} onChange={event => update('unit', event.target.value)} aria-invalid={!!errors.unit} aria-describedby={errors.unit ? 'product-unit-error' : undefined}>{['kg', 'bunch', 'piece', 'head', 'pack'].map(unit => <option value={unit} key={unit}>{unitLabel(unit, filipino)}</option>)}</select>{errors.unit && <p id="product-unit-error" className="product-error">{localizeMessage(errors.unit, filipino)}</p>}</div>
                     
                     <FormField id="product-stock" label={filipino ? 'Available na stock' : 'Available stock'} type="number" min="0" step="1" placeholder="0" value={data.stock} onChange={event => update('stock', event.target.value)} error={localizeMessage(errors.stock, filipino)} hint={filipino ? `Bilang ng available na ${unitLabel(data.unit, true)}.` : `Number of ${data.unit} units available.`} required />
                     <FormField id="product-threshold" label={filipino ? 'Paalala kapag kaunti na ang stock' : 'Low-stock reminder'} type="number" min="0" step="1" value={data.threshold} onChange={event => update('threshold', event.target.value)} error={localizeMessage(errors.threshold, filipino)} hint={filipino ? 'Antas ng stock na mamarkahang kailangang dagdagan.' : 'Stock level to flag for replenishment.'} required />

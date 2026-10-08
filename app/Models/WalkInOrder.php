@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WalkInOrder extends Model
 {
+    public const CANCELLATION_REASONS = [
+        'reserved_elsewhere' => 'Already allocated to another customer',
+        'out_of_stock' => 'Out of stock',
+        'harvest_unavailable' => 'Harvest unavailable',
+        'other' => 'Other reason',
+    ];
+
     protected $fillable = ['customer_name', 'product_name', 'unit', 'quantity', 'unit_price', 'total', 'status'];
 
     protected function casts(): array

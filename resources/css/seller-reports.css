@@ -71,7 +71,7 @@
 .report-generate-button { display: inline-flex; width: 100%; min-height: 42px; align-items: center; justify-content: center; gap: 7px; margin-top: auto; padding: 0 16px; border-radius: 9px; background: #176a43; color: #fff; font-size: 12px; font-weight: 750; }
 .report-generate-button:hover { background: #105737; }
 .report-generate-button:focus-visible { outline: 2px solid #24774d; outline-offset: 3px; }
-.report-option-card.is-generated .report-generate-button { background: #245f42; }
+.report-option-card.is-generated .report-generate-button { background: var(--ui-action); }
 
 .report-preview-section { min-width: 0; scroll-margin-top: 20px; }
 .report-preview-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
@@ -138,6 +138,8 @@
 .dark .report-pagination { border-color: #dce5da; background: #f8faf7; }
 .dark .report-pagination > p,.dark .report-pagination .seller-pagination__controls strong { color: #65756b; }
 .dark .report-pagination .seller-pagination__controls button { border-color: #d6e1d6; background: #fff; color: #315442; }
+.dark .report-pagination .seller-pagination__size { color: #65756b; }
+.dark .report-pagination .seller-pagination__size select { border-color: #d6e1d6; background: #fff; color: #315442; color-scheme: light; }
 
 @media (max-width: 1050px) {
     .report-generator { align-items: flex-start; flex-direction: column; gap: 20px; }

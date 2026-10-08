@@ -60,6 +60,9 @@ class CustomerCheckoutController extends Controller
                 $quantity = $quantities->get($product->id)['quantity'];
                 $isPreorder = $product->stock === 0 && $product->expected_yield > 0;
                 $maxAvailable = $isPreorder ? $product->expected_yield : $product->stock;
+                if ($product->status !== 'active') {
+                    throw ValidationException::withMessages(['items' => "{$product->name} is no longer available. Review your cart."]);
+                }
                 if ($product->seller?->role !== UserRole::Seller || $product->seller->account_status !== AccountStatus::Active || $maxAvailable < $quantity) {
                     throw ValidationException::withMessages(['items' => "{$product->name} is no longer available in that quantity. Review your cart."]);
                 }
@@ -82,6 +85,7 @@ class CustomerCheckoutController extends Controller
 
             foreach ($products as $product) {
                 $quantity = $quantities->get($product->id)['quantity'];
+                $isPreorder = $product->stock === 0 && $product->expected_yield > 0;
                 $order = new WalkInOrder([
                     'customer_name' => $checkout->recipient_name,
                     'product_name' => $product->name,
@@ -94,6 +98,7 @@ class CustomerCheckoutController extends Controller
                 $order->user_id = $product->user_id;
                 $order->product_id = $product->id;
                 $order->customer_checkout_id = $checkout->id;
+                $order->inventory_source = $isPreorder ? 'expected_yield' : 'stock';
                 $order->save();
                 if ($isPreorder) {
                     $product->decrement('expected_yield', $quantity);

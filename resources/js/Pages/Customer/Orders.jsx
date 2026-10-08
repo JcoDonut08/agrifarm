@@ -3,7 +3,19 @@ import { useState } from 'react';
 import StorefrontLayout from '../../Layouts/StorefrontLayout';
 import { ShopProvider } from '../../Components/Storefront/ShopContext';
 import Icon from '../../Components/Storefront/Icon';
+import OrderCancellationReason from '../../Components/OrderCancellationReason';
 
+function orderStatusLabel(status, filipino) {
+    const labels = {
+        pending: ['Pending', 'Naghihintay'],
+        reservation: ['Preorder', 'Preorder'],
+        preparing: ['Preparing', 'Inihahanda'],
+        out_for_delivery: ['Out for delivery', 'Ipinadadala'],
+        delivered: ['Delivered', 'Naihatid'],
+        cancelled: ['Cancelled', 'Kinansela'],
+    };
+    return labels[status]?.[filipino ? 1 : 0] || status.replaceAll('_', ' ');
+}
 
 const OrderProgressBar = ({ status, filipino }) => {
     if (status === 'cancelled') {
@@ -166,11 +178,11 @@ export default function Orders({ checkouts }) {
                                                                     </div>
                                                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                                                                         <span className={`badge-${item.status}`} style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                                            {item.status}
+                                                                            {orderStatusLabel(item.status, filipino)}
                                                                         </span>
                                                                         {item.status === 'delivered' && (
                                                                             <Link href={`/?page=product&product=${item.product_id}`} className="order-action-link" style={{ fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                                                                                <Icon name="edit" size={14} /> Write Review
+                                                                            <Icon name="edit" size={14} /> {filipino ? 'Sumulat ng review' : 'Write review'}
                                                                             </Link>
                                                                         )}
                                                                     </div>
@@ -178,6 +190,7 @@ export default function Orders({ checkouts }) {
                                                               </div>
                                                               </div>
                                                                 <OrderProgressBar status={item.status} filipino={filipino} />
+                                                                <OrderCancellationReason order={item} filipino={filipino} />
                                                           </div>
                                                     );
                                                 })}
@@ -186,12 +199,12 @@ export default function Orders({ checkouts }) {
                                             {/* Order Footer */}
                                             <div style={{ padding: '14px 20px', borderTop: '1px solid var(--store-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'color-mix(in srgb, var(--store-bg) 50%, var(--store-soft))' }}>
                                                 <span style={{ fontSize: '12px', color: 'var(--store-muted)' }}>
-                                                    Payment Method: <strong style={{ color: 'var(--store-ink)' }}>{checkout.payment_method}</strong>
+                                                    {filipino ? 'Paraan ng pagbabayad' : 'Payment method'}: <strong style={{ color: 'var(--store-ink)' }}>{checkout.payment_method}</strong>
                                                 </span>
                                                 {checkout.isCompleted ? (
-                                                    <Link href="/" className="checkout-outline-button order-action-btn" style={{ minHeight: '36px', padding: '6px 14px', fontSize: '12px' }}>Buy Again</Link>
+                                                    <Link href="/" className="checkout-outline-button order-action-btn">{filipino ? 'Bumili ulit' : 'Buy again'}</Link>
                                                 ) : (
-                                                    <span style={{ fontSize: '12px', color: 'var(--store-muted)' }}>We'll notify you when items update.</span>
+                                                    <span style={{ fontSize: '12px', color: 'var(--store-muted)' }}>{filipino ? 'Aabisuhan ka kapag nagbago ang status ng order.' : 'We’ll notify you when your order status changes.'}</span>
                                                 )}
                                             </div>
                                         </div>

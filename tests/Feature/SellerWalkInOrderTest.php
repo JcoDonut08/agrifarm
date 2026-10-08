@@ -83,7 +83,7 @@ class SellerWalkInOrderTest extends TestCase
             ->assertSessionHasNoErrors();
         $this->assertSame('delivered', $order->fresh()->status);
 
-        $this->patch("/seller/orders/{$order->id}/status", ['status' => 'cancelled'])
+        $this->patch("/seller/orders/{$order->id}/status", ['status' => 'cancelled', 'cancellation_reason' => 'out_of_stock'])
             ->assertSessionHasErrors('status');
         $this->assertSame('delivered', $order->fresh()->status);
         $this->assertSame(6, $product->fresh()->stock);
@@ -103,12 +103,12 @@ class SellerWalkInOrderTest extends TestCase
         $order = WalkInOrder::firstOrFail();
         $this->assertSame(4, $product->fresh()->stock);
 
-        $this->patch("/seller/orders/{$order->id}/status", ['status' => 'cancelled'])
+        $this->patch("/seller/orders/{$order->id}/status", ['status' => 'cancelled', 'cancellation_reason' => 'out_of_stock'])
             ->assertSessionHasNoErrors();
         $this->assertSame('cancelled', $order->fresh()->status);
         $this->assertSame(6, $product->fresh()->stock);
 
-        $this->patch("/seller/orders/{$order->id}/status", ['status' => 'cancelled'])
+        $this->patch("/seller/orders/{$order->id}/status", ['status' => 'cancelled', 'cancellation_reason' => 'out_of_stock'])
             ->assertSessionHasErrors('status');
         $this->assertSame(6, $product->fresh()->stock);
 
@@ -141,7 +141,7 @@ class SellerWalkInOrderTest extends TestCase
             ->where('orders.0.customer_avatar_url', 'https://example.com/jco-avatar.jpg'));
     }
 
-    public function test_updating_product_updates_associated_walk_in_orders(): void
+    public function test_updating_a_listing_preserves_the_original_walk_in_order_details(): void
     {
         $this->withoutVite();
         $seller = User::factory()->create(['role' => UserRole::Seller]);
@@ -163,16 +163,22 @@ class SellerWalkInOrderTest extends TestCase
             'category' => 'Fruits',
             'description' => 'Sweet strawberries',
             'price' => '120.00',
-            'unit' => 'kg',
+            'unit' => 'bunch',
             'stock' => 8,
+            'original_stock' => 8,
             'threshold' => 2,
         ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('walk_in_orders', [
             'product_id' => $product->id,
-            'product_name' => 'Strawberry',
-            'unit' => 'kg',
+            'product_name' => 'Fresh Pechay',
+            'unit' => 'bunch',
+            'quantity' => 2,
+            'unit_price' => '35.50',
+            'total' => '71.00',
         ]);
+        $this->assertSame('Strawberry', $product->fresh()->name);
+        $this->assertSame('120.00', $product->fresh()->price);
     }
 
     private function product(User $seller, int $stock): Product

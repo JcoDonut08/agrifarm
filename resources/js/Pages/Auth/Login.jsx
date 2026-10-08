@@ -33,7 +33,7 @@ export default function Login() {
                     <Link href="/forgot-password" className="rounded text-sm font-bold text-forest-700 hover:text-forest-950 dark:text-forest-300 dark:hover:text-white">Forgot password?</Link>
                 </div>
 
-                <SubmitButton processing={processing}>{processing ? 'Logging in...' : 'Login'}</SubmitButton>
+                <SubmitButton processing={processing}>{processing ? 'Logging in…' : 'Login'}</SubmitButton>
             </form>
 
             <GoogleAuthButton href="/auth/google/redirect?intent=login" error={errors.google} />
@@ -42,7 +42,7 @@ export default function Login() {
                 New to AgriFarm? <Link href="/register" className="font-bold text-forest-700 hover:text-forest-950 dark:text-forest-300 dark:hover:text-white">Create account</Link>
             </p>
             <aside className="mt-5 border-t border-stone-200 pt-4 text-center dark:border-white/10" aria-label="Account terms and privacy">
-                <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-stone-500 dark:text-stone-400">Account terms &amp; privacy</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-stone-600 dark:text-stone-300">Account terms &amp; privacy</p>
                 <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-stone-600 dark:text-stone-300">
                     New accounts created with Google require acceptance of our{' '}
                     <Link href="/terms" className="rounded font-bold text-forest-700 underline decoration-forest-300 underline-offset-2 transition hover:text-forest-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 dark:text-forest-300 dark:hover:text-white">Terms of Use</Link>{' '}

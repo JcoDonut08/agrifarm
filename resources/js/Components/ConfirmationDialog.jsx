@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from 'react';
 import Icon from './Storefront/Icon';
+import '../../css/confirmation-dialog.css';
 
 export default function ConfirmationDialog({
     open,
@@ -12,6 +13,7 @@ export default function ConfirmationDialog({
     icon = 'trash',
     onConfirm,
     onCancel,
+    children,
 }) {
     const dialog = useRef(null);
     const cancelButton = useRef(null);
@@ -58,10 +60,11 @@ export default function ConfirmationDialog({
         <div className="seller-confirmation-content">
             <span className="seller-confirmation-icon"><Icon name={icon} size={25} /></span>
             <div><h2 id={titleId}>{title}</h2><p id={descriptionId}>{description}</p></div>
+            {children && <div className="seller-confirmation-fields">{children}</div>}
         </div>
         <div className="seller-confirmation-actions">
             <button ref={cancelButton} type="button" className="seller-outline-button" disabled={busy} onClick={dismiss}>{cancelLabel}</button>
-            <button type="button" className="seller-danger-button" disabled={busy} onClick={onConfirm}><Icon name={icon} size={17} />{busy ? workingLabel : confirmLabel}</button>
+            <button type="button" className="seller-danger-button" disabled={busy} onClick={onConfirm}>{busy ? workingLabel : confirmLabel}</button>
         </div>
     </dialog>;
 }

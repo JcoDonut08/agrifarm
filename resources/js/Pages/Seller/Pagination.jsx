@@ -1,7 +1,9 @@
 import Icon from '../../Components/Storefront/Icon';
+import { useId } from 'react';
 import '../../../css/seller-pagination.css';
 
-export default function Pagination({ page, pageSize, totalItems, onPageChange, label = 'Pagination', itemLabel = 'items', filipino = false, className = '' }) {
+export default function Pagination({ page, pageSize, totalItems, onPageChange, onPageSizeChange, label = 'Pagination', itemLabel = 'items', filipino = false, className = '' }) {
+    const sizeId = useId();
     if (!totalItems) return null;
 
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -11,6 +13,15 @@ export default function Pagination({ page, pageSize, totalItems, onPageChange, l
 
     return <nav className={`seller-pagination ${className}`.trim()} aria-label={label}>
         <p>{filipino ? `Ipinapakita ang ${firstItem}–${lastItem} sa ${totalItems} ${itemLabel}` : `Showing ${firstItem}–${lastItem} of ${totalItems} ${itemLabel}`}</p>
+        {onPageSizeChange && <div className="seller-pagination__size">
+            <label htmlFor={sizeId}>{filipino ? 'Mga hanay bawat pahina' : 'Rows per page'}</label>
+            <select id={sizeId} value={pageSize} onChange={event => {
+                onPageSizeChange(Number(event.target.value));
+                onPageChange(1);
+            }}>
+                {[5, 10, 20].map(size => <option key={size} value={size}>{size}</option>)}
+            </select>
+        </div>}
         <div className="seller-pagination__controls">
             <button type="button" className="seller-pagination__previous" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)} aria-label={filipino ? 'Nakaraang pahina' : 'Previous page'}>
                 <Icon name="chevron" size={16} />

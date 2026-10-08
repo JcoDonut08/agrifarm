@@ -101,13 +101,14 @@ class SellerProductTest extends TestCase
             'name' => 'Premium Pechay',
             'price' => '42.00',
             'stock' => 9,
+            'original_stock' => 3,
         ]), '_method' => 'patch', 'photo' => null])->assertSessionHasNoErrors()->assertRedirect('/seller/dashboard?section=products');
         $this->assertSame('Premium Pechay', $product->fresh()->name);
         $this->assertSame($originalPath, $product->photo_path);
         Storage::disk('local')->assertExists($originalPath);
 
         $replacement = $this->photo('replacement.png');
-        $this->post("/seller/products/{$product->id}", [...$this->payload(['name' => 'Premium Pechay', 'photo' => $replacement]), '_method' => 'patch'])
+        $this->post("/seller/products/{$product->id}", [...$this->payload(['name' => 'Premium Pechay', 'photo' => $replacement, 'original_stock' => 9]), '_method' => 'patch'])
             ->assertSessionHasNoErrors();
         $replacementPath = $product->fresh()->photo_path;
         $this->assertNotSame($originalPath, $replacementPath);

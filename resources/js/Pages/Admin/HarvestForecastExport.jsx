@@ -11,6 +11,7 @@ export default function HarvestForecastExport({ barangays, from, to, filipino })
     const [notice, setNotice] = useState('');
     const [format, setFormat] = useState('xlsx');
     const [page, setPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const requestRef = useRef(null);
     const statusRef = useRef(null);
     const selection = `${barangay}|${from}|${to}|${filipino}`;
@@ -122,7 +123,7 @@ export default function HarvestForecastExport({ barangays, from, to, filipino })
     const currentPreview = preview?.selection === selection ? preview : null;
     const dateLabel = value => new Date(value.length === 10 ? `${value}T00:00:00` : value).toLocaleDateString(filipino ? 'fil-PH' : 'en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
     const kgLabel = value => Number(value).toLocaleString('en-PH', { maximumFractionDigits: 3 });
-    const pageRows = currentPreview?.rows?.slice((page - 1) * 12, page * 12) || [];
+    const pageRows = currentPreview?.rows?.slice((page - 1) * rowsPerPage, page * rowsPerPage) || [];
     return <section className="harvest-forecast-export" aria-labelledby="harvest-forecast-export-heading">
         <header><h2 id="harvest-forecast-export-heading">{text('Export for forecasting', 'Export para sa pagtataya')}</h2>
             <p>{text('Download actual monthly harvests for farmers to upload. Uses the date range above.', 'I-download ang tunay na buwanang ani para i-upload ng mga magsasaka. Gamit ang petsang pinili sa itaas.')}</p></header>
@@ -171,7 +172,7 @@ export default function HarvestForecastExport({ barangays, from, to, filipino })
                                     <tbody>{pageRows.map(([month, crop, kg, area]) => <tr key={`${month}|${crop}`}><td>{month}</td><td>{crop}</td><td>{kgLabel(kg)}</td><td>{area}</td></tr>)}</tbody>
                                 </table>
                             </div>
-                            <Pagination page={page} pageSize={12} totalItems={currentPreview.row_count} onPageChange={setPage} filipino={filipino} label={text('Monthly harvest pages', 'Mga pahina ng buwanang ani')} itemLabel={text('monthly crop totals', 'buwanang kabuuan ng pananim')} className="report-pagination" />
+                            <Pagination page={page} pageSize={rowsPerPage} onPageSizeChange={setRowsPerPage} totalItems={currentPreview.row_count} onPageChange={setPage} filipino={filipino} label={text('Monthly harvest pages', 'Mga pahina ng buwanang ani')} itemLabel={text('monthly crop totals', 'buwanang kabuuan ng pananim')} className="report-pagination" />
                             <footer>{text('Actual recorded harvests for this barangay. Months without records are omitted; they do not mean zero harvest. Downloads include every row, ready for forecasting upload.', 'Aktuwal na naitalang ani ng barangay. Hindi kasama ang buwang walang tala; hindi ito nangangahulugang walang ani. Kasama sa download ang lahat ng tala, handa nang i-upload para sa pagtataya.')}</footer>
                         </article>
                     </div>

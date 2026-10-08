@@ -41,6 +41,8 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import AppMark from "../../Components/AppMark";
+import FormStatus from '../../Components/FormStatus';
+import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import "../../../css/seller.css";
 import "../../../css/admin.css";
 import WeatherCard from "../Seller/WeatherCard";
@@ -48,6 +50,8 @@ import Avatar from "../Seller/Avatar";
 import Profile from "./Profile";
 import AdminSettings from "./Settings";
 import FarmersSellers from "./FarmersSellers";
+import Pagination from '../Seller/Pagination';
+import useTablePagination from '../../Components/useTablePagination';
 import AuditLogs from "./AuditLogs";
 import BarangayMonitoring from "./BarangayMonitoring";
 import AdminProducts from "./Products";
@@ -256,6 +260,7 @@ function buildAdminAlerts(attention = {}, weather, preferences) {
 export default function Dashboard() {
     const {
         auth,
+        flash,
         dashboard,
         sellerManagement,
         auditLogs = [],
@@ -459,6 +464,7 @@ export default function Dashboard() {
                 </header>
 
                 <main className="admin-main">
+                    <FormStatus dismissible messageId={flash?.id} dismissLabel={filipino ? 'Isara ang mensahe' : 'Dismiss message'}>{filipino ? ({ 'Profile photo updated successfully.': 'Na-update ang larawan sa profile.', 'Profile photo removed.': 'Inalis ang larawan sa profile.', 'Task added.': 'Naidagdag ang gawain.', 'Task completed.': 'Natapos ang gawain.', 'Task reopened.': 'Muling binuksan ang gawain.', 'Task deleted.': 'Nabura ang gawain.', 'Seller details updated.': 'Na-update ang detalye ng seller.' }[flash?.status] || flash?.status) : flash?.status}</FormStatus>
                     {section === "Dashboard" ? (
                         <DashboardOverview
                             dashboard={dashboard}
@@ -657,6 +663,7 @@ function AdminNotifications({ alerts, filipino }) {
 function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
     const summary = dashboard.summary || {};
     const barangays = dashboard.barangays || [];
+    const barangayPages = useTablePagination(barangays);
     const monthlySales = dashboard.monthlySales || { months: [], series: [] };
     const todo = dashboard.todo || [];
     const recentActivity = dashboard.recentActivity || [];
@@ -779,7 +786,7 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
                                 <span>{filipino ? "Mga order" : "Orders"}</span>
                             </div>
                             <div className="admin-performance-list">
-                                {barangays.map((barangay) => (
+                                {barangayPages.visibleItems.map((barangay) => (
                                     <article
                                         className="admin-performance-item"
                                         key={barangay.id}
@@ -820,6 +827,7 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
                                     </article>
                                 ))}
                             </div>
+                            <Pagination page={barangayPages.page} pageSize={barangayPages.pageSize} totalItems={barangays.length} onPageChange={barangayPages.setPage} onPageSizeChange={barangayPages.setPageSize} filipino={filipino} label="Barangay performance pagination" itemLabel="barangays" />
                         </div>
                     ) : (
                         <div className="admin-empty">
@@ -955,6 +963,8 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
 
 function AdminTodoPanel({ tasks, filipino }) {
     const [adding, setAdding] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleting, setDeleting] = useState(false);
     const form = useForm({ title: "", due_date: "" });
     const completedTasks = tasks.filter((task) => task.completed).length;
     const openTasks = tasks.length - completedTasks;
@@ -982,17 +992,18 @@ function AdminTodoPanel({ tasks, filipino }) {
         );
     };
 
-    const deleteTask = (task) => {
-        const confirmMessage = filipino
-            ? `Burahin ang “${task.title}”?`
-            : `Delete “${task.title}”?`;
-        if (window.confirm(confirmMessage)) {
-            router.delete(`/admin/tasks/${task.id}`, { preserveScroll: true });
-        }
+    const deleteTask = () => {
+        if (!deleteTarget || deleting) return;
+        router.delete(`/admin/tasks/${deleteTarget.id}`, {
+            preserveScroll: true,
+            onStart: () => setDeleting(true),
+            onSuccess: () => setDeleteTarget(null),
+            onFinish: () => setDeleting(false),
+        });
     };
 
     return (
-        <article className="admin-panel admin-todo-panel">
+        <><article className="admin-panel admin-todo-panel">
             <div className="admin-panel-heading">
                 <div>
                     <h2>
@@ -1154,7 +1165,7 @@ function AdminTodoPanel({ tasks, filipino }) {
                                 type="button"
                                 className="admin-task-delete"
                                 aria-label={`Delete ${task.title}`}
-                                onClick={() => deleteTask(task)}
+                                onClick={() => setDeleteTarget(task)}
                             >
                                 <Trash2 />
                             </button>
@@ -1174,6 +1185,8 @@ function AdminTodoPanel({ tasks, filipino }) {
                 )
             )}
         </article>
+        <ConfirmationDialog open={Boolean(deleteTarget)} title={filipino ? 'Burahin ang gawain?' : 'Delete task?'} description={filipino ? `Aalisin ang “${deleteTarget?.title || ''}” sa iyong listahan ng gagawin.` : `“${deleteTarget?.title || ''}” will be removed from your to-do list.`} confirmLabel={filipino ? 'Burahin ang gawain' : 'Delete task'} cancelLabel={filipino ? 'Kanselahin' : 'Cancel'} workingLabel={filipino ? 'Binubura…' : 'Deleting…'} busy={deleting} onCancel={() => setDeleteTarget(null)} onConfirm={deleteTask} />
+        </>
     );
 }
 

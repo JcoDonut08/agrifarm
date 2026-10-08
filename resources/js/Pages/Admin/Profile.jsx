@@ -12,12 +12,14 @@ import {
 } from "lucide-react";
 import { useForm } from "@inertiajs/react";
 import { useRef, useState } from "react";
+import ConfirmationDialog from '../../Components/ConfirmationDialog';
 
 export default function Profile({ user, email, filipino }) {
     const displayName = user?.name || "Pasig CENRO Administrator";
     const form = useForm({ photo: null });
     const [preview, setPreview] = useState(null);
     const [clientError, setClientError] = useState(null);
+    const [removingPhoto, setRemovingPhoto] = useState(false);
     const fileInputRef = useRef(null);
 
     const handleFileChange = (e) => {
@@ -77,13 +79,11 @@ export default function Profile({ user, email, filipino }) {
     };
 
     const handleRemove = () => {
-        if (!confirm("Are you sure you want to remove your profile photo?"))
-            return;
-
         form.delete("/admin/profile/photo", {
             preserveScroll: true,
             onSuccess: () => {
                 cancelPreview();
+                setRemovingPhoto(false);
             },
         });
     };
@@ -91,13 +91,7 @@ export default function Profile({ user, email, filipino }) {
     return (
         <>
             <h1 className="admin-page-title">
-                {filipino
-                    ? filipino
-                        ? "Profile"
-                        : "Profile"
-                    : filipino
-                      ? "Profile"
-                      : "Profile"}
+                Profile
             </h1>
             <section className="admin-panel admin-profile-form">
                 <header className="admin-profile-heading">
@@ -122,10 +116,9 @@ export default function Profile({ user, email, filipino }) {
                     aria-labelledby="admin-photo-heading"
                 >
                     <div>
-                        <h2 id="admin-photo-heading">Profile photo</h2>
+                        <h2 id="admin-photo-heading">{filipino ? 'Larawan sa profile' : 'Profile photo'}</h2>
                         <p>
-                            Add an official CENRO account photo to personalize
-                            your administrative workspace.
+                            {filipino ? 'Pumili ng larawan para sa iyong CENRO account.' : 'Choose a photo for your CENRO account.'}
                         </p>
                     </div>
                     <div className="admin-settings-content">
@@ -154,7 +147,7 @@ export default function Profile({ user, email, filipino }) {
                             </span>
                             <div className="admin-photo-details">
                                 <strong>Pasig CENRO account</strong>
-                                <p>JPG, PNG, or WebP files up to 10 MB.</p>
+                                <p>{filipino ? 'JPG, PNG o WebP. Hanggang 10 MB.' : 'JPG, PNG or WebP. Up to 10 MB.'}</p>
                                 <input
                                     ref={fileInputRef}
                                     id="admin-profile-photo-input"
@@ -176,9 +169,9 @@ export default function Profile({ user, email, filipino }) {
                                         <span>
                                             {preview || user?.avatar_url
                                                 ? filipino
-                                                    ? "Palitan ang litrato"
+                                                    ? "Palitan ang larawan"
                                                     : "Change photo"
-                                                : "Choose photo"}
+                                                : filipino ? 'Pumili ng larawan' : "Choose photo"}
                                         </span>
                                     </button>
                                     {preview && (
@@ -190,9 +183,7 @@ export default function Profile({ user, email, filipino }) {
                                             >
                                                 <Check aria-hidden="true" />
                                                 <span>
-                                                    {form.processing
-                                                        ? "Saving…"
-                                                        : "Save photo"}
+                                                    {filipino ? (form.processing ? 'Sine-save…' : 'I-save ang larawan') : (form.processing ? 'Saving…' : 'Save photo')}
                                                 </span>
                                             </button>
                                             <button
@@ -202,7 +193,7 @@ export default function Profile({ user, email, filipino }) {
                                                 disabled={form.processing}
                                             >
                                                 <X aria-hidden="true" />
-                                                <span>Cancel</span>
+                                                <span>{filipino ? 'Kanselahin' : 'Cancel'}</span>
                                             </button>
                                         </>
                                     )}
@@ -210,16 +201,12 @@ export default function Profile({ user, email, filipino }) {
                                         <button
                                             type="button"
                                             className="admin-danger-button admin-photo-btn"
-                                            onClick={handleRemove}
+                                            onClick={() => setRemovingPhoto(true)}
                                             disabled={form.processing}
                                         >
                                             <Trash2 aria-hidden="true" />
                                             <span>
-                                                {filipino
-                                                    ? "Alisin ang litrato"
-                                                    : filipino
-                                                      ? "Alisin ang litrato"
-                                                      : "Remove photo"}
+                                                {filipino ? 'Alisin ang larawan' : 'Remove photo'}
                                             </span>
                                         </button>
                                     )}
@@ -250,16 +237,15 @@ export default function Profile({ user, email, filipino }) {
                     aria-labelledby="admin-details-heading"
                 >
                     <div>
-                        <h2 id="admin-details-heading">Account details</h2>
+                        <h2 id="admin-details-heading">{filipino ? 'Detalye ng account' : 'Account details'}</h2>
                         <p>
-                            Review the identity used for this CENRO
-                            administrator workspace.
+                            {filipino ? 'Tingnan ang detalye ng iyong CENRO administrator account.' : 'Review your CENRO administrator account details.'}
                         </p>
                     </div>
                     <dl className="admin-profile-details">
                         <ProfileDetail
                             icon={UserRound}
-                            label="Display name"
+                            label={filipino ? 'Pangalan' : 'Display name'}
                             value={displayName}
                         />
                         <ProfileDetail
@@ -270,12 +256,12 @@ export default function Profile({ user, email, filipino }) {
                         />
                         <ProfileDetail
                             icon={ShieldCheck}
-                            label="Account role"
+                            label={filipino ? 'Tungkulin sa account' : 'Account role'}
                             value="CENRO Administrator"
                         />
                         <ProfileDetail
                             icon={Building2}
-                            label="Office"
+                            label={filipino ? 'Opisina' : 'Office'}
                             value="Pasig City CENRO"
                         />
                     </dl>
@@ -286,10 +272,9 @@ export default function Profile({ user, email, filipino }) {
                     aria-labelledby="admin-security-heading"
                 >
                     <div>
-                        <h2 id="admin-security-heading">Password & security</h2>
+                        <h2 id="admin-security-heading">{filipino ? 'Password at seguridad' : 'Password & security'}</h2>
                         <p>
-                            Password tools will be added when administrator
-                            account management is connected.
+                            {filipino ? 'Gamitin ang Forgot password sa login page para palitan ang iyong password.' : 'Use Forgot password on the login page to reset your password.'}
                         </p>
                     </div>
                     <div className="admin-security-note">
@@ -297,15 +282,15 @@ export default function Profile({ user, email, filipino }) {
                             <LockKeyhole />
                         </span>
                         <div>
-                            <strong>Account access is protected</strong>
+                            <strong>{filipino ? 'Protektado ang access sa account' : 'Account access is protected'}</strong>
                             <p>
-                                Your administrator role and access restrictions
-                                are enforced by the server.
+                                {filipino ? 'Ang server ang nagpapatupad ng mga pahintulot ng iyong administrator account.' : 'Your administrator role and access restrictions are enforced by the server.'}
                             </p>
                         </div>
                     </div>
                 </section>
             </section>
+            <ConfirmationDialog open={removingPhoto} title={filipino ? 'Alisin ang larawan sa profile?' : 'Remove profile photo?'} description={filipino ? 'Maaari kang mag-upload ng bagong larawan anumang oras.' : 'You can upload a new photo at any time.'} confirmLabel={filipino ? 'Alisin ang larawan' : 'Remove photo'} cancelLabel={filipino ? 'Kanselahin' : 'Cancel'} workingLabel={filipino ? 'Inaalis…' : 'Removing…'} busy={form.processing} onCancel={() => setRemovingPhoto(false)} onConfirm={handleRemove} />
         </>
     );
 }

@@ -58,8 +58,9 @@ class StorefrontSellerProductTest extends TestCase
         $this->get('/marketplace/products/'.$product->id.'/photo')->assertOk()->assertHeader('Content-Type', extension_loaded('gd') || extension_loaded('imagick') ? 'image/webp' : 'image/png');
         $this->get($product->photo_url)->assertRedirect('/login');
 
-        $this->actingAs($seller)->post('/seller/products/'.$product->id, [...$this->payload(['name' => 'Premium Pechay', 'price' => '42.00', 'stock' => 9]), '_method' => 'patch', 'photo' => null])
+        $this->actingAs($seller)->post('/seller/products/'.$product->id, [...$this->payload(['name' => 'Premium Pechay', 'price' => '42.00', 'stock' => 9]), 'original_stock' => 3, '_method' => 'patch', 'photo' => null])
             ->assertSessionHasNoErrors();
+        auth()->logout();
         $this->get('/')->assertInertia(fn (Assert $page) => $page
             ->where('sellerProducts.0.name', 'Premium Pechay')
             ->where('sellerProducts.0.price', 42)
@@ -89,6 +90,7 @@ class StorefrontSellerProductTest extends TestCase
 
         $this->actingAs($seller)->delete('/seller/products/'.$product->id)->assertSessionHasNoErrors();
         $this->assertDatabaseCount('product_reviews', 0);
+        auth()->logout();
         $this->get('/marketplace/products/'.$product->id.'/photo')->assertNotFound();
         $this->get('/')->assertInertia(fn (Assert $page) => $page->has('sellerProducts', 0)->etc());
     }

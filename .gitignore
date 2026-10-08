@@ -7,6 +7,8 @@
 /test-results
 /database/*.sqlite
 /storage/*.key
+/storage/backups/
+/storage/recovery/
 /vendor
 .env
 .env.backup

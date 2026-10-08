@@ -28,6 +28,20 @@ Use the system UI font for interface text (Segoe UI on Windows). Segoe Print is 
 - Shopping headers are title-only. The cart is device-local; stock is reserved only after server-side COD checkout. Show three connected steps and always disclose unconfigured delivery charges beside the goods subtotal.
 - Keep hover motion restrained, keyboard focus visible, menus inside the viewport, and reduced-motion support intact.
 
+## Workspace consistency
+
+Customer, seller, and administrator action controls share the `--ui-*` tokens in `resources/css/app.css`: a 44px minimum height, 10px corners, 14px labels, and 600 weight. Primary actions use the same green and hover color; secondary actions use a neutral outline; destructive actions use red. Large forecast actions can remain taller, and navigation, icon controls, and report format tabs retain their purpose-specific layouts.
+
+Workspace page headings use 25px on larger screens and 23px on mobile. Profile form labels use 13px and 600 weight, and action rows use a 12px gap.
+
+Use `FormStatus` for feedback across customer, seller, and administrator pages. Dismissible success messages use a neutral surface, a small green icon, and concise text. Keep them at the bottom center, away from page headings and primary actions; on narrow customer screens, reserve space for the help button. They close after six seconds; hovering or focusing pauses the timer. Clear them when navigating away or leaving the browser tab. Each flash message appears once, including when dashboard sections remount. Authentication instructions remain inline, and errors stay visible until corrected or dismissed. Do not show a second success message or a success modal for the same action.
+
+Use `ConfirmationDialog` before deletion, order cancellation, and other destructive actions. Forms that need a reason, such as account suspension and order cancellation, collect it in the dialog. Ordinary edits, saves, and uploads need success feedback after completion. Place validation errors beside the relevant fields, and request failures near the action. Dialog styling lives once in `resources/css/confirmation-dialog.css` and adapts to the current theme. Action labels use sentence case with a specific verb, such as “Save photo”, “Update password”, or “Delete task”. Localized controls must include their loading, error, and confirmation states.
+
+## Tables and record lists
+
+Record tables and management lists show five rows by default. Use the shared `Pagination` component with a labeled “Rows per page” selector offering 5, 10, and 20. Changing the size returns to page one, filters keep their existing behavior, and removing the last record on a page moves to a valid page. Paginate report previews only; downloads and totals include all matching records. The full harvest calendar and individual order receipts keep their complete contents. Dashboard recent-order summaries show the latest five records and link to the full order list.
+
 ## Theme and responsive checks
 
 Hero, featured banner, harvest CTA, forms, dialogs, seller cards, and review controls must be legible in both themes. Do not invert photographs. Verify at 390px, 768px, and 1440px with no horizontal overflow.

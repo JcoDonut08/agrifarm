@@ -6,7 +6,6 @@ import Pagination from "./Pagination";
 import "../../../css/seller-reports.css";
 
 const DAY = 86400000;
-const REPORT_ROWS_PER_PAGE = 8;
 
 function startOfDay(value) {
     const date = new Date(value);
@@ -430,6 +429,7 @@ export default function Reports({
     });
     const [isExporting, setIsExporting] = useState(false);
     const [previewPage, setPreviewPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [from, setFrom] = useState(() =>
         inputDate(new Date(today.getFullYear(), today.getMonth(), 1)),
     );
@@ -604,11 +604,11 @@ export default function Reports({
     const format = reportType ? formats[reportType] : "pdf";
     const reportPageCount = Math.max(
         1,
-        Math.ceil(report.rows.length / REPORT_ROWS_PER_PAGE),
+        Math.ceil(report.rows.length / rowsPerPage),
     );
     const visibleReportRows = report.rows.slice(
-        (previewPage - 1) * REPORT_ROWS_PER_PAGE,
-        previewPage * REPORT_ROWS_PER_PAGE,
+        (previewPage - 1) * rowsPerPage,
+        previewPage * rowsPerPage,
     );
 
     useEffect(() => {
@@ -936,7 +936,7 @@ export default function Reports({
                                         visibleReportRows.map(
                                             (row, rowIndex) => (
                                                 <tr
-                                                    key={`${row[0]}-${(previewPage - 1) * REPORT_ROWS_PER_PAGE + rowIndex}`}
+                                                    key={`${row[0]}-${(previewPage - 1) * rowsPerPage + rowIndex}`}
                                                 >
                                                     {row.map((value, index) => (
                                                         <td
@@ -965,7 +965,8 @@ export default function Reports({
                         </div>
                         <Pagination
                             page={previewPage}
-                            pageSize={REPORT_ROWS_PER_PAGE}
+                            pageSize={rowsPerPage}
+                            onPageSizeChange={setRowsPerPage}
                             totalItems={report.rows.length}
                             onPageChange={setPreviewPage}
                             label={`${report.title} ${filipino ? "na paglipat ng pahina" : "pagination"}`}

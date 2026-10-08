@@ -17,13 +17,17 @@ class Product extends Model
 
     protected $appends = ['photo_url'];
 
+    protected $attributes = ['status' => 'active'];
+
     protected function casts(): array
     {
         return [
+            'price' => 'decimal:2',
+            'stock' => 'integer',
+            'threshold' => 'integer',
             'expected_yield' => 'integer',
             'harvest_date' => 'date',
         ];
-        return ['price' => 'decimal:2', 'stock' => 'integer', 'threshold' => 'integer'];
     }
 
     public function getPhotoUrlAttribute(): string
@@ -51,7 +55,6 @@ class Product extends Model
         return $this->hasMany(ProductReview::class);
     }
 
-    
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class);

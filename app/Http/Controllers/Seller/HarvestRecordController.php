@@ -24,7 +24,7 @@ class HarvestRecordController extends Controller
         $harvestRecord->user_id = $request->user()->id;
         $harvestRecord->save();
 
-        if ($request->wantsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+        if (! $request->header('X-Inertia') && ($request->wantsJson() || $request->ajax())) {
             return response()->json(['status' => 'success', 'message' => $this->createdMessage($harvestRecord)]);
         }
 
@@ -42,7 +42,7 @@ class HarvestRecordController extends Controller
             'notes' => filled($data['notes'] ?? null) ? trim($data['notes']) : null,
         ]);
 
-        if ($request->wantsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+        if (! $request->header('X-Inertia') && ($request->wantsJson() || $request->ajax())) {
             return response()->json(['status' => 'success', 'message' => 'Harvest record updated successfully.']);
         }
 
@@ -56,7 +56,7 @@ class HarvestRecordController extends Controller
         $productName = $harvestRecord->product_name;
         $harvestRecord->delete();
 
-        if ($request->wantsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+        if (! $request->header('X-Inertia') && ($request->wantsJson() || $request->ajax())) {
             return response()->json(['status' => 'success', 'message' => "Harvest record for {$productName} deleted successfully."]);
         }
 

@@ -40,8 +40,8 @@ class StorefrontRankingTest extends TestCase
             ->component('Welcome')
             ->where('bestBarangay.name', 'Rosario')
             ->where('bestBarangay.deliveredRevenue', 500)
-            ->where('communityStats.0.listingCount', 1)
-            ->where('communityStats.1.deliveredOrderCount', 2)
+            ->where('communityStats', fn ($communities) => collect($communities)->firstWhere('name', 'Rosario')['listingCount'] === 1
+                && collect($communities)->firstWhere('name', 'Maybunga')['deliveredOrderCount'] === 2)
             ->where('sellerProducts.0.barangay', null)
             ->where('sellerProducts.0.isBestSeller', true)
             ->where('sellerProducts.1.barangay', 'Maybunga')
@@ -69,7 +69,7 @@ class StorefrontRankingTest extends TestCase
             ->where('bestBarangay', null)
             ->where('bestSellingProducts', [])
             ->where('bestBarangayProduct', null)
-            ->where('communityStats.2.listingCount', 1)
+            ->where('communityStats', fn ($communities) => collect($communities)->firstWhere('name', 'Sto. Tomas')['listingCount'] === 1)
             ->where('sellerProducts.0.barangay', 'Sto. Tomas')
             ->etc());
     }

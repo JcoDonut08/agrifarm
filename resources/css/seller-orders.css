@@ -18,6 +18,8 @@
 .order-filters button.is-active span { color: #175f39; background: #fff; }
 .orders-table-wrap { overflow-x: auto; }
 .seller-panel .orders-table { min-width: 1080px; }
+.seller-panel .orders-table-wrap.is-empty .orders-table { min-width: 0; }
+.orders-table-wrap.is-empty thead { display: none; }
 .seller-panel .orders-table th { padding: 15px 16px; background: #fafbf8; color: #415b4b; font-size: 12px; font-weight: 700; letter-spacing: .01em; white-space: nowrap; }
 .seller-panel .orders-table td { padding: 0; }
 .seller-panel .orders-table .order-row td { padding: 16px; border-top: 1px solid #e5eae3; color: #183c2a; font-size: 13px; font-weight: 500; line-height: 1.45; vertical-align: middle; }

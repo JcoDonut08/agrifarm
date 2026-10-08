@@ -28,13 +28,14 @@ export function ShopProvider({ children, products = previewProducts, persist = t
     const [notice, setNotice] = useState('');
     const [noticeId, setNoticeId] = useState(0);
     const [noticeTarget, setNoticeTarget] = useState(null);
-    const [noticePaused, setNoticePaused] = useState(false);
+    const [noticeTone, setNoticeTone] = useState('success');
     const [language, setLanguage] = useState(() => { try { return localStorage.getItem('agrifarm-customer-language') || 'english'; } catch { return 'english'; } });
     const changeLanguage = (lang) => { setLanguage(lang); try { localStorage.setItem('agrifarm-customer-language', lang); } catch {} };
 
-    function notify(message, target = null) {
+    function notify(message, target = null, tone = 'success') {
         setNotice(message);
         setNoticeTarget(target);
+        setNoticeTone(tone);
         setNoticeId((id) => id + 1);
     }
 
@@ -57,12 +58,6 @@ export function ShopProvider({ children, products = previewProducts, persist = t
         });
     }, [products, persist]);
 
-    useEffect(() => {
-        if (!notice || noticePaused) return;
-        const timeout = window.setTimeout(() => setNotice(''), 8000);
-        return () => window.clearTimeout(timeout);
-    }, [notice, noticeId, noticePaused]);
-
     function changeQuantity(id, change) {
         setSaved((previous) => {
             const cart = { ...previous.cart };
@@ -79,7 +74,7 @@ export function ShopProvider({ children, products = previewProducts, persist = t
         const isPreorderMode = product.stock === 0 && product.expected_yield > 0;
         const maxAvailable = isPreorderMode ? product.expected_yield : product.stock;
         if ((saved.cart[product.id] || 0) + quantity > maxAvailable) {
-            notify('You have added all available stock for this item.');
+            notify('You have added all available stock for this item.', null, 'error');
             return false;
         }
         changeQuantity(product.id, quantity);
@@ -115,7 +110,7 @@ export function ShopProvider({ children, products = previewProducts, persist = t
         setSaved((previous) => ({ ...previous, favorites: previous.favorites.includes(id) ? previous.favorites.filter((item) => item !== id) : [...previous.favorites, id] }));
     }
 
-    const value = { ...saved, products, panel, setPanel, notice, noticeId, noticeTarget, dismissNotice: () => setNotice(''), setNoticePaused, add, addQuantity, saveForLater, changeQuantity, clearPurchased, toggleFavorite, count: Object.values(saved.cart).reduce((total, quantity) => total + quantity, 0), language, filipino: language === 'filipino', changeLanguage };
+    const value = { ...saved, products, panel, setPanel, notice, noticeId, noticeTarget, noticeTone, notify, dismissNotice: () => setNotice(''), add, addQuantity, saveForLater, changeQuantity, clearPurchased, toggleFavorite, count: Object.values(saved.cart).reduce((total, quantity) => total + quantity, 0), language, filipino: language === 'filipino', changeLanguage };
     return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
 

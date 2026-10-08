@@ -2,8 +2,8 @@
 
 namespace App\Notifications;
 
+use App\Models\WalkInOrder;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -14,10 +14,7 @@ class OrderStatusUpdated extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(public WalkInOrder $order) {}
 
     /**
      * Get the notification's delivery channels.
@@ -26,7 +23,7 @@ class OrderStatusUpdated extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -34,10 +31,16 @@ class OrderStatusUpdated extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+        $data = $this->toArray($notifiable);
+        $mail = (new MailMessage)->subject($data['title'])->line($data['message']);
+        if ($this->order->status === 'cancelled') {
+            $mail->line('Reason: '.(WalkInOrder::CANCELLATION_REASONS[$this->order->cancellation_reason] ?? 'No reason recorded.'));
+            if ($this->order->cancellation_note) {
+                $mail->line($this->order->cancellation_note);
+            }
+        }
+
+        return $mail->action('View your orders', url('/customer/orders'));
     }
 
     /**
@@ -48,7 +51,15 @@ class OrderStatusUpdated extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'title' => $this->order->status === 'cancelled' ? 'Order cancelled' : 'Order updated',
+            'message' => 'Your order for '.$this->order->product_name.' is now '.str_replace('_', ' ', $this->order->status).'.',
+            'order_id' => $this->order->id,
+            'reference' => $this->order->checkout?->reference_number,
+            'product_name' => $this->order->product_name,
+            'status' => $this->order->status,
+            'cancellation_reason' => $this->order->cancellation_reason,
+            'cancellation_note' => $this->order->cancellation_note,
+            'url' => '/customer/orders',
         ];
     }
 }

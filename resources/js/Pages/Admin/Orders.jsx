@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Search, ChevronDown, ShoppingBag, Eye, X, Store, CheckCircle2, Clock, Truck, FileQuestion, XCircle, Package } from 'lucide-react';
+import Pagination from '../Seller/Pagination';
 
 export default function AdminOrders({ orderManagement, filipino }) {
     const { orders } = orderManagement;
@@ -9,7 +10,7 @@ export default function AdminOrders({ orderManagement, filipino }) {
     const [statusFilter, setStatusFilter] = useState('');
     
     const [page, setPage] = useState(1);
-    const pageSize = 10;
+    const [pageSize, setPageSize] = useState(5);
 
     const [viewOrder, setViewOrder] = useState(null);
 
@@ -29,6 +30,10 @@ export default function AdminOrders({ orderManagement, filipino }) {
         const start = (page - 1) * pageSize;
         return filtered.slice(start, start + pageSize);
     }, [filtered, page, pageSize]);
+    useEffect(() => {
+        const lastPage = Math.max(1, Math.ceil(filtered.length / pageSize));
+        if (page > lastPage) setPage(lastPage);
+    }, [filtered.length, page, pageSize]);
 
     // Reset page when filters change
     useEffect(() => {
@@ -163,22 +168,7 @@ export default function AdminOrders({ orderManagement, filipino }) {
                             ))}
                         </div>
 
-                        <div className="admin-table-pagination" aria-label="Orders table pagination">
-                            <span className="admin-pagination-info">
-                                Showing <strong>{(page - 1) * pageSize + 1}</strong> - <strong>{Math.min(page * pageSize, filtered.length)}</strong> of <strong>{filtered.length}</strong> orders
-                            </span>
-                            <div className="admin-pagination-controls">
-                                <button type="button" className="admin-pagination-btn" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>
-                                    <span>&lsaquo; Previous</span>
-                                </button>
-                                <span className="admin-pagination-current">
-                                    Page <strong>{page}</strong> of <strong>{Math.ceil(filtered.length / pageSize) || 1}</strong>
-                                </span>
-                                <button type="button" className="admin-pagination-btn" disabled={page >= Math.ceil(filtered.length / pageSize)} onClick={() => setPage(p => Math.min(Math.ceil(filtered.length / pageSize), p + 1))}>
-                                    <span>Next &rsaquo;</span>
-                                </button>
-                            </div>
-                        </div>
+                        <Pagination page={page} pageSize={pageSize} totalItems={filtered.length} onPageChange={setPage} onPageSizeChange={setPageSize} filipino={filipino} label="Orders table pagination" itemLabel={filipino ? "tala" : "orders"} />
                     </div>
                 ) : (
                     <div className="admin-empty admin-seller-empty">
