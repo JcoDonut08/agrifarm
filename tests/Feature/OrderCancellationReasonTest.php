@@ -69,7 +69,7 @@ class OrderCancellationReasonTest extends TestCase
         $this->assertSame($order->cancellation_note, $notice->data['cancellation_note']);
         $this->assertSame('/customer/orders', $notice->data['url']);
         $mail = (new OrderStatusUpdated($order))->toMail($buyer);
-        $this->assertContains($order->cancellation_note, $mail->introLines);
+        $this->assertStringContainsString($order->cancellation_note, (string) $mail->render());
         $this->get('/?page=notifications')->assertInertia(fn (Assert $page) => $page
             ->where('notifications.0.data.cancellation_note', $order->cancellation_note));
         $this->actingAs(User::factory()->create())->get('/customer/orders')->assertInertia(fn (Assert $page) => $page->has('checkouts', 0));

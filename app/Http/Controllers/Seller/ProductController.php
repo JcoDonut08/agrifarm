@@ -19,6 +19,8 @@ class ProductController extends Controller
 
     private const UNITS = ['kg', 'bunch', 'piece', 'head', 'pack'];
 
+    private const ACTIVE_ORDER_STATUSES = ['pending', 'reservation', 'preparing', 'out_for_delivery'];
+
     public function store(Request $request, ProductPhotoService $photos): RedirectResponse
     {
         $data = $this->validatedProduct($request, true);
@@ -29,7 +31,7 @@ class ProductController extends Controller
             $product->user_id = $request->user()->id;
             $product->save();
         } catch (\Throwable $exception) {
-            Storage::disk('local')->delete($path);
+            $photos->delete($path);
             throw $exception;
         }
 
@@ -53,7 +55,7 @@ class ProductController extends Controller
             DB::transaction(function () use ($product, $data, &$previousPath): void {
                 $currentProduct = Product::whereKey($product->id)->lockForUpdate()->firstOrFail();
                 if ($data['unit'] !== $currentProduct->unit && WalkInOrder::where('product_id', $currentProduct->id)
-                    ->whereIn('status', ['pending', 'reservation', 'preparing', 'out_for_delivery'])->exists()) {
+                    ->whereIn('status', self::ACTIVE_ORDER_STATUSES)->exists()) {
                     throw ValidationException::withMessages([
                         'unit' => 'Finish or cancel open orders before changing the selling unit.',
                     ]);
@@ -80,56 +82,79 @@ class ProductController extends Controller
             });
         } catch (\Throwable $exception) {
             if ($replacementPath) {
-                Storage::disk('local')->delete($replacementPath);
+                $photos->delete($replacementPath);
             }
             throw $exception;
         }
 
         if ($replacementPath && $previousPath !== $replacementPath) {
-            Storage::disk('local')->delete($previousPath);
+            $photos->delete($previousPath);
         }
 
         return redirect('/seller/dashboard?section=products')->with('status', 'Product updated successfully.');
     }
 
-    public function destroy(Request $request, Product $product): RedirectResponse
+    public function destroy(Request $request, Product $product, ProductPhotoService $photos): RedirectResponse
     {
         $this->ensureOwner($request, $product);
-        $path = $product->photo_path;
-        $product->delete();
-        Storage::disk('local')->delete($path);
+        $path = DB::transaction(function () use ($request, $product): ?string {
+            // Order creation reserves inventory under this same product lock.
+            $currentProduct = Product::where('user_id', $request->user()->id)
+                ->whereKey($product->id)->lockForUpdate()->firstOrFail();
+            if (WalkInOrder::where('product_id', $currentProduct->id)
+                ->whereIn('status', self::ACTIVE_ORDER_STATUSES)->exists()) {
+                throw ValidationException::withMessages([
+                    'product' => 'This product has unfinished orders or reservations. Finish or cancel them before deleting it.',
+                ]);
+            }
+            $path = $currentProduct->photo_path;
+            $currentProduct->delete();
+
+            return $path;
+        });
+        $photos->delete($path);
 
         return redirect('/seller/dashboard?section=products')->with('status', 'Product deleted successfully.');
     }
 
-    public function bulkDestroy(Request $request): RedirectResponse
+    public function bulkDestroy(Request $request, ProductPhotoService $photos): RedirectResponse
     {
         $data = $request->validate([
             'product_ids' => ['required', 'array', 'min:1', 'max:100'],
             'product_ids.*' => ['required', 'integer', 'distinct'],
         ]);
         $ids = collect($data['product_ids'])->map(fn ($id) => (int) $id)->unique()->values();
-        $products = Product::where('user_id', $request->user()->id)->whereIn('id', $ids)->get();
+        $paths = DB::transaction(function () use ($request, $ids): array {
+            $products = Product::where('user_id', $request->user()->id)->whereIn('id', $ids)
+                ->orderBy('id')->lockForUpdate()->get();
+            if ($products->count() !== $ids->count()) {
+                throw ValidationException::withMessages(['product_ids' => 'One or more selected products could not be deleted.']);
+            }
+            if (WalkInOrder::whereIn('product_id', $ids)
+                ->whereIn('status', self::ACTIVE_ORDER_STATUSES)->exists()) {
+                throw ValidationException::withMessages([
+                    'product_ids' => 'One or more selected products have unfinished orders or reservations. No products were deleted. Finish or cancel those orders, or remove those products from your selection.',
+                ]);
+            }
+            Product::where('user_id', $request->user()->id)->whereIn('id', $ids)->delete();
 
-        if ($products->count() !== $ids->count()) {
-            throw ValidationException::withMessages(['product_ids' => 'One or more selected products could not be deleted.']);
-        }
-
-        $paths = $products->pluck('photo_path')->all();
-        DB::transaction(fn () => Product::where('user_id', $request->user()->id)->whereIn('id', $ids)->delete());
-        Storage::disk('local')->delete($paths);
+            return $products->pluck('photo_path')->all();
+        });
+        $photos->delete($paths);
 
         $count = $ids->count();
 
         return redirect('/seller/dashboard?section=products')->with('status', "{$count} ".($count === 1 ? 'product' : 'products').' deleted successfully.');
     }
 
-    public function photo(Request $request, Product $product)
+    public function photo(Request $request, Product $product, ProductPhotoService $photos)
     {
         $this->ensureOwner($request, $product);
         abort_unless(Storage::disk('local')->exists($product->photo_path), 404);
 
-        return response()->file(Storage::disk('local')->path($product->photo_path), ['Cache-Control' => 'private, max-age=3600', 'X-Content-Type-Options' => 'nosniff']);
+        $path = $photos->displayPath($product->photo_path, $request->query('size') === 'card');
+
+        return response()->file(Storage::disk('local')->path($path), ['Cache-Control' => 'private, max-age=3600', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     private function validatedProduct(Request $request, bool $photoRequired): array

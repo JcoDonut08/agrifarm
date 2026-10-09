@@ -27,7 +27,7 @@ export default function SellerStorefront({ profile }) {
         <section className="seller-public-products" aria-labelledby="seller-products-heading">
             <div className="section-heading"><div><h2 id="seller-products-heading">Products from this seller</h2><p>Current listings published by {profile.name}.</p></div><Link className="section-link" href={marketHref(profile.barangay)}>Browse marketplace <Icon name="arrow" size={17} /></Link></div>
             {profile.products.length
-                ? <div className="market-product-grid">{profile.products.map((product) => <ProductCard key={product.id} product={product} />)}</div>
+                ? <div className="market-product-grid">{profile.products.map((product, index) => <ProductCard key={product.id} product={product} priority={index < 4} />)}</div>
                 : <div className="seller-public-empty"><Icon name="sprout" size={30} /><h2>No active listings</h2><p>This seller does not have products available right now.</p></div>}
         </section>
     </div>;

@@ -33,6 +33,7 @@
         }
     },
     "scripts": {
+        "queue:orders": "@php artisan queue:work database --queue=order-emails --sleep=1 --tries=3 --timeout=60",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

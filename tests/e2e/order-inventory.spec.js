@@ -92,6 +92,7 @@ test('accepted preorder cancellation restores future harvest at mobile tablet an
         await expect(customer.locator('.order-cancellation-reason').filter({ hasText: reasonText })).toBeVisible();
         await customer.screenshot({ path: testInfo.outputPath(`customer-cancellation-${width}.png`), fullPage: true });
         await customer.goto('/?page=notifications');
+        await customer.locator('.customer-notification').filter({ hasText: reasonText }).first().locator('summary').click();
         await expect(customer.locator('.customer-notification').filter({ hasText: reasonText })).toBeVisible();
         await customer.screenshot({ path: testInfo.outputPath(`customer-cancellation-notification-${width}.png`), fullPage: true });
         if (width === 768) {

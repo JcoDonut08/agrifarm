@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import Icon from "../../Components/Storefront/Icon";
 import { unitLabel } from "./SellerLocale";
+import Pagination from "./Pagination";
+import useTablePagination from "../../Components/useTablePagination";
+import { deliveryDate } from '../../lib/salesDates';
 
 const currency = new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -34,7 +37,7 @@ const filipinoStatusLabels = {
 };
 
 function salesDate(order) {
-    return new Date(order.updated_at || order.created_at);
+    return deliveryDate(order);
 }
 
 function manilaDateParts(value = new Date()) {
@@ -185,6 +188,7 @@ export function SalesOverview({ orders = [], SellerIcon, filipino = false }) {
             .filter((order) => order.status === "delivered")
             .forEach((order) => {
                 const date = salesDate(order);
+                if (!date) return;
                 const point = nextPoints.find(
                     (item) => date >= item.start && date < item.end,
                 );
@@ -320,6 +324,7 @@ export function SalesOverview({ orders = [], SellerIcon, filipino = false }) {
                     ))}
                 </div>
             </div>
+            <p>{filipino ? 'Batay sa petsa ng paghatid, sa oras ng Pilipinas.' : 'Based on delivery dates in Philippine time.'}{orders.some(order => order.status === 'delivered' && !deliveryDate(order)) && (filipino ? ' Hindi kasama sa chart ang mga lumang order na walang petsa ng paghatid.' : 'Older orders without a delivery date are excluded from this chart.')}</p>
         </section>
     );
 }
@@ -339,7 +344,8 @@ export function RecentOrders({
     EmptyState,
     filipino = false,
 }) {
-    const recentOrders = orders.slice(0, 5);
+    const orderPages = useTablePagination(orders);
+    const recentOrders = orderPages.visibleItems;
     const productById = useMemo(
         () => new Map(products.map((product) => [Number(product.id), product])),
         [products],
@@ -469,6 +475,16 @@ export function RecentOrders({
                     </tbody>
                 </table>
             </div>
+            <Pagination
+                page={orderPages.page}
+                pageSize={orderPages.pageSize}
+                totalItems={orders.length}
+                onPageChange={orderPages.setPage}
+                onPageSizeChange={orderPages.setPageSize}
+                label={filipino ? "Mga pahina ng kamakailang order" : "Recent orders pagination"}
+                itemLabel={filipino ? "tala" : "records"}
+                filipino={filipino}
+            />
         </section>
     );
 }

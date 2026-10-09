@@ -24,7 +24,7 @@ test.beforeAll(() => {
             Illuminate\\Support\\Facades\\DB::table('harvest_records')->where('id', $record->id)->update(['harvest_date' => now()->toDateString()]);
             $checkout = App\\Models\\CustomerCheckout::create(['id' => (string) Illuminate\\Support\\Str::uuid(), 'user_id' => $customer->id, 'recipient_name' => 'Pagination Customer '.$i, 'phone' => '09171234567', 'address' => 'Test farm, Pasig City', 'barangay' => 'Rosario', 'payment_method' => 'cod', 'goods_total' => 70, 'reference_number' => 'PAGINATION-'.$i]);
             $order = new App\\Models\\WalkInOrder;
-            $order->forceFill(['user_id' => $seller->id, 'product_id' => $product->id, 'customer_checkout_id' => $checkout->id, 'customer_name' => 'Pagination Customer '.$i, 'product_name' => $name, 'unit' => 'kg', 'quantity' => 2, 'unit_price' => 35, 'total' => 70, 'status' => 'delivered', 'inventory_source' => 'stock'])->save();
+            $order->forceFill(['user_id' => $seller->id, 'product_id' => $product->id, 'customer_checkout_id' => $checkout->id, 'customer_name' => 'Pagination Customer '.$i, 'product_name' => $name, 'unit' => 'kg', 'quantity' => 2, 'unit_price' => 35, 'total' => 70, 'status' => 'delivered', 'delivered_at' => now()->utc(), 'inventory_source' => 'stock'])->save();
             $farmer = new App\\Models\\User;
             $farmer->forceFill(['name' => 'Pagination Farm '.$i, 'email' => 'pagination'.$i.'@agrifarm.test', 'password' => $seller->password, 'role' => 'seller', 'barangay' => 'Rosario', 'account_status' => 'active', 'email_verified_at' => now()])->save();
             App\\Models\\AuditLog::record($admin, 'Created seller account', 'Created pagination test seller '.$i, $farmer, 'create');
@@ -111,6 +111,9 @@ for (const width of [390, 768, 1440]) {
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         await signIn(page, 'brgyrosario@gmail.com', width);
+        const recentNav = page.getByRole('navigation', { name: 'Recent orders pagination' });
+        await exercisePagination(page, page.locator('.seller-recent-order-row'), recentNav);
+        await inspectThemes(page, recentNav, 'seller-recent-orders', width, testInfo);
         await navigate(page, 'seller', 'Orders', width);
         const orderNav = page.getByRole('navigation', { name: 'Orders pagination' });
         await exercisePagination(page, page.locator('.orders-table tbody tr'), orderNav);
@@ -205,6 +208,10 @@ for (const width of [390, 768, 1440]) {
 
 test('390px: Filipino pagination stays readable and works with the keyboard', async ({ page }, testInfo) => {
     await signIn(page, 'brgyrosario@gmail.com', 390, 'filipino');
+    const recentNav = page.getByRole('navigation', { name: 'Mga pahina ng kamakailang order' });
+    await recentNav.getByLabel('Mga hanay bawat pahina', { exact: true }).selectOption('10');
+    await expect(page.locator('.seller-recent-order-row')).toHaveCount(10);
+    await recentNav.screenshot({ path: testInfo.outputPath('filipino-recent-orders-pagination.png') });
     await page.goto('/seller/dashboard?section=orders');
     const nav = page.getByRole('navigation', { name: 'Paglipat ng pahina ng mga order' });
     const size = nav.getByLabel('Mga hanay bawat pahina', { exact: true });

@@ -15,13 +15,26 @@ class ForecastRecommendationService
         $plantingMonth = $plantingDate->startOfMonth();
         $metadata = json_decode(file_get_contents(storage_path('app/forecasting/crop_metadata.json')), true);
         $tolerances = json_decode(file_get_contents(storage_path('app/forecasting/crop_weather_tolerance.json')), true);
+        $references = json_decode(file_get_contents(storage_path('app/forecasting/online_crop_references.json')), true);
+        $result = $this->withOnlineReferences($result, $references);
+        foreach ($references as $crop => $reference) {
+            $metadata[$crop] = $reference;
+            $tolerances[$crop] = $reference['weather_tolerance'];
+        }
         $scored = [];
         $sellingContext = $seller ? $this->sellingActivity->context($seller, $result['dataset'] ?? [], $plantingDate) : null;
+        $recordedCrops = [];
+        foreach ($result['crops'] as $crop => $details) {
+            if ($details['status'] !== 'new_crop') {
+                $recordedCrops[mb_strtolower(trim($crop))] = true;
+            }
+        }
 
         foreach ($result['crops'] as $crop => &$details) {
             $details['metadata'] = $metadata[$crop] ?? null;
             $meta = $details['metadata'];
-            if (! $meta || ! ($meta['recommendable'] ?? true)) {
+            if (! $meta || ! ($meta['recommendable'] ?? true)
+                || ($details['status'] === 'new_crop' && isset($recordedCrops[mb_strtolower(trim($crop))]))) {
                 continue;
             }
 
@@ -78,7 +91,17 @@ class ForecastRecommendationService
                 'weather_focus' => $rainWeight > 0.55 ? 'rain' : ($rainWeight < 0.45 ? 'heat' : 'balanced'),
                 'weather_tolerance' => $tolerance,
                 'rain_weight' => round($rainWeight, 4),
-                'source' => $usesFarmHistory ? (($result['dataset']['scope'] ?? null) === 'barangay' ? 'barangay_history' : 'farm_history') : 'area_profile',
+                'source' => $usesFarmHistory ? (($result['dataset']['scope'] ?? null) === 'barangay' ? 'barangay_history' : 'farm_history')
+                    : (isset($references[$crop]) ? 'online_reference' : 'area_profile'),
+                'reference' => isset($references[$crop]) ? [
+                    'name' => $meta['source_name'], 'url' => $meta['source_url'],
+                    'reviewed_on' => $meta['reviewed_on'], 'guidance' => $meta['guidance'],
+                    'guidance_fil' => $meta['guidance_fil'], 'timing_note' => $meta['timing_note'],
+                    'timing_note_fil' => $meta['timing_note_fil'],
+                    'short_description' => $meta['short_description'], 'short_description_fil' => $meta['short_description_fil'],
+                    'weather_source_url' => $meta['weather_source_url'], 'weather_note' => $meta['weather_note'],
+                    'weather_note_fil' => $meta['weather_note_fil'],
+                ] : null,
                 'outside_forecast_horizon' => $details['status'] === 'success' && ! $usesFarmHistory,
                 'new_crop' => $details['status'] === 'new_crop',
                 'forecast' => $usesFarmHistory ? $point : null,
@@ -100,7 +123,63 @@ class ForecastRecommendationService
             }
         }
 
+        // Keep the usual ranking unless no reference crop is visible.
+        // These thresholds use the existing seasonal guide, not forecast accuracy.
+        $suitableNewCrop = static fn (array $candidate): bool => $candidate['new_crop']
+            && $candidate['season_strength'] >= 0.4 && $candidate['weather_score'] >= 5;
+        if (! collect($recommendations)->contains(fn (array $candidate): bool => $candidate['new_crop'])) {
+            $newCrop = collect($scored)->first($suitableNewCrop);
+            if ($newCrop !== null) {
+                if (count($recommendations) === 3) {
+                    array_pop($recommendations);
+                }
+                $recommendations[] = $newCrop;
+            }
+        }
+
         return [...$result, 'planting_month' => $plantingMonth->format('Y-m'),
             'recommendations' => $recommendations, 'weather_basis' => 'seasonal'];
+    }
+
+    private function withOnlineReferences(array $result, array $references): array
+    {
+        foreach ($references as $crop => $reference) {
+            $aliases = array_map(fn (string $name): string => mb_strtolower(trim($name)), $reference['aliases']);
+            $recordedKey = null;
+            foreach ($result['crops'] as $name => $details) {
+                if ($details['status'] !== 'new_crop' && in_array(mb_strtolower(trim($name)), $aliases, true)) {
+                    $recordedKey = $name;
+                    break;
+                }
+            }
+            $details = $recordedKey !== null ? $result['crops'][$recordedKey] : null;
+            // An uploaded alias is already recorded; do not invent a new crop
+            // or merge separately recorded harvest series under another name.
+            if ($recordedKey !== null && $recordedKey !== $crop) {
+                if (($result['crops'][$crop]['status'] ?? null) === 'new_crop') {
+                    unset($result['crops'][$crop]);
+                }
+
+                continue;
+            }
+            if (($details['status'] ?? null) === 'success') {
+                $result['crops'][$crop] = $details;
+
+                continue;
+            }
+            $profile = $reference['annual_profile_index'];
+            $result['crops'][$crop] = [
+                ...($details ?? []),
+                'status' => $recordedKey !== null ? 'fallback' : 'new_crop',
+                'unit' => 'season_strength',
+                'annual_profile_index' => $profile,
+                'forecast' => array_map(fn (string $month): array => [
+                    'month' => $month, 'value' => $profile[(int) substr($month, 5, 2) - 1],
+                    'lower' => null, 'upper' => null,
+                ], $result['forecast_months']),
+            ];
+        }
+
+        return $result;
     }
 }

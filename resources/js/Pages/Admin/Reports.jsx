@@ -3,38 +3,10 @@ import { MapPinned, Sprout, Users } from "lucide-react";
 import Icon from "../../Components/Storefront/Icon";
 import Pagination from "../Seller/Pagination";
 import HarvestForecastExport from "./HarvestForecastExport";
+import { deliveryDate, manilaInputDate as inputDate, salesReportRange as dateRange } from '../../lib/salesDates';
 import "../../../css/seller-reports.css";
 
 const DAY = 86400000;
-
-function startOfDay(value) {
-    const date = new Date(value);
-    date.setHours(0, 0, 0, 0);
-    return date;
-}
-
-function inputDate(value) {
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, "0");
-    const day = String(value.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-}
-
-function parseInputDate(value) {
-    if (!value) return null;
-    const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day);
-}
-
-function dateRange(from, to) {
-    const today = startOfDay(new Date());
-    const start = parseInputDate(from) || new Date(today.getFullYear(), today.getMonth(), 1);
-    const selectedEnd = parseInputDate(to) || today;
-    return {
-        start,
-        end: new Date(Math.max(start.getTime() + DAY, selectedEnd.getTime() + DAY)),
-    };
-}
 
 function safeCell(value) {
     const text = String(value ?? "");
@@ -111,7 +83,7 @@ export default function AdminReports({
     const [isExporting, setIsExporting] = useState(false);
     const [previewPage, setPreviewPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [from, setFrom] = useState(() => inputDate(new Date(today.getFullYear(), today.getMonth(), 1)));
+    const [from, setFrom] = useState(() => `${inputDate(today).slice(0, 7)}-01`);
     const [to, setTo] = useState(() => inputDate(today));
 
     const range = useMemo(() => dateRange(from, to), [from, to]);
@@ -121,7 +93,7 @@ export default function AdminReports({
         [harvestRecords, range],
     );
     const filteredOrders = useMemo(
-        () => walkInOrders.filter((o) => { const d = new Date(o.created_at); return !Number.isNaN(d.getTime()) && d >= range.start && d < range.end && o.status === "delivered"; }),
+        () => walkInOrders.filter((o) => { const d = deliveryDate(o); return d && d >= range.start && d < range.end; }),
         [walkInOrders, range],
     );
     const filteredSellers = useMemo(
@@ -225,14 +197,17 @@ export default function AdminReports({
         ];
     }, [reportType, filteredHarvest, filteredOrders, filteredSellers, filteredPending, barangayRows, filipino]);
 
-    const periodLabel = `${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium" }).format(range.start)} \u2013 ${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium" }).format(new Date(range.end.getTime() - DAY))}`;
-    const generatedLabel = new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium" }).format(today);
+    const periodLabel = `${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium", timeZone: 'Asia/Manila' }).format(range.start)} \u2013 ${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium", timeZone: 'Asia/Manila' }).format(new Date(range.end.getTime() - DAY))}`;
+    const generatedLabel = new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium", timeZone: 'Asia/Manila' }).format(today);
     const format = reportType ? formats[reportType] : "pdf";
     const reportPageCount = Math.max(1, Math.ceil(report.rows.length / rowsPerPage));
     const visibleReportRows = report.rows.slice((previewPage - 1) * rowsPerPage, previewPage * rowsPerPage);
-    const reportNote = filipino
+    const reportNote = (filipino
         ? "Opisyal na ulat ng AgriFarm para sa Pasig CENRO. Batay sa datos na nasa sistema noong ginawa ang ulat."
-        : "Official AgriFarm report for Pasig CENRO. Based on data available in the system at the time of generation.";
+        : "Official AgriFarm report for Pasig CENRO. Based on data available in the system at the time of generation.")
+        + (reportType !== 'registration' ? (filipino ? ' Ang benta ay batay sa petsa ng paghatid, sa oras ng Pilipinas.' : ' Sales use delivery dates in Philippine time.') : '')
+        + (reportType !== 'registration' && walkInOrders.some(order => order.status === 'delivered' && !deliveryDate(order))
+            ? (filipino ? ' Hindi kasama ang mga lumang naihatid na order na walang petsa ng paghatid.' : ' Older delivered orders without a delivery date are excluded.') : '');
 
     useEffect(() => { if (previewPage > reportPageCount) setPreviewPage(reportPageCount); }, [previewPage, reportPageCount]);
 
@@ -251,6 +226,7 @@ export default function AdminReports({
                     ["Organisation", "AgriFarm \u2014 Pasig CENRO"],
                     ["Reporting period", periodLabel],
                     ["Generated on", generatedLabel],
+                    [filipino ? 'Batayan' : 'Basis', note],
                     [],
                     report.headers,
                     ...report.rows,
@@ -272,6 +248,10 @@ export default function AdminReports({
                 ws.getCell("A1").fill = { type:"pattern", pattern:"solid", fgColor:{argb:"FF176A43"} };
                 ws.getRow(1).height = 31;
                 ws.addTable({ name:"AdminReport", ref:"A3", headerRow:true, totalsRow:false, style:{theme:"TableStyleMedium4", showRowStripes:true}, columns: report.headers.map((h) => ({ name: String(h ?? ""), filterButton: true })), rows: report.rows.map((row) => row.map((v) => String(v ?? ""))) });
+                const noteRow = ws.addRow([note]);
+                ws.mergeCells(noteRow.number, 1, noteRow.number, report.headers.length);
+                noteRow.getCell(1).alignment = { wrapText: true, vertical: 'top' };
+                noteRow.height = 48;
                 const buf = await wb.xlsx.writeBuffer();
                 downloadBlob(buf, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", `${fileStem}.xlsx`);
                 return;
@@ -309,7 +289,7 @@ export default function AdminReports({
             (report.rows.length?report.rows:[["No data available."]]).forEach((row,ri) => {
                 const cells=row.map((v,i)=>pdf.splitTextToSize(pdfText(v),(cols[i]||uw)-5));
                 const rh=Math.max(8,Math.max(...cells.map((l)=>l.length))*3.6+3);
-                if(y+rh>ph-16){pdf.addPage();drawHeader(true);y=drawTH(37);}
+                if(y+rh>ph-22){pdf.addPage();drawHeader(true);y=drawTH(37);}
                 if(ri%2===1){pdf.setFillColor(248,250,247);pdf.rect(m,y,cols.reduce((s,w)=>s+w,0),rh,"F");}
                 pdf.setDrawColor(228,233,226); pdf.line(m,y+rh,m+cols.reduce((s,w)=>s+w,0),y+rh);
                 let x=m;
@@ -317,7 +297,7 @@ export default function AdminReports({
                 y+=rh;
             });
             const pages=pdf.getNumberOfPages();
-            for(let p=1;p<=pages;p++){pdf.setPage(p);pdf.setDrawColor(225,231,223);pdf.line(m,ph-11,pw-m,ph-11);pdf.setFont("helvetica","normal");pdf.setFontSize(7);pdf.setTextColor(108,124,114);pdf.text(pdfText(note),m,ph-6,{maxWidth:uw-25});pdf.text(`${p} / ${pages}`,pw-m,ph-6,{align:"right"});}
+            for(let p=1;p<=pages;p++){pdf.setPage(p);pdf.setDrawColor(225,231,223);pdf.line(m,ph-18,pw-m,ph-18);pdf.setFont("helvetica","normal");pdf.setFontSize(7);pdf.setTextColor(108,124,114);pdf.text(pdfText(note),m,ph-13,{maxWidth:uw-25});pdf.text(`${p} / ${pages}`,pw-m,ph-8,{align:"right"});}
             downloadBlob(pdf.output("blob"),"application/pdf",`${fileStem}.pdf`);
         } finally { setIsExporting(false); }
     };

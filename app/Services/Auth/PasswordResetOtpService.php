@@ -82,6 +82,7 @@ class PasswordResetOtpService
         $request->session()->put(self::VERIFIED_SESSION_KEY, [
             'user_id' => $user->getKey(),
             'verified_at' => now()->getTimestamp(),
+            'password_hash' => $this->passwordFingerprint($user),
         ]);
     }
 
@@ -109,8 +110,15 @@ class PasswordResetOtpService
             ]);
         }
 
-        DB::transaction(function () use ($user, $password): void {
+        $fingerprint = $request->session()->get(self::VERIFIED_SESSION_KEY.'.password_hash');
+        DB::transaction(function () use ($user, $password, $request, $fingerprint): void {
             $lockedUser = User::query()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
+            if (! hash_equals($this->passwordFingerprint($lockedUser), $fingerprint)) {
+                $request->session()->forget(self::VERIFIED_SESSION_KEY);
+                throw ValidationException::withMessages([
+                    'password' => 'Your verified password reset session has expired. Request a new code.',
+                ]);
+            }
             $lockedUser->forceFill([
                 'password' => Hash::make($password),
                 'remember_token' => Str::random(60),
@@ -161,7 +169,9 @@ class PasswordResetOtpService
     {
         $verified = $request->session()->get(self::VERIFIED_SESSION_KEY);
 
-        if (! is_array($verified) || ! isset($verified['user_id'], $verified['verified_at'])) {
+        if (! is_array($verified) || ! isset($verified['user_id'], $verified['verified_at'], $verified['password_hash'])) {
+            $request->session()->forget(self::VERIFIED_SESSION_KEY);
+
             return null;
         }
 
@@ -171,7 +181,19 @@ class PasswordResetOtpService
             return null;
         }
 
-        return User::query()->find($verified['user_id']);
+        $user = User::query()->find($verified['user_id']);
+        if (! $user || ! is_string($verified['password_hash']) || ! hash_equals($this->passwordFingerprint($user), $verified['password_hash'])) {
+            $request->session()->forget(self::VERIFIED_SESSION_KEY);
+
+            return null;
+        }
+
+        return $user;
+    }
+
+    private function passwordFingerprint(User $user): string
+    {
+        return hash_hmac('sha256', $user->getAuthPassword(), (string) config('app.key'));
     }
 
     private function maskEmail(string $email): string

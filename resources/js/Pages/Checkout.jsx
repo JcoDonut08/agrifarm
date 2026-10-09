@@ -69,7 +69,7 @@ function OrderSuccess({ order }) {
     return <>
         <section className="checkout-confirmation" aria-live="polite">
             <div className="checkout-confirmation-visual">
-                <img className="checkout-mascot" src="/images/checkout-pechay-mascot.png" alt="Smiling pechay mascot celebrating your order" />
+                <img className="checkout-mascot" src="/images/kuya-ani-checkout.webp" alt="Kuya Ani holding a basket of fresh vegetables" width="800" height="1200" decoding="async" />
             </div>
             <div className="checkout-confirmation-content">
                 <span className="checkout-kicker">Order placed successfully</span>

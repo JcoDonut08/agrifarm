@@ -19,9 +19,13 @@ function wideRange(point) {
 const picturedCrops = ['Kamatis', 'Talong', 'Okra', 'Kangkong', 'Pechay', 'Mustasa', 'Kalabasa', 'Ampalaya', 'Sitaw', 'Sili', 'Alugbati', 'Lettuce', 'Labanos', 'Patola', 'Gabi', 'Saluyot', 'Spinach', 'Kalamansi', 'Luya', 'Malunggay'];
 
 function CropPicture({ crop, text, large = false }) {
+    if (crop.trim().toLowerCase() === 'pipino') {
+        return <img src="/images/forecast-pipino.webp" alt={`${crop} — ${text('crop reference image', 'halimbawang larawan ng pananim')}`}
+            className={`forecast-crop-picture is-photo ${large ? 'is-large' : ''}`} width={large ? 64 : 36} height={large ? 64 : 36} decoding="async" />;
+    }
     const index = picturedCrops.findIndex(name => name.toLowerCase() === crop.trim().toLowerCase());
     return index < 0
-        ? <span className={`forecast-crop-picture is-placeholder ${large ? 'is-large' : ''}`} aria-hidden="true"><Icon name="sprout" /></span>
+        ? <span className={`forecast-crop-picture is-placeholder ${large ? 'is-large' : ''}`} role="img" aria-label={`${crop} — ${text('crop icon', 'icon ng pananim')}`}><Icon name="sprout" /></span>
         : <span role="img" aria-label={`${crop} — ${text('crop reference image', 'halimbawang larawan ng pananim')}`}
             className={`forecast-crop-picture ${large ? 'is-large' : ''}`}
             style={{ backgroundPosition: `${(index % 4) / 3 * 100}% ${Math.floor(index / 4) / 4 * 100}%` }} />;
@@ -283,10 +287,10 @@ export default function Forecasting({ filipino = false }) {
                     {recommendations.length ? <div className="forecast-card-grid">
                         {recommendations.map(rec => <article className="forecast-rec-card" key={rec.crop}>
                             <div className="forecast-rec-header"><CropPicture crop={rec.crop} text={text} large /><div><h4>{rec.crop}</h4>
-                                {rec.new_crop && <span className="forecast-new-crop">{text('New crop for you', 'Bagong pananim para sa iyo')}</span>}
+                                {rec.new_crop && <span className="forecast-new-crop">{text('New crop to consider', 'Bagong pananim na maaaring subukan')}</span>}
                             </div></div>
                             <ul className="forecast-rec-summary">
-                                <li>{weatherReason(rec)}</li>
+                                <li>{rec.source === 'online_reference' ? text(rec.reference.short_description, rec.reference.short_description_fil) : weatherReason(rec)}</li>
                                 <li className="forecast-strong-months">{strongHarvestMonths(rec.crop)}</li>
                                 {sellingReason(rec) && <li className="forecast-selling-activity">{sellingReason(rec)}</li>}
                             </ul>
@@ -295,6 +299,8 @@ export default function Forecasting({ filipino = false }) {
                             <p className="forecast-harvest-date">{text('Harvest around', 'Ani bandang')} <strong>{monthLabel(rec.harvest_month, filipino)}</strong></p>
                             <p className="forecast-expected-harvest">{rec.forecast
                                 ? <>{rec.source === 'barangay_history' ? text(`Estimated harvest for ${barangay}`, `Tantyang ani para sa ${barangay}`) : text('Estimated harvest', 'Tantyang ani')}: <strong>{Math.round(rec.forecast.lower)}–{Math.round(rec.forecast.upper)} kg</strong></>
+                                : rec.source === 'online_reference' ? text('Based on an agricultural guide', 'Batay sa gabay sa pagsasaka')
+                                : rec.new_crop ? text('Based on seasonal references', 'Batay sa mga sanggunian ng panahon')
                                 : text('Seasonal planting guide', 'Gabay batay sa panahon')}</p>
                             <button type="button" className="forecast-plan-button"
                                 disabled={planForm.processing || savedCrops.has(rec.crop)}
@@ -309,17 +315,35 @@ export default function Forecasting({ filipino = false }) {
                             </button>
                             <details className="forecast-card-details">
                                 <summary>{text('Why this crop?', 'Bakit ito?')}</summary>
-                                <p>{rec.source === 'barangay_history'
+                                {rec.new_crop && <p>{text('This crop is not in your uploaded harvest records. Consider a small trial planting first.', 'Wala ang pananim na ito sa iyong na-upload na mga tala ng ani. Subukan muna sa maliit na taniman.')}</p>}
+                                <p>{rec.source === 'online_reference'
+                                    ? text('Based on published agricultural guidance.', 'Batay sa inilathalang gabay sa pagsasaka.')
+                                    : rec.source === 'barangay_history'
                                     ? text(`Based on ${barangay} harvest records.`, `Batay sa mga tala ng ani ng ${barangay}.`)
                                     : rec.source === 'farm_history'
                                     ? text('Based on your harvest records.', 'Batay sa mga tala ng iyong ani.')
                                     : text('Based on illustrative seasonal references for Pasig.', 'Batay sa mga halimbawang sanggunian ng panahon sa Pasig.')}</p>
                                 {rec.outside_forecast_horizon && <p>{text('This harvest date is outside your saved forecast. This suggestion uses seasonal references.', 'Lampas sa saklaw ng iyong na-save na pagtataya ang petsang ito. Batay sa mga sanggunian ng panahon ang mungkahing ito.')}</p>}
                                 <ul>
-                                    <li>{text('Harvest season', 'Panahon ng ani')}: {seasonText(rec.season_strength)} ({Math.round(rec.season_strength * 100)}%)</li>
-                                    <li>{weatherReason(rec)}</li>
+                                    {rec.source === 'online_reference'
+                                        ? <li>{text('Seasonal fit uses planning rules, not measured local harvests.', 'Batay sa mga tuntunin sa pagpaplano ang kaangkupan sa panahon, hindi sa nasukat na lokal na ani.')}</li>
+                                        : <><li>{text('Harvest season', 'Panahon ng ani')}: {seasonText(rec.season_strength)} ({Math.round(rec.season_strength * 100)}%)</li>
+                                            <li>{weatherReason(rec)}</li></>}
                                     <li>{text('Planting rank', 'Ranggo sa pagtatanim')}: {rec.score.toFixed(1)} / 10. {text('A guide for comparing crops.', 'Gabay sa paghahambing ng mga pananim.')}</li>
                                 </ul>
+                                {rec.reference && <div className="forecast-reference-details">
+                                    <p>{text(rec.reference.guidance, rec.reference.guidance_fil)}</p>
+                                    <p>{text(rec.reference.timing_note, rec.reference.timing_note_fil)}</p>
+                                    <a href={rec.reference.url} target="_blank" rel="noopener noreferrer">
+                                        {text('Read the growing guide', 'Basahin ang gabay sa pagtatanim')} · {rec.reference.name}
+                                    </a>
+                                    {rec.reference.weather_source_url && <>
+                                        <p>{text(rec.reference.weather_note, rec.reference.weather_note_fil)}</p>
+                                        <a href={rec.reference.weather_source_url} target="_blank" rel="noopener noreferrer">
+                                            {text('Weather guidance', 'Gabay sa panahon')} · DA Regional Field Office 02
+                                        </a>
+                                    </>}
+                                </div>}
                                 {rec.selling_activity?.order_count > 0 && <div className="forecast-selling-details">
                                     <p>{text('Selling activity', 'Tala ng benta')}: <strong>{rec.selling_activity.scope === 'barangay' ? rec.selling_activity.barangay : text('Your selling records', 'Mga tala ng iyong benta')}</strong></p>
                                     <p>{text('Completed orders', 'Mga nakumpletong order')}: {rec.selling_activity.order_count}</p>

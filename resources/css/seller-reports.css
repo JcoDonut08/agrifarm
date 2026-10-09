@@ -136,7 +136,7 @@
 .dark .report-table-wrap td { border-color: #e4e9e2; color: #34493b; }
 .dark .report-table-wrap tbody tr:nth-child(even) { background: #f8faf7; }
 .dark .report-pagination { border-color: #dce5da; background: #f8faf7; }
-.dark .report-pagination > p,.dark .report-pagination .seller-pagination__controls strong { color: #65756b; }
+.dark .report-pagination .seller-pagination__count,.dark .report-pagination .seller-pagination__controls strong { color: #65756b; }
 .dark .report-pagination .seller-pagination__controls button { border-color: #d6e1d6; background: #fff; color: #315442; }
 .dark .report-pagination .seller-pagination__size { color: #65756b; }
 .dark .report-pagination .seller-pagination__size select { border-color: #d6e1d6; background: #fff; color: #315442; color-scheme: light; }

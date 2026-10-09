@@ -116,6 +116,8 @@ test('customer checks out with COD across mobile tablet and desktop; seller rece
         await expect(page.locator('.checkout-confirmation-delivery')).toContainText('123 Example Street near Rosario hall');
         const mascot = page.locator('.checkout-mascot');
         await expect(mascot).toBeVisible();
+        await expect(mascot).toHaveAttribute('src', '/images/kuya-ani-checkout.webp');
+        await expect(mascot).toHaveAttribute('alt', 'Kuya Ani holding a basket of fresh vegetables');
         await expect.poll(() => mascot.evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
         if (viewport.name === 'mobile-390') {
             await page.emulateMedia({ media: 'print' });
@@ -134,6 +136,9 @@ test('customer checks out with COD across mobile tablet and desktop; seller rece
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-order-success.png`), fullPage: true });
+        await page.evaluate(() => document.documentElement.classList.add('dark'));
+        await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-order-success-dark.png`), fullPage: true });
+        await page.evaluate(() => document.documentElement.classList.remove('dark'));
         await page.goto('/?page=cart');
         await expect(page.getByRole('heading', { name: 'Your basket is waiting' })).toBeVisible();
     }

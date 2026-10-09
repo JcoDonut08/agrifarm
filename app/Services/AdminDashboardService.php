@@ -8,6 +8,7 @@ use App\Models\AdminTask;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\WalkInOrder;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -80,19 +81,20 @@ class AdminDashboardService
         ];
     }
 
-    /** @return array{months: array<int, array{key: string, label: string}>, series: array<int, array{name: string, sales: array<int, float>}>} */
+    /** @return array{months: array<int, array{key: string, label: string}>, series: array<int, array{name: string, sales: array<int, float>}>, undatedOrders: int} */
     private function monthlySales(Collection $sellers): array
     {
-        $months = collect(range(11, 0))->map(function (int $monthsAgo): array {
-            $month = now()->startOfMonth()->subMonths($monthsAgo);
+        $asOf = CarbonImmutable::now('Asia/Manila');
+        $months = collect(range(11, 0))->map(function (int $monthsAgo) use ($asOf): array {
+            $month = $asOf->startOfMonth()->subMonths($monthsAgo);
 
             return ['key' => $month->format('Y-m'), 'label' => $month->format('M')];
         });
         $orders = WalkInOrder::query()
             ->whereIn('user_id', $sellers->pluck('id'))
             ->where('status', 'delivered')
-            ->where('created_at', '>=', now()->startOfMonth()->subMonths(11))
-            ->get(['user_id', 'total', 'created_at']);
+            ->whereBetween('delivered_at', [$asOf->startOfMonth()->subMonths(11)->utc(), $asOf->utc()])
+            ->get(['user_id', 'total', 'delivered_at']);
 
         $series = $sellers->groupBy(fn (User $seller) => $this->barangayName($seller))
             ->map(function (Collection $barangaySellers, string $name) use ($months, $orders): array {
@@ -102,12 +104,14 @@ class AdminDashboardService
                 return [
                     'name' => $name,
                     'sales' => $months->map(fn (array $month) => (float) $barangayOrders
-                        ->filter(fn (WalkInOrder $order) => $order->created_at->format('Y-m') === $month['key'])
+                        ->filter(fn (WalkInOrder $order) => $order->delivered_at->setTimezone('Asia/Manila')->format('Y-m') === $month['key'])
                         ->sum('total'))->all(),
                 ];
             })->values()->all();
 
-        return ['months' => $months->all(), 'series' => $series];
+        return ['months' => $months->all(), 'series' => $series,
+            'undatedOrders' => WalkInOrder::whereIn('user_id', $sellers->pluck('id'))
+                ->where('status', 'delivered')->whereNull('delivered_at')->count()];
     }
 
     /** @return array<int, array<string, bool|int|string|null>> */

@@ -94,7 +94,7 @@ class SellerForecastTest extends TestCase
         $result = $this->forecastPayload(['Pechay' => $this->row(points: [
             ['month' => '2025-12', 'value' => 0, 'lower' => 0, 'upper' => 0],
         ])]);
-        $pick = app(ForecastRecommendationService::class)->recommend($result, CarbonImmutable::parse('2025-11-01'))['recommendations'][0];
+        $pick = collect(app(ForecastRecommendationService::class)->recommend($result, CarbonImmutable::parse('2025-11-01'))['recommendations'])->firstWhere('crop', 'Pechay');
         $this->assertEquals(0, $pick['season_strength']);
         $this->assertSame('farm_history', $pick['source']);
     }
@@ -127,7 +127,8 @@ class SellerForecastTest extends TestCase
     {
         $result = $this->forecastPayload(['Kalamansi' => $this->row('new_crop'), 'Unknown' => $this->row('fallback')]);
         $output = app(ForecastRecommendationService::class)->recommend($result, CarbonImmutable::parse('2025-01-01'));
-        $this->assertSame([], $output['recommendations']);
+        $this->assertNotContains('Kalamansi', array_column($output['recommendations'], 'crop'));
+        $this->assertNotContains('Unknown', array_column($output['recommendations'], 'crop'));
         $this->assertArrayHasKey('Kalamansi', $output['crops']);
     }
 

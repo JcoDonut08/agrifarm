@@ -43,6 +43,7 @@ class CustomerProfileTest extends TestCase
         $seller = User::factory()->seller()->create();
 
         $this->actingAs($seller)->patch('/customer/profile', ['name' => 'Wrong'])->assertForbidden();
+        $this->post('/logout');
         $this->actingAs($customer)->put('/customer/password', [
             'current_password' => 'OldPass123', 'password' => 'NewPass123', 'password_confirmation' => 'NewPass123',
         ])->assertRedirect();
@@ -53,6 +54,7 @@ class CustomerProfileTest extends TestCase
         $photoUrl = $customer->fresh()->avatar_url;
         $this->assertStringStartsWith('/customer/profile/photo?image=', $photoUrl);
         $this->get($photoUrl)->assertOk();
+        $this->post('/logout');
         $this->actingAs(User::factory()->create())->get($photoUrl)->assertNotFound();
         $this->get("/marketplace/customers/{$customer->id}/photo")->assertOk();
     }

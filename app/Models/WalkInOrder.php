@@ -22,6 +22,7 @@ class WalkInOrder extends Model
             'quantity' => 'integer',
             'unit_price' => 'decimal:2',
             'total' => 'decimal:2',
+            'delivered_at' => 'immutable_datetime',
         ];
     }
 

@@ -51,8 +51,8 @@ for (const width of [390, 768, 1440]) {
         const uploadBounds = await page.locator('.forecast-upload-panel').boundingBox();
         expect(calendarBounds.y + calendarBounds.height).toBeLessThanOrEqual(recommendationBounds.y);
         expect(recommendationBounds.y + recommendationBounds.height).toBeLessThanOrEqual(uploadBounds.y);
-        await expect(visualCalendar.locator('tbody tr')).toHaveCount(20);
-        await expect(page.locator('.forecast-rec-card [role="img"]')).toHaveCount(3);
+        await expect(visualCalendar.locator('tbody tr')).toHaveCount(21);
+        await expect(page.locator('.forecast-rec-card').getByRole('img')).toHaveCount(3);
         await expect(page.locator('.forecast-rec-summary').first()).toContainText(/rain|heat/i);
         await expect(page.locator('.seller-forecast table')).toHaveCount(1);
         await expect(visualCalendar.getByRole('columnheader')).toHaveCount(13);
@@ -69,7 +69,19 @@ for (const width of [390, 768, 1440]) {
         await page.screenshot({ path: testInfo.outputPath(`forecast-scroll-right-${width}.png`) });
         await visualCalendar.evaluate(element => { element.scrollLeft = 0; });
         await visualCalendar.locator('tbody tr').last().getByRole('button').first().click();
-        await expect(page.locator('.forecast-month-detail')).toBeInViewport({ ratio: 1 });
+        const monthDetail = page.locator('.forecast-month-detail');
+        await expect(monthDetail).toContainText('Seasonal planting guide');
+        for (const theme of ['light', 'dark']) {
+            if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+            await page.locator('.forecast-visual-calendar').screenshot({ path: testInfo.outputPath(`forecast-selected-month-${width}-${theme}.png`) });
+            await visualCalendar.locator('tbody tr').nth(8).evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
+            await expect.poll(async () => (await monthDetail.boundingBox()).y + (await monthDetail.boundingBox()).height).toBeLessThan(0);
+            const detailBounds = await monthDetail.boundingBox();
+            const tableBounds = await visualCalendar.boundingBox();
+            expect(detailBounds.y + detailBounds.height).toBeLessThanOrEqual(tableBounds.y);
+            await page.screenshot({ path: testInfo.outputPath(`forecast-scrolled-rows-${width}-${theme}.png`) });
+            if (theme === 'dark') await page.getByRole('button', { name: 'Switch to light mode' }).click();
+        }
         await visualCalendar.locator('button').first().focus();
         await page.keyboard.press('Enter');
         await expect(page.locator('.forecast-month-detail')).toContainText('Seasonal planting guide');
@@ -140,7 +152,7 @@ for (const width of [390, 768, 1440]) {
         await expect(page.locator('.forecast-saved')).toBeVisible();
         await expect(page.locator('.forecast-saved')).toContainText('synthetic_harvest_4_years.csv');
         await expect(visualCalendar.getByRole('columnheader')).toHaveCount(13);
-        await expect(visualCalendar.locator('tbody tr')).toHaveCount(20);
+        await expect(visualCalendar.locator('tbody tr')).toHaveCount(21);
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path: testInfo.outputPath(`forecast-farm-${width}.png`), fullPage: true });
         await page.getByRole('button', { name: 'Switch to dark mode' }).click();
@@ -173,7 +185,7 @@ test('partial crop upload uses shifted dates and recommends new crops', async ({
     await expect(page.locator('.forecast-saved')).toContainText('five-crops-through-june.csv', { timeout: 60_000 });
     await expect(page.locator('.forecast-visual-calendar .forecast-results-heading')).toContainText('Jul 2025 – Jun 2026');
     await expect(page.locator('.forecast-season-grid thead th')).toHaveCount(13);
-    await expect(page.locator('.forecast-season-grid tbody tr')).toHaveCount(20);
+    await expect(page.locator('.forecast-season-grid tbody tr')).toHaveCount(21);
     await expect(page.locator('.forecast-season-grid thead')).toContainText('Jul 2025');
     await expect(page.locator('.forecast-season-grid thead')).toContainText('Jun 2026');
     await expect(page.locator('.forecast-rec-card')).toHaveCount(3);
@@ -240,7 +252,7 @@ test('Filipino Excel upload and row errors keep the saved result', async ({ page
     await expect(page.locator('.forecast-card-details summary').first()).toHaveText('Bakit ito?');
     await expect(page.locator('.seller-forecast table')).toHaveCount(1);
     await expect(page.locator('.forecast-season-grid thead th')).toHaveCount(13);
-    await expect(page.locator('.forecast-season-grid tbody tr')).toHaveCount(20);
+    await expect(page.locator('.forecast-season-grid tbody tr')).toHaveCount(21);
     await page.locator('.forecast-season-grid tbody tr').filter({ hasText: 'Pechay' }).getByRole('button').first().click();
     await expect(page.locator('.forecast-month-detail')).toContainText('Gabay batay sa panahon');
     await expect(page.locator('.forecast-month-detail')).not.toContainText('kg');
@@ -287,7 +299,7 @@ test('old farm forecasts keep future suggestions seasonal and unknown crops unav
     await expect(page.locator('.forecast-expected-harvest')).toHaveText([
         'Seasonal planting guide', 'Seasonal planting guide', 'Seasonal planting guide',
     ]);
-    await expect(page.locator('.forecast-season-grid tbody tr')).toHaveCount(21);
+    await expect(page.locator('.forecast-season-grid tbody tr')).toHaveCount(22);
     const visualUnknown = page.locator('.forecast-season-grid tbody tr').filter({ hasText: 'Unknown vegetable' });
     await expect(visualUnknown).toContainText('No forecast');
     await visualUnknown.getByRole('button').first().click();

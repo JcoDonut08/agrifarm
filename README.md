@@ -24,12 +24,17 @@ shadcn/ui components used in AgriFarm are customized through Tailwind CSS and th
 
 ## Implemented behavior
 
+- Order updates save in-app customer notifications immediately and send email through a database-backed background worker, with three attempts and delayed retries. Run `php artisan migrate` and `composer run queue:orders` for local delivery. See [Order Email Queue](docs/Order%20Email%20Queue.md).
+
 - Consistent action feedback: destructive actions ask for confirmation; saves, uploads, product moderation, harvest records, reviews, and reports show small success notifications. Notifications close after six seconds and pause on hover/focus. Validation errors stay with their fields.
+
+- Product add/edit forms protect unsaved field and photo changes when closed with Cancel, the close button, Escape, or the backdrop. Keep editing preserves the draft and validation errors; Discard changes closes it. Untouched forms and successful saves close normally.
 
 - Sellers must choose a cancellation reason for orders and reservations; "Other reason" requires an explanation. Customers see it in order history, in-app notifications, and order-update emails. Existing cancelled orders without a reason show "No reason recorded." Run `php artisan migrate` to add the cancellation fields.
   Older accepted orders with an unknown reservation source ask the seller to confirm available stock or future harvest before returning the quantity. New orders use their recorded source automatically.
 
 - Customer registration, email verification, password recovery, and role-aware login for customers, sellers, and CENRO admins
+- Password changes keep the current browser signed in and invalidate other tracked sessions on their next request. Password resets invalidate earlier sessions and verified reset grants. See [Account Session Security](docs/Account%20Session%20Security.md) for rollout and verification.
 - CENRO Farmers & Sellers administration: create individual farmer-seller accounts, assign barangays, edit store details, and review account status/history
 - Admin-created sellers begin active with a temporary password that must be replaced before seller-dashboard access; suspended sellers cannot sign in and their public shop/listings are hidden
 - Seller profiles, private product/photo management (JPG/PNG/WebP up to 10 MB, including clipboard paste), inventory, walk-in orders, and public-safe image routes
@@ -96,6 +101,10 @@ New customer and walk-in orders remember whether they reserve available stock or
 
 Product edits preserve inventory fields that were not changed in the form. To update `stock` or `expected_yield`, include the quantity seen when opening the editor as `original_stock` or `original_expected_yield`. The server checks deliberate inventory changes while locking the product; outdated changes are rejected, and the editor shows current quantities for review. Zero stock and manual restocking remain available. Metadata-only requests can omit both inventory fields.
 
+Single and bulk product deletion are blocked while any selected product has pending orders, reservations, orders being prepared, or deliveries in progress. Blocked bulk deletion preserves every selected product and its photos. After all orders are delivered or cancelled, deletion is allowed, including products with zero stock; historical order details remain available.
+
+Delivery confirmation saves `delivered_at` using the server's UTC time. Seller/admin sales charts, report downloads, barangay trends, and forecast selling activity use the delivery date in Philippine time. An order placed in September and delivered in October counts toward October's completed sales. Older delivered orders have no verified delivery date: they remain in all-time totals but are excluded from date-filtered sales reports, charts, and seasonal selling evidence. Run `php artisan migrate` on each deployment to add the nullable indexed field; no historical delivery dates are guessed.
+
 Existing orders and receipts retain their original product name, selling unit, quantity, price, and total when a listing is edited. Selling-unit changes are blocked while the product has pending, reserved, preparing, or out-for-delivery orders; name, price, and other listing corrections remain available. After orders are delivered or cancelled, the unit can be changed and new orders use the updated listing. Previously overwritten order details cannot be reconstructed automatically.
 
 ## Development boundaries
@@ -105,6 +114,7 @@ Existing orders and receipts retain their original product name, selling unit, q
 - Use Eloquent directly; add a service only for multi-step workflows or transactions.
 - Public registration always creates a customer; seller/admin accounts are seeded or administered.
 - Harvest forecasting uses a local Python runtime and saves each seller's latest result. Recommendation cards show planting and harvest months, approximate growing times, and an action to save/remove crops in a seller-owned planting plan. See [SARIMA setup and deployment](docs/SARIMA%20Deployment.md) for Python installation, limits, and `php artisan forecast:check`.
+- New-crop options also use reviewed online agricultural guides, starting with Pipino (cucumber) from DA–ATI MIMAROPA. They can appear with the full sample CSV or a saved forecast, without a second upload. Cards link to the growing guide and distinguish reference guidance from recorded harvest estimates; the app's seasonal scores are planning rules rather than measured local yields.
 - Admin Reports previews actual monthly kilogram totals for one barangay and downloads forecasting-ready Excel or CSV files. For harvests in pieces/bunches, farmers can enter the measured total weight in kg in Record Harvest or Edit. Farmers upload either file through Generate; saved results retain the barangay and record coverage. See the [SARIMA Barangay Harvest Data Plan](docs/SARIMA%20Barangay%20Harvest%20Data%20Plan.md).
 - Deferred work: online payment processing, automated delivery-fee calculation, production reporting, and deployment.
 - Planting recommendations use aggregate completed sales from the relevant barangay, preferring past harvest-month sales when available and recent activity otherwise. Current stock stays separate by unit; sparse selling records leave ranks unchanged. This adds planning context without predicting future sales or profit.

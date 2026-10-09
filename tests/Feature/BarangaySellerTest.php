@@ -26,6 +26,7 @@ class BarangaySellerTest extends TestCase
             $this->assertTrue(Hash::check('AgriFarm123!', $user->password));
             $this->actingAs($user)->get('/seller/dashboard')->assertOk()
                 ->assertInertia(fn (Assert $page) => $page->component('Seller/Dashboard')->where('auth.user.email', $email));
+            $this->post('/logout');
         }
 
         $user->update(['password' => 'Changed-password-123!']);

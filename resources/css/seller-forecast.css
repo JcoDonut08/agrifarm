@@ -81,6 +81,7 @@
 .forecast-results-heading > span, .forecast-updated { color: var(--text-muted); font-size: .875rem; }
 .forecast-rec-card > h4 { font-size: 1.2rem; font-weight: 700; overflow-wrap: anywhere; }
 .forecast-new-crop { display: inline-block; margin-top: .25rem; font-size: .8rem; }
+.forecast-reference-details a { display: inline-block; color: var(--store-green); text-decoration: underline; text-underline-offset: 3px; padding: .5rem 0; overflow-wrap: anywhere; }
 .forecast-harvest-date { margin: .75rem 0 .25rem; }
 .forecast-growing-time { color: var(--text-muted); font-size: .875rem; margin: .75rem 0; }
 .forecast-growing-time strong { font-size: 1rem; font-weight: 700; color: var(--text-base); white-space: nowrap; }
@@ -111,6 +112,7 @@
 .forecast-results + .forecast-upload-panel { margin-top: .25rem; }
 .forecast-crop-picture { display: block; width: 36px; height: 36px; flex: 0 0 auto; border-radius: 6px; background: #faf8f3 url('/images/forecast-crops.png') no-repeat; background-size: 400% 500%; }
 .forecast-crop-picture.is-large { width: 64px; height: 64px; border-radius: 8px; }
+.forecast-crop-picture.is-photo { background: #faf8f3; object-fit: cover; }
 .forecast-crop-picture.is-placeholder { display: grid; place-items: center; background: var(--surface-alt); color: var(--store-green); }
 .forecast-calendar-intro { color: var(--text-muted); font-size: .875rem; line-height: 1.6; margin-top: .5rem; }
 .forecast-history-note { margin-top: .75rem; padding-left: .75rem; border-left: 2px solid var(--border); color: var(--text-muted); font-size: .875rem; line-height: 1.6; }
@@ -136,7 +138,7 @@
 .forecast-season-legend { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin: .75rem 0; font-size: .8rem; }
 .forecast-season-legend > span { display: inline-flex; align-items: center; gap: .35rem; }
 .forecast-season-legend i { font-style: normal; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 4px; }
-.forecast-month-detail { position: sticky; top: 6rem; z-index: 3; border: 1px solid var(--border); padding: .75rem 1rem; margin-top: 1rem; background: var(--surface-alt); border-radius: 8px; font-size: .875rem; line-height: 1.6; }
+.forecast-month-detail { border: 1px solid var(--border); padding: .75rem 1rem; margin-top: 1rem; background: var(--surface-alt); border-radius: 8px; font-size: .875rem; line-height: 1.6; }
 .forecast-rec-header { justify-content: flex-start; align-items: center; margin: 0; gap: .75rem; }
 .forecast-rec-header h4 { font-size: 1.15rem; }
 .forecast-rec-summary { list-style: none; padding: 0; margin: 1rem 0; font-size: .875rem; line-height: 1.65; }

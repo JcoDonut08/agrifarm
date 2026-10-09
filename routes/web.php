@@ -1,17 +1,22 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\HarvestForecastExportController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SellerController as AdminSellerController;
 use App\Http\Controllers\Admin\TaskController as AdminTaskController;
-use App\Http\Controllers\Admin\ReportController as AdminReportController;
-use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\Customer\ChatbotOrderController;
 use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
+use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
+use App\Http\Controllers\Customer\ReportController;
 use App\Http\Controllers\CustomerCheckoutController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\ReviewReactionController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Seller\ForecastController;
 use App\Http\Controllers\Seller\HarvestRecordController;
@@ -25,6 +30,7 @@ use App\Http\Controllers\StorefrontCustomerPhotoController;
 use App\Http\Controllers\StorefrontProductPhotoController;
 use App\Http\Controllers\StorefrontSellerPhotoController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', [StorefrontController::class, 'index'])->name('home');
 Route::get('/marketplace/products/{product}/photo', StorefrontProductPhotoController::class)->name('marketplace.products.photo');
@@ -49,7 +55,7 @@ Route::delete('/product-reviews/{productReview}', [ProductReviewController::clas
     ->middleware(['auth', 'role:customer', 'throttle:10,1'])
     ->name('product-reviews.destroy');
 
-Route::post('/product-reviews/{productReview}/react', [\App\Http\Controllers\ReviewReactionController::class, 'toggle'])
+Route::post('/product-reviews/{productReview}/react', [ReviewReactionController::class, 'toggle'])
     ->middleware(['auth', 'throttle:20,1'])
     ->name('product-reviews.react');
 
@@ -57,21 +63,26 @@ Route::post('/checkout', [CustomerCheckoutController::class, 'store'])
     ->middleware(['auth', 'role:customer', 'throttle:10,1'])
     ->name('checkout.store');
 
+Route::middleware(['auth', 'role:customer', 'throttle:30,1'])->group(function () {
+    Route::get('/api/chatbot/latest-order', [ChatbotOrderController::class, 'latest'])->name('chatbot.orders.latest');
+    Route::get('/api/chatbot/order-status', [ChatbotOrderController::class, 'show'])->name('chatbot.orders.show');
+});
+
 Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
     Route::get('/customer', CustomerHomeController::class)
         ->middleware('role:customer')
         ->name('customer.home');
 
     Route::get('/customer/settings', function () {
-        return \Inertia\Inertia::render('Customer/Settings');
+        return Inertia::render('Customer/Settings');
     })->name('customer.settings');
 
-    Route::get('/customer/orders', [\App\Http\Controllers\Customer\OrderController::class, 'index'])
+    Route::get('/customer/orders', [OrderController::class, 'index'])
         ->middleware('role:customer')
         ->name('customer.orders');
 
     Route::middleware('role:customer')->group(function () {
-        Route::post('/customer/reports', [\App\Http\Controllers\Customer\ReportController::class, 'store'])->middleware('throttle:10,1')->name('customer.reports.store');
+        Route::post('/customer/reports', [ReportController::class, 'store'])->middleware('throttle:10,1')->name('customer.reports.store');
         Route::patch('/customer/profile', [CustomerProfileController::class, 'update'])->middleware('throttle:6,1')->name('customer.profile.update');
         Route::put('/customer/password', [CustomerProfileController::class, 'password'])->middleware('throttle:6,1')->name('customer.password.update');
         Route::post('/customer/profile/photo', [CustomerProfileController::class, 'photo'])->middleware('throttle:10,1')->name('customer.profile.photo');
@@ -125,8 +136,8 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         Route::patch('/admin/tasks/{adminTask}', [AdminTaskController::class, 'update'])->name('admin.tasks.update');
         Route::delete('/admin/tasks/{adminTask}', [AdminTaskController::class, 'destroy'])->name('admin.tasks.destroy');
         Route::delete('/admin/reports/{report}', [AdminReportController::class, 'destroy'])->name('admin.reports.destroy');
-        Route::get('/admin/reports/harvest-forecast/preview', [\App\Http\Controllers\Admin\HarvestForecastExportController::class, 'preview'])->name('admin.harvest-forecast.preview');
-        Route::get('/admin/reports/harvest-forecast/download', [\App\Http\Controllers\Admin\HarvestForecastExportController::class, 'download'])->name('admin.harvest-forecast.download');
+        Route::get('/admin/reports/harvest-forecast/preview', [HarvestForecastExportController::class, 'preview'])->name('admin.harvest-forecast.preview');
+        Route::get('/admin/reports/harvest-forecast/download', [HarvestForecastExportController::class, 'download'])->name('admin.harvest-forecast.download');
 
         Route::post('/admin/products/{product}/delist', [AdminProductController::class, 'delist'])->name('admin.products.delist');
         Route::post('/admin/products/{product}/relist', [AdminProductController::class, 'relist'])->name('admin.products.relist');
@@ -135,130 +146,6 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
     });
 });
 
-Route::get('/api/chatbot/latest-order', function (Illuminate\Http\Request $request) {
-    if (!$request->user()) return response()->json(['error' => 'Not logged in'], 401);
-    
-    $activeCheckouts = \App\Models\CustomerCheckout::with('items')
-        ->where('user_id', $request->user()->id)
-        ->whereHas('items', function($q) {
-            $q->whereNotIn('status', ['delivered', 'cancelled']);
-        })
-        ->orderByDesc('created_at')
-        ->get();
-        
-    if ($activeCheckouts->isEmpty()) {
-        $latest = \App\Models\CustomerCheckout::with('items')->where('user_id', $request->user()->id)->orderByDesc('created_at')->first();
-        if (!$latest || $latest->items->isEmpty()) return response()->json(['status' => 'not_found']);
-        $itemsDetail = $latest->items->map(fn($i) => $i->quantity . 'x ' . $i->product_name)->join(', ');
-        return response()->json([
-            'reference' => $latest->reference_number,
-            'status' => strtolower($latest->items->first()->status),
-            'summary' => $itemsDetail
-        ]);
-    }
-    
-    $allItems = [];
-    foreach ($activeCheckouts as $checkout) {
-        foreach ($checkout->items as $item) {
-            if (!in_array(strtolower($item->status), ['delivered', 'cancelled'])) {
-                $allItems[] = $item->quantity . 'x ' . $item->product_name . ' (' . ucfirst($item->status) . ')';
-            }
-        }
-    }
-    
-    return response()->json([
-        'reference' => 'multiple_active',
-        'status' => 'active_multiple',
-        'summary' => implode("\n- ", $allItems)
-    ]);
+Route::get('/test-403', function () {
+    abort(403);
 });
-
-Route::get('/api/chatbot/order-status', function (Illuminate\Http\Request $request) {
-    $reference = $request->query('reference');
-    if (!$reference) return response()->json(['error' => 'No reference provided'], 400);
-    
-    $checkout = \App\Models\CustomerCheckout::with('items')->where('reference_number', $reference)->first();
-    if (!$checkout || $checkout->items->isEmpty()) return response()->json(['status' => 'not_found']);
-    
-    $itemsDetail = $checkout->items->map(function ($i) {
-        return $i->quantity . 'x ' . $i->product_name . ' (' . ucfirst($i->status) . ')';
-    })->join(', ');
-    
-    $statuses = $checkout->items->pluck('status')->map(fn($s) => strtolower($s))->unique();
-    $overallStatus = 'mixed';
-    if ($statuses->count() === 1) {
-        $overallStatus = $statuses->first();
-    } elseif ($statuses->contains('pending') || $statuses->contains('preparing')) {
-        $overallStatus = 'processing';
-    }
-    
-    return response()->json([
-        'reference' => $checkout->reference_number,
-        'status' => $overallStatus,
-        'summary' => $itemsDetail
-    ]);
-});
-
-Route::get('/api/chatbot/order-status', function (Illuminate\Http\Request $request) {
-    $reference = $request->query('reference');
-    if (!$reference) return response()->json(['error' => 'No reference provided'], 400);
-    
-    $checkout = \App\Models\CustomerCheckout::with('items')->where('reference_number', $reference)->first();
-    if (!$checkout || $checkout->items->isEmpty()) return response()->json(['status' => 'not_found']);
-    
-    $itemsDetail = $checkout->items->map(function ($i) {
-        return $i->quantity . 'x ' . $i->product_name . ' (' . ucfirst($i->status) . ')';
-    })->join(', ');
-    
-    $statuses = $checkout->items->pluck('status')->map(fn($s) => strtolower($s))->unique();
-    $overallStatus = 'mixed';
-    if ($statuses->count() === 1) {
-        $overallStatus = $statuses->first();
-    } elseif ($statuses->contains('pending') || $statuses->contains('preparing')) {
-        $overallStatus = 'processing';
-    }
-    
-    return response()->json([
-        'reference' => $checkout->reference_number,
-        'status' => $overallStatus,
-        'summary' => $itemsDetail
-    ]);
-});
-
-Route::get('/api/chatbot/order-status', function (Illuminate\Http\Request $request) {
-    $reference = $request->query('reference');
-    if (!$reference) return response()->json(['error' => 'No reference provided'], 400);
-    
-    $checkout = \App\Models\CustomerCheckout::with('items')->where('reference_number', $reference)->first();
-    if (!$checkout || $checkout->items->isEmpty()) return response()->json(['status' => 'not_found']);
-    
-    $itemsSummary = $checkout->items->take(2)->map(fn($i) => $i->quantity . 'x ' . $i->product_name)->join(', ');
-    if ($checkout->items->count() > 2) $itemsSummary .= ' and more';
-    
-    return response()->json([
-        'reference' => $checkout->reference_number,
-        'status' => strtolower($checkout->items->first()->status),
-        'summary' => $itemsSummary
-    ]);
-});
-Route::get('/api/chatbot/order-status', function (Illuminate\Http\Request $request) {
-    $reference = $request->query('reference');
-    if (!$reference) {
-        return response()->json(['error' => 'No reference provided'], 400);
-    }
-    
-    $checkout = \App\Models\CustomerCheckout::with('items')
-        ->where('reference_number', $reference)
-        ->first();
-        
-    if (!$checkout || $checkout->items->isEmpty()) {
-        return response()->json(['status' => 'not_found']);
-    }
-    
-    $item = $checkout->items->first();
-    return response()->json([
-        'reference' => $checkout->reference_number,
-        'status' => strtolower($item->status)
-    ]);
-});
-Route::get('/test-403', function () { abort(403); });

@@ -9,6 +9,11 @@ import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import '../../../css/seller-products.css';
 
 const initial = { name: '', category: '', description: '', price: '', unit: 'kg', stock: '', threshold: '5',  harvest_date: '', expected_yield: '0' };
+const numericFields = new Set(['price', 'stock', 'threshold', 'expected_yield']);
+function fieldValue(key, value) {
+    if (numericFields.has(key) && value !== '' && Number.isFinite(Number(value))) return String(Number(value));
+    return String(value ?? '');
+}
 export default function Products({ filipino = false }) {
     const { auth, products = [], flash } = usePage().props;
     const [editing, setEditing] = useState(false);
@@ -23,11 +28,15 @@ export default function Products({ filipino = false }) {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [deleting, setDeleting] = useState(null);
     const [confirmation, setConfirmation] = useState(null);
+    const [discardConfirmation, setDiscardConfirmation] = useState(false);
     const [managementError, setManagementError] = useState('');
     const fileInput = useRef(null);
     const form = useRef(null);
     const modal = useRef(null);
     const selectAllInput = useRef(null);
+    const originalData = useRef(initial);
+    const discardAfterClose = useRef(false);
+    const hasUnsavedChanges = Boolean(photo) || Object.keys(initial).some(key => fieldValue(key, data[key]) !== fieldValue(key, originalData.current[key]));
     const allSelected = products.length > 0 && selectedIds.length === products.length;
     const totalPages = Math.max(1, Math.ceil(products.length / rowsPerPage));
     const visibleProducts = products.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
@@ -39,6 +48,15 @@ export default function Products({ filipino = false }) {
         modal.current.querySelector('#product-name')?.focus();
         return () => { document.body.style.overflow = previousOverflow; };
     }, [editing]);
+    useEffect(() => {
+        if (!editing || !hasUnsavedChanges || processing) return;
+        const warnBeforeLeaving = event => {
+            event.preventDefault();
+            event.returnValue = '';
+        };
+        window.addEventListener('beforeunload', warnBeforeLeaving);
+        return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+    }, [editing, hasUnsavedChanges, processing]);
     useEffect(() => {
         if (!photo) { setPreview(editingProduct?.photo_url || null); return; }
         const url = URL.createObjectURL(photo);
@@ -67,9 +85,13 @@ export default function Products({ filipino = false }) {
             expected_yield: yieldChanged || Number(current.expected_yield) === Number(editingProduct.expected_yield || 0) ? String(latest.expected_yield || 0) : current.expected_yield,
         }));
         setEditingProduct(latest);
+        originalData.current = { ...originalData.current, stock: String(latest.stock), expected_yield: String(latest.expected_yield || 0) };
     }, [editing, editingProduct, products, errors.stock, errors.expected_yield]);
 
     function openCreate() {
+        originalData.current = initial;
+        discardAfterClose.current = false;
+        setDiscardConfirmation(false);
         setEditingProduct(null);
         setData(initial);
         setPhoto(null);
@@ -78,15 +100,43 @@ export default function Products({ filipino = false }) {
         if (fileInput.current) fileInput.current.value = '';
     }
     function openEdit(product) {
+        const values = { name: product.name, category: product.category, description: product.description || '', price: String(product.price), unit: product.unit, stock: String(product.stock), threshold: String(product.threshold), harvest_date: product.harvest_date ? String(product.harvest_date).split('T')[0] : '', expected_yield: String(product.expected_yield || '0') };
+        originalData.current = values;
+        discardAfterClose.current = false;
+        setDiscardConfirmation(false);
         setEditingProduct(product);
-        setData({ name: product.name, category: product.category, description: product.description || '', price: String(product.price), unit: product.unit, stock: String(product.stock), threshold: String(product.threshold),  harvest_date: product.harvest_date ? String(product.harvest_date).split('T')[0] : '', expected_yield: String(product.expected_yield || '0') });
+        setData(values);
         setPhoto(null);
         setErrors({});
         setEditing(true);
         if (fileInput.current) fileInput.current.value = '';
     }
     function closeEditor() {
-        if (!processing) setEditing(false);
+        if (processing || discardConfirmation) return;
+        if (hasUnsavedChanges) {
+            setDiscardConfirmation(true);
+            return;
+        }
+        resetEditor();
+    }
+    function resetEditor() {
+        setEditing(false);
+        setEditingProduct(null);
+        setData(initial);
+        originalData.current = initial;
+        setPhoto(null);
+        setErrors({});
+        setDiscardConfirmation(false);
+        discardAfterClose.current = false;
+        if (fileInput.current) fileInput.current.value = '';
+    }
+    function confirmDiscard() {
+        discardAfterClose.current = true;
+        setDiscardConfirmation(false);
+    }
+    function finishDiscard() {
+        // Close the editor after the nested dialog releases focus and its scroll lock.
+        if (discardAfterClose.current) resetEditor();
     }
     function update(key, value) {
         setData(current => ({ ...current, [key]: value }));
@@ -151,12 +201,7 @@ export default function Products({ filipino = false }) {
                 },
                 onSuccess: () => {
                     if (!editingProduct) setCurrentPage(1);
-                    setEditing(false);
-                    setEditingProduct(null);
-                    setData(initial);
-                    setPhoto(null);
-                    setErrors({});
-                    if (fileInput.current) fileInput.current.value = '';
+                    resetEditor();
                 },
                 onFinish: () => setProcessing(false),
             });
@@ -170,6 +215,7 @@ export default function Products({ filipino = false }) {
         setSelectedIds(allSelected ? [] : products.map(product => product.id));
     }
     function deleteProduct(product) {
+        setManagementError('');
         setConfirmation({ type: 'single', product });
     }
     function performProductDelete(product) {
@@ -177,12 +223,14 @@ export default function Products({ filipino = false }) {
         setManagementError('');
         router.delete(`/seller/products/${product.id}`, {
             preserveScroll: true,
-            onError: () => setManagementError(filipino ? 'Hindi nabura ang produkto.' : 'The product could not be deleted.'),
-            onFinish: () => { setDeleting(null); setConfirmation(null); },
+            onError: serverErrors => setManagementError(localizeMessage(serverErrors.product, filipino) || (filipino ? 'Hindi nabura ang produkto.' : 'The product could not be deleted.')),
+            onSuccess: () => setConfirmation(null),
+            onFinish: () => setDeleting(null),
         });
     }
     function deleteSelected() {
         if (!selectedIds.length) return;
+        setManagementError('');
         setConfirmation({ type: 'bulk', ids: [...selectedIds], count: selectedIds.length });
     }
     function performSelectedDelete(ids) {
@@ -192,8 +240,8 @@ export default function Products({ filipino = false }) {
             data: { product_ids: ids },
             preserveScroll: true,
             onError: serverErrors => setManagementError(filipino ? localizeMessage(serverErrors.product_ids, true) || 'Hindi nabura ang mga napiling produkto.' : serverErrors.product_ids || 'The selected products could not be deleted.'),
-            onSuccess: () => setSelectedIds([]),
-            onFinish: () => { setDeleting(null); setConfirmation(null); },
+            onSuccess: () => { setSelectedIds([]); setConfirmation(null); },
+            onFinish: () => setDeleting(null),
         });
     }
     function confirmDeletion() {
@@ -210,13 +258,12 @@ export default function Products({ filipino = false }) {
                 <label className="product-select-all"><input ref={selectAllInput} type="checkbox" checked={allSelected} onChange={toggleAll} /><span><strong>{filipino ? 'Piliin lahat ng produkto' : 'Select all products'}</strong><small>{filipino ? 'Pumili ng maraming produkto para sabay-sabay silang burahin.' : 'Choose multiple products to remove them together.'}</small></span></label>
                 <div className="product-bulk-actions"><span aria-live="polite">{selectedIds.length} {filipino ? 'ang napili' : 'selected'}</span><button type="button" disabled={!selectedIds.length || Boolean(deleting)} onClick={deleteSelected}><Icon name="trash" size={17} />{filipino ? 'Burahin ang napili' : 'Delete selected'}</button></div>
             </section>
-            {managementError && <p className="product-management-error" role="alert">{managementError}</p>}
-            <div className="seller-product-list">{visibleProducts.map(product => {
+            <div className="seller-product-list">{visibleProducts.map((product, index) => {
                 const stockState = product.stock === 0 ? 'out' : product.stock <= product.threshold ? 'low' : 'in';
                 const stockLabel = filipino ? (stockState === 'out' ? 'Ubos na ang stock' : stockState === 'low' ? 'Kaunti na ang stock' : 'May stock') : (stockState === 'out' ? 'Out of stock' : stockState === 'low' ? 'Low stock' : 'In stock');
                 const selected = selectedIds.includes(product.id);
                 return <article className={`seller-product-card ${selected ? 'is-selected' : ''}`} key={product.id}>
-                    <div className="seller-product-image"><img src={product.photo_url} alt={product.name} /><label className="product-card-select"><input type="checkbox" checked={selected} onChange={() => toggleProduct(product.id)} aria-label={filipino ? `Piliin ang ${product.name}` : `Select ${product.name}`} /><span>{filipino ? 'Piliin' : 'Select'}</span></label><span className={`product-stock-badge product-stock-badge--${stockState}`}>{stockLabel}</span></div>
+                    <div className="seller-product-image"><img src={product.thumbnail_url || product.photo_url} alt={product.name} loading={index < 4 ? 'eager' : 'lazy'} decoding="async" /><label className="product-card-select"><input type="checkbox" checked={selected} onChange={() => toggleProduct(product.id)} aria-label={filipino ? `Piliin ang ${product.name}` : `Select ${product.name}`} /><span>{filipino ? 'Piliin' : 'Select'}</span></label><span className={`product-stock-badge product-stock-badge--${stockState}`}>{stockLabel}</span></div>
                     <div className="seller-product-body"><span className="product-preview-category">{categoryLabel(product.category, filipino)}</span><h2>{product.name}</h2><p className={`seller-product-description ${product.description ? '' : 'is-empty'}`}>{product.description || (filipino ? 'Walang ibinigay na paglalarawan.' : 'No description provided.')}</p><div className="seller-product-footer"><div><strong>{money(product.price)}</strong><span>{filipino ? `bawat ${unitLabel(product.unit, true)}` : `per ${product.unit}`}</span></div><p><strong>{product.stock}</strong> {filipino ? `${unitLabel(product.unit, true)} ang available` : `${product.unit} available`}</p></div><div className="product-card-actions" aria-label={filipino ? `Mga aksyon para sa ${product.name}` : `Actions for ${product.name}`}><button type="button" className="product-card-action" aria-label={filipino ? `I-edit ang ${product.name}` : `Edit ${product.name}`} data-tooltip={filipino ? 'I-edit ang produkto' : 'Edit product'} disabled={Boolean(deleting)} onClick={() => openEdit(product)}><Icon name="edit" size={17} /></button><button type="button" className="product-card-action product-card-action--danger" aria-label={filipino ? `Burahin ang ${product.name}` : `Delete ${product.name}`} data-tooltip={filipino ? 'Burahin ang produkto' : 'Delete product'} disabled={Boolean(deleting)} onClick={() => deleteProduct(product)}><Icon name="trash" size={17} /></button></div></div>
                 </article>;
             })}</div>
@@ -242,8 +289,21 @@ export default function Products({ filipino = false }) {
             confirmLabel={filipino ? (confirmation?.type === 'bulk' ? 'Burahin ang mga produkto' : 'Burahin ang produkto') : (confirmation?.type === 'bulk' ? 'Delete products' : 'Delete product')}
             workingLabel={filipino ? 'Binubura…' : 'Deleting…'}
             busy={Boolean(deleting)}
-            onCancel={() => setConfirmation(null)}
+            onCancel={() => { setConfirmation(null); setManagementError(''); }}
             onConfirm={confirmDeletion}
+        >
+            {managementError && <p className="product-management-error" role="alert">{managementError}</p>}
+        </ConfirmationDialog>
+        <ConfirmationDialog
+            open={discardConfirmation}
+            title={filipino ? 'Itapon ang mga pagbabago?' : 'Discard your changes?'}
+            description={filipino ? 'Hindi pa nase-save ang iyong mga pagbabago.' : 'Your changes haven’t been saved.'}
+            cancelLabel={filipino ? 'Ituloy ang pag-edit' : 'Keep editing'}
+            confirmLabel={filipino ? 'Itapon ang mga pagbabago' : 'Discard changes'}
+            icon="close"
+            onCancel={() => setDiscardConfirmation(false)}
+            onConfirm={confirmDiscard}
+            onClose={finishDiscard}
         />
         <dialog ref={modal} className="product-modal" aria-labelledby="add-product-title" aria-describedby="add-product-description" onPaste={pastePhoto} onCancel={event => { event.preventDefault(); closeEditor(); }} onClick={event => {
             if (processing || event.target !== modal.current) return;

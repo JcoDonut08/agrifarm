@@ -40,7 +40,7 @@ export default function ProductDetail({ productId, products = previewProducts, r
         <div className="product-detail-main">
             <div className="product-detail-gallery-column">
                 <div className="product-detail-gallery">
-                    <ProducePhoto product={product} className="product-detail-photo" />
+                    <ProducePhoto product={product} className="product-detail-photo" priority />
                 </div>
             </div>
 

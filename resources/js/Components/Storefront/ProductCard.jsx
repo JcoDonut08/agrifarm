@@ -4,14 +4,15 @@ import Icon from './Icon';
 import { money, stockUnit, getProductBadge, productHref } from './catalog';
 import { useShop } from './ShopContext';
 
-export function ProducePhoto({ product, className = '' }) {
-    if (product.photoUrl) return <div className={`produce-photo has-upload ${className}`}><img src={product.photoUrl} alt={product.name} loading="lazy" /></div>;
+export function ProducePhoto({ product, className = '', thumbnail = false, priority = false }) {
+    const source = thumbnail ? (product.thumbnailUrl || product.photoUrl) : product.photoUrl;
+    if (source) return <div className={`produce-photo has-upload ${className}`}><img src={source} alt={product.name} loading={priority ? 'eager' : 'lazy'} decoding="async" /></div>;
     const extra = product.photo >= 9;
     const index = extra ? product.photo - 9 : product.photo;
     return <div role="img" aria-label={product.name} className={`produce-photo ${extra ? 'produce-photo-extra' : ''} ${className}`} style={{ '--photo-position': `${(index % 3) * 50}% ${extra ? 50 : Math.floor(index / 3) * 50}%` }} />;
 }
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, priority = false }) {
     const stats = usePage().props.reviewStats?.[product.id];
     const rating = stats?.average || 0;
     const count = stats?.count || 0;
@@ -38,7 +39,7 @@ export default function ProductCard({ product }) {
         <article className="produce-card">
             <Link className="produce-card-link" href={productHref(product.id)} aria-label={`View ${product.name} details`} />
             <div className="produce-image-wrap">
-                <ProducePhoto product={product} />
+                <ProducePhoto product={product} thumbnail priority={priority} />
                 {badge && <span className={`product-badge badge-${badge.style}`} title={badge.description}><Icon name={badge.icon} size={13} />{badge.label}</span>}
                 <button type="button" className={`favorite-button ${favorite ? 'is-saved' : ''}`} aria-label={`${favorite ? 'Remove' : 'Save'} ${product.name} ${favorite ? 'from' : 'to'} favorites`} aria-pressed={favorite} onClick={() => { toggleFavorite(product.id); setSaveAnimation((value) => value + 1); }}><span key={saveAnimation} className={saveAnimation ? 'favorite-feedback' : ''}><Icon name="heart" fill={favorite ? 'currentColor' : 'none'} /></span></button>
             </div>

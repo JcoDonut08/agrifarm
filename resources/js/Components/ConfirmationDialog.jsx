@@ -13,6 +13,7 @@ export default function ConfirmationDialog({
     icon = 'trash',
     onConfirm,
     onCancel,
+    onClose,
     children,
 }) {
     const dialog = useRef(null);
@@ -50,6 +51,7 @@ export default function ConfirmationDialog({
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
         aria-busy={busy}
+        onClose={onClose}
         onCancel={event => { event.preventDefault(); dismiss(); }}
         onClick={event => {
             if (event.target !== dialog.current) return;

@@ -15,7 +15,7 @@ class Product extends Model
 
     protected $hidden = ['photo_path'];
 
-    protected $appends = ['photo_url'];
+    protected $appends = ['photo_url', 'thumbnail_url'];
 
     protected $attributes = ['status' => 'active'];
 
@@ -38,6 +38,11 @@ class Product extends Model
     public function photoVersion(): string
     {
         return substr(sha1($this->photo_path), 0, 12);
+    }
+
+    public function getThumbnailUrlAttribute(): string
+    {
+        return $this->photo_url.'&size=card';
     }
 
     public function seller(): BelongsTo

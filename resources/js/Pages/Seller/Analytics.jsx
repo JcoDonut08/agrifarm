@@ -4,6 +4,7 @@ import useTablePagination from '../../Components/useTablePagination';
 import Icon from "../../Components/Storefront/Icon";
 import { categoryLabel, unitLabel } from "./SellerLocale";
 import { formatMoney } from "./DashboardCards";
+import { deliveryDate, manilaCalendarDate, orderActivityDate } from '../../lib/salesDates';
 import "../../../css/seller-analytics.css";
 
 const terminalStatuses = ["delivered", "cancelled"];
@@ -40,12 +41,11 @@ function parseInputDate(value) {
 }
 
 function orderDate(order) {
-    const date = new Date(order.created_at);
-    return Number.isNaN(date.getTime()) ? null : date;
+    return manilaCalendarDate(orderActivityDate(order));
 }
 
 function getRange(period, from, to, orders) {
-    const now = new Date();
+    const now = manilaCalendarDate();
     const today = startOfDay(now);
     let start;
     let end;
@@ -215,7 +215,7 @@ export default function Analytics({
     SellerIcon,
     filipino = false,
 }) {
-    const today = useMemo(() => new Date(), []);
+    const today = useMemo(() => manilaCalendarDate(), []);
     const [period, setPeriod] = useState("month");
     const [from, setFrom] = useState(() =>
         inputDate(new Date(today.getFullYear(), today.getMonth(), 1)),
@@ -256,6 +256,7 @@ export default function Analytics({
     };
     const catalogOrders = orders.filter(matchesCatalogFilters);
     const filteredOrders = catalogOrders.filter((order) => {
+        if (period === 'all' && order.status === 'delivered' && !deliveryDate(order)) return true;
         const date = orderDate(order);
         return date && date >= range.start && date < range.end;
     });
@@ -310,6 +311,7 @@ export default function Analytics({
         const points = makeTrendPoints(range, period, filipino);
         completedOrders.forEach((order) => {
             const date = orderDate(order);
+            if (!date) return;
             const point = points.find(
                 (item) => date >= item.start && date < item.end,
             );
@@ -684,8 +686,8 @@ export default function Analytics({
                             </h2>
                             <p>
                                 {filipino
-                                    ? "Mga naihatid na order ayon sa petsang naitala."
-                                    : "Delivered orders grouped by their recorded date."}
+                                    ? "Mga naihatid na order ayon sa petsa ng paghatid, sa oras ng Pilipinas."
+                                    : "Delivered orders grouped by delivery date in Philippine time."}
                             </p>
                         </div>
                         <div
@@ -762,13 +764,13 @@ export default function Analytics({
                         <EmptyAnalytics
                             title={
                                 filipino
-                                    ? "Walang nakumpletong benta"
-                                    : "No completed sales"
+                                    ? "Walang benta na may naitalang petsa ng paghatid"
+                                    : "No sales with a recorded delivery date"
                             }
                         >
                             {filipino
-                                ? "Walang naihatid na order na tumutugma sa mga napiling filter."
-                                : "No delivered orders match the selected filters."}
+                                ? "Lalabas dito ang mga naihatid na order na may naitalang petsa ng paghatid."
+                                : "Delivered orders with a recorded delivery date appear here."}
                         </EmptyAnalytics>
                     )}
                 </section>
@@ -1149,8 +1151,11 @@ export default function Analytics({
                             : "About these numbers:"}
                     </strong>{" "}
                     {filipino
-                        ? "Ang halaga ng nakumpletong benta ay mula sa mga order na minarkahang naihatid at inayos ayon sa petsang naitala ang order. Hindi nito kinukumpirma ang natanggap na bayad at hindi ito tubo."
-                        : "Completed sales value comes from orders marked delivered and is grouped by the date each order was recorded. It does not confirm payment received and is not profit."}
+                        ? "Ang nakumpletong benta ay batay sa petsa ng paghatid, sa oras ng Pilipinas. Ang ibang order ay batay sa petsa ng pag-order. Ang halaga ay benta, hindi tubo o kumpirmadong bayad."
+                        : "Completed sales use delivery dates in Philippine time. Other orders use their order dates. Values represent sales, not profit or confirmed payment."}
+                    {catalogOrders.some(order => order.status === 'delivered' && !deliveryDate(order)) && (filipino
+                        ? ' Kasama sa kabuuan ng lahat ng panahon ang mga lumang order na walang petsa ng paghatid, ngunit hindi sa mga chart o ulat na may napiling petsa.'
+                        : 'Older delivered orders without a delivery date remain in all-time totals, but are excluded from charts and date-filtered reports.')}
                 </p>
             </aside>
         </div>

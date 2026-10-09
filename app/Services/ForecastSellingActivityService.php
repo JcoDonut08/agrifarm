@@ -25,9 +25,9 @@ class ForecastSellingActivityService
 
         return [
             'scope' => $scope, 'barangay' => $barangay ?: null, 'as_of' => $asOf,
-            // Orders use their placement date; no completion-date column exists.
-            'orders' => $orders->whereBetween('created_at', [$asOf->startOfMonth()->subMonths(24)->utc(), $asOf->utc()])
-                ->get(['id', 'user_id', 'customer_checkout_id', 'product_name', 'quantity', 'unit', 'created_at'])
+            // Undated historical deliveries cannot establish monthly activity.
+            'orders' => $orders->whereBetween('delivered_at', [$asOf->startOfMonth()->subMonths(24)->utc(), $asOf->utc()])
+                ->get(['id', 'user_id', 'customer_checkout_id', 'product_name', 'quantity', 'unit', 'delivered_at'])
                 ->groupBy(fn ($order) => $this->cropKey($order->product_name)),
             'stock' => $products->where('stock', '>', 0)->get(['name', 'stock', 'unit'])
                 ->groupBy(fn ($product) => $this->cropKey($product->name)),
@@ -47,18 +47,18 @@ class ForecastSellingActivityService
         $key = $this->cropKey($crop);
         $records = $context['orders']->get($key, collect());
         $monthNumber = (int) substr($harvestMonth, 5, 2);
-        $seasonal = $records->filter(fn ($record) => $record->created_at->setTimezone('Asia/Manila')->month === $monthNumber
-            && $record->created_at->setTimezone('Asia/Manila')->format('Y-m') < $asOf->format('Y-m'));
-        $years = $seasonal->map(fn ($record) => $record->created_at->setTimezone('Asia/Manila')->year)->unique();
+        $seasonal = $records->filter(fn ($record) => $record->delivered_at->setTimezone('Asia/Manila')->month === $monthNumber
+            && $record->delivered_at->setTimezone('Asia/Manila')->format('Y-m') < $asOf->format('Y-m'));
+        $years = $seasonal->map(fn ($record) => $record->delivered_at->setTimezone('Asia/Manila')->year)->unique();
         $useSeasonal = $years->count() >= 2 && $this->orderCount($seasonal) >= 3;
         $start = $asOf->subDays(90);
-        $selected = $useSeasonal ? $seasonal : $records->filter(fn ($record) => $record->created_at >= $start->utc());
+        $selected = $useSeasonal ? $seasonal : $records->filter(fn ($record) => $record->delivered_at >= $start->utc());
         $count = $this->orderCount($selected);
-        $days = $selected->map(fn ($record) => $record->created_at->setTimezone('Asia/Manila')->format('Y-m-d'))->unique()->count();
+        $days = $selected->map(fn ($record) => $record->delivered_at->setTimezone('Asia/Manila')->format('Y-m-d'))->unique()->count();
         $signal['basis'] = $useSeasonal ? 'harvest_month' : 'recent';
         $signal['order_count'] = $count;
         $signal['periods'] = $useSeasonal
-            ? $selected->map(fn ($record) => $record->created_at->setTimezone('Asia/Manila')->format('Y-m'))->unique()->sort()->values()->all()
+            ? $selected->map(fn ($record) => $record->delivered_at->setTimezone('Asia/Manila')->format('Y-m'))->unique()->sort()->values()->all()
             : [['from' => $start->toDateString(), 'to' => $asOf->toDateString()]];
         $sold = $this->quantities($selected, 'quantity');
         $stock = $this->quantities($context['stock']->get($key, collect()), 'stock');

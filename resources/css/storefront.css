@@ -1221,7 +1221,7 @@ img.review-avatar { object-fit: cover; display: block; }
 .checkout-success-page { padding-top: 40px; }
 .checkout-confirmation { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); min-height: 565px; overflow: hidden; border: 1px solid var(--store-border); border-radius: var(--store-radius); background: var(--store-bg); }
 .checkout-confirmation-visual { display: flex; justify-content: center; align-items: center; min-width: 0; padding: 24px; background: #edf4ed; }
-.checkout-mascot { display: block; width: min(100%, 510px); max-height: 590px; object-fit: contain; }
+.checkout-mascot { display: block; width: min(100%, 510px); height: auto; max-height: 590px; object-fit: contain; }
 .checkout-confirmation-content { min-width: 0; padding: clamp(30px, 5vw, 66px); }
 .checkout-confirmation-content h1 { margin-top: 8px; font-size: clamp(32px, 3.4vw, 48px); font-weight: 750; line-height: 1.1; letter-spacing: -.035em; }
 .checkout-confirmation-content > p:first-of-type { margin-top: 14px; color: var(--store-muted); font-size: 14px; line-height: 1.6; }

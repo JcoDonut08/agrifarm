@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\WalkInOrder;
+use App\Notifications\OrderStatusEmail;
 use App\Notifications\OrderStatusUpdated;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -119,6 +120,9 @@ class WalkInOrderController extends Controller
 
             $order->inventory_source = $inventorySource;
             $order->status = $nextStatus;
+            if ($nextStatus === 'delivered') {
+                $order->delivered_at = now()->utc();
+            }
             if ($nextStatus === 'cancelled') {
                 $order->cancellation_reason = $data['cancellation_reason'];
                 $order->cancellation_note = $data['cancellation_note'] ?? null;
@@ -126,7 +130,10 @@ class WalkInOrderController extends Controller
             $order->save();
 
             if ($order->checkout && $order->checkout->customer) {
-                $order->checkout->customer->notify(new OrderStatusUpdated($order));
+                $customer = $order->checkout->customer;
+                $notification = new OrderStatusUpdated($order);
+                $customer->notifyNow($notification, ['database']);
+                $customer->notify(new OrderStatusEmail($notification->toMail($customer)));
             }
         });
 

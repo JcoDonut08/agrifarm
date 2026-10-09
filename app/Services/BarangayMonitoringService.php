@@ -86,9 +86,10 @@ class BarangayMonitoringService
                 'salesTrend' => [
                     'labels' => $months->pluck('label')->all(),
                     'data' => $months->map(fn (array $month): float => (float) $barangayDeliveredOrders
-                        ->filter(fn (WalkInOrder $order) => $order->created_at->format('Y-m') === $month['key'])
+                        ->filter(fn (WalkInOrder $order) => $order->delivered_at?->setTimezone('Asia/Manila')->format('Y-m') === $month['key'])
                         ->sum('total'))->all(),
-                    'available' => $barangayDeliveredOrders->isNotEmpty(),
+                    'available' => $barangayDeliveredOrders->whereNotNull('delivered_at')->isNotEmpty(),
+                    'undatedOrders' => $barangayDeliveredOrders->whereNull('delivered_at')->count(),
                 ],
                 'harvestTrend' => [
                     'labels' => $months->pluck('label')->all(),
@@ -154,7 +155,7 @@ class BarangayMonitoringService
     private function months(): Collection
     {
         return collect(range(1, 12))->map(function (int $monthNum): array {
-            $month = now()->startOfYear()->addMonths($monthNum - 1);
+            $month = now('Asia/Manila')->startOfYear()->addMonths($monthNum - 1);
 
             return ['key' => $month->format('Y-m'), 'label' => $month->format('M')];
         });

@@ -3,42 +3,10 @@ import Icon from "../../Components/Storefront/Icon";
 import { formatMoney } from "./DashboardCards";
 import { unitLabel } from "./SellerLocale";
 import Pagination from "./Pagination";
+import { deliveryDate, manilaInputDate as inputDate, orderActivityDate, salesReportRange as dateRange } from '../../lib/salesDates';
 import "../../../css/seller-reports.css";
 
 const DAY = 86400000;
-
-function startOfDay(value) {
-    const date = new Date(value);
-    date.setHours(0, 0, 0, 0);
-    return date;
-}
-
-function inputDate(value) {
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, "0");
-    const day = String(value.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-}
-
-function parseInputDate(value) {
-    if (!value) return null;
-    const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day);
-}
-
-function dateRange(from, to) {
-    const today = startOfDay(new Date());
-    const start =
-        parseInputDate(from) ||
-        new Date(today.getFullYear(), today.getMonth(), 1);
-    const selectedEnd = parseInputDate(to) || today;
-    return {
-        start,
-        end: new Date(
-            Math.max(start.getTime() + DAY, selectedEnd.getTime() + DAY),
-        ),
-    };
-}
 
 function customerKey(order) {
     const id = order.customer_id || order.customer?.id;
@@ -191,7 +159,7 @@ async function createExcelReport({ report, metadata, filename, note }) {
         wrapText: true,
         vertical: "top",
     };
-    worksheet.getRow(noteRow).height = 28;
+    worksheet.getRow(noteRow).height = 42;
     worksheet.headerFooter.oddFooter =
         "&LAgriFarm seller report&C&F&RPage &P of &N";
 
@@ -332,7 +300,7 @@ async function createPdfReport({
             8,
             Math.max(...cells.map((lines) => lines.length)) * 3.6 + 3,
         );
-        if (y + rowHeight > pageHeight - 16) {
+        if (y + rowHeight > pageHeight - 22) {
             pdf.addPage();
             drawBrandHeader(true);
             y = drawTableHeader(37);
@@ -369,14 +337,14 @@ async function createPdfReport({
     for (let page = 1; page <= pages; page += 1) {
         pdf.setPage(page);
         pdf.setDrawColor(225, 231, 223);
-        pdf.line(margin, pageHeight - 11, pageWidth - margin, pageHeight - 11);
+        pdf.line(margin, pageHeight - 18, pageWidth - margin, pageHeight - 18);
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(7);
         pdf.setTextColor(108, 124, 114);
-        pdf.text(pdfText(note), margin, pageHeight - 6, {
+        pdf.text(pdfText(note), margin, pageHeight - 13, {
             maxWidth: usableWidth - 25,
         });
-        pdf.text(`${page} / ${pages}`, pageWidth - margin, pageHeight - 6, {
+        pdf.text(`${page} / ${pages}`, pageWidth - margin, pageHeight - 8, {
             align: "right",
         });
     }
@@ -431,7 +399,7 @@ export default function Reports({
     const [previewPage, setPreviewPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [from, setFrom] = useState(() =>
-        inputDate(new Date(today.getFullYear(), today.getMonth(), 1)),
+        `${inputDate(today).slice(0, 7)}-01`,
     );
     const [to, setTo] = useState(() => inputDate(today));
 
@@ -439,9 +407,9 @@ export default function Reports({
     const filteredOrders = useMemo(
         () =>
             orders.filter((order) => {
-                const date = new Date(order.created_at);
+                const date = orderActivityDate(order);
                 return (
-                    !Number.isNaN(date.getTime()) &&
+                    date &&
                     date >= range.start &&
                     date < range.end
                 );
@@ -566,9 +534,9 @@ export default function Reports({
         return {
             title: filipino ? "Buod ng benta" : "Sales summary",
             headers: filipino
-                ? ["Petsa", "Order", "Customer", "Produkto", "Dami", "Halaga"]
+                ? ["Petsa ng paghatid", "Order", "Customer", "Produkto", "Dami", "Halaga"]
                 : [
-                      "Date",
+                      "Delivered on",
                       "Order",
                       "Customer",
                       "Product",
@@ -578,7 +546,8 @@ export default function Reports({
             rows: deliveredOrders.map((order) => [
                 new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", {
                     dateStyle: "medium",
-                }).format(new Date(order.created_at)),
+                    timeZone: 'Asia/Manila',
+                }).format(deliveryDate(order)),
                 order.order_number || `#${order.id}`,
                 order.customer_name ||
                     (filipino ? "Walk-in na customer" : "Walk-in customer"),
@@ -596,10 +565,10 @@ export default function Reports({
         filipino,
     ]);
 
-    const periodLabel = `${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium" }).format(range.start)} – ${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium" }).format(new Date(range.end.getTime() - DAY))}`;
+    const periodLabel = `${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium", timeZone: 'Asia/Manila' }).format(range.start)} – ${new Intl.DateTimeFormat(filipino ? "fil-PH" : "en-PH", { dateStyle: "medium", timeZone: 'Asia/Manila' }).format(new Date(range.end.getTime() - DAY))}`;
     const generatedLabel = new Intl.DateTimeFormat(
         filipino ? "fil-PH" : "en-PH",
-        { dateStyle: "medium" },
+        { dateStyle: "medium", timeZone: 'Asia/Manila' },
     ).format(today);
     const format = reportType ? formats[reportType] : "pdf";
     const reportPageCount = Math.max(
@@ -615,15 +584,20 @@ export default function Reports({
         if (previewPage > reportPageCount) setPreviewPage(reportPageCount);
     }, [previewPage, reportPageCount]);
 
+    const reportNote = (filipino
+        ? 'Ang benta ay batay sa petsa ng paghatid, sa oras ng Pilipinas. Ang halaga ay benta, hindi tubo o kumpirmadong bayad.'
+        : 'Sales use delivery dates in Philippine time. Values represent sales, not profit or confirmed payment.')
+        + (orders.some(order => order.status === 'delivered' && !deliveryDate(order)) ? (filipino
+            ? ' Hindi kasama sa ulat ang mga lumang naihatid na order na walang petsa ng paghatid.'
+            : 'Older delivered orders without a delivery date are excluded from this report.') : '');
+
     const exportReport = async () => {
         const slug = report.title
             .toLocaleLowerCase()
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/(^-|-$)/g, "");
         const fileStem = `agrifarm-${slug}-${from}-to-${to}`;
-        const note = filipino
-            ? "Batay sa mga order na minarkahang naihatid. Ang halaga ay benta, hindi tubo o kumpirmadong bayad."
-            : "Based on orders marked delivered. Values represent sales, not profit or confirmed payment.";
+        const note = reportNote;
         const metadata = {
             storeName,
             storeTitle: filipino ? "Tindahan" : "Store",
@@ -680,6 +654,7 @@ export default function Reports({
                 [filipino ? "Tindahan" : "Store", storeName],
                 [metadata.periodTitle, periodLabel],
                 [metadata.generatedTitle, generatedLabel],
+                [filipino ? 'Batayan' : 'Basis', note],
                 [],
                 report.headers,
                 ...report.rows,
@@ -981,9 +956,7 @@ export default function Reports({
                             className="report-pagination"
                         />
                         <footer>
-                            {filipino
-                                ? "Batay sa mga order na minarkahang naihatid. Ang halaga ay benta, hindi tubo o kumpirmadong bayad."
-                                : "Based on orders marked delivered. Values represent sales, not profit or confirmed payment."}
+                            {reportNote}
                         </footer>
                     </article>
                 </section>

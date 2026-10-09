@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\UserRole;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\ProductPhotoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -85,6 +86,11 @@ class SellerProductTest extends TestCase
         $this->assertSame('image/webp', $dimensions['mime']);
         $this->assertSame(1600, $dimensions[0]);
         $this->assertLessThan(strlen($content), strlen($stored));
+        $thumbnail = app(ProductPhotoService::class)->thumbnailPath($product->photo_path);
+        Storage::disk('local')->assertExists($thumbnail);
+        $thumbnailDimensions = getimagesizefromstring(Storage::disk('local')->get($thumbnail));
+        $this->assertSame('image/webp', $thumbnailDimensions['mime']);
+        $this->assertSame(800, $thumbnailDimensions[0]);
     }
 
     public function test_seller_can_edit_a_product_and_optionally_replace_its_photo(): void
@@ -114,6 +120,7 @@ class SellerProductTest extends TestCase
         $this->assertNotSame($originalPath, $replacementPath);
         $this->assertNotSame($originalUrl, $product->fresh()->photo_url);
         Storage::disk('local')->assertMissing($originalPath);
+        Storage::disk('local')->assertMissing(app(ProductPhotoService::class)->thumbnailPath($originalPath));
         Storage::disk('local')->assertExists($replacementPath);
 
         $this->actingAs($otherSeller)->post("/seller/products/{$product->id}", [...$this->payload(['photo' => null]), '_method' => 'patch'])
@@ -141,6 +148,7 @@ class SellerProductTest extends TestCase
             ->assertSessionHasNoErrors()->assertRedirect('/seller/dashboard?section=products');
         $this->assertDatabaseMissing('products', ['id' => $single->id]);
         Storage::disk('local')->assertMissing($singlePath);
+        Storage::disk('local')->assertMissing(app(ProductPhotoService::class)->thumbnailPath($singlePath));
 
         $remaining = $sellerProducts->where('id', '!=', $single->id);
         $remainingPaths = $remaining->pluck('photo_path')->all();
@@ -149,6 +157,7 @@ class SellerProductTest extends TestCase
         $this->assertDatabaseMissing('products', ['user_id' => $seller->id]);
         foreach ($remainingPaths as $path) {
             Storage::disk('local')->assertMissing($path);
+            Storage::disk('local')->assertMissing(app(ProductPhotoService::class)->thumbnailPath($path));
         }
         $this->assertDatabaseHas('products', ['id' => $otherProduct->id]);
         Storage::disk('local')->assertExists($otherProduct->photo_path);

@@ -38,6 +38,7 @@ class ForecastSellingActivityTest extends TestCase
         $order->user_id = $seller->id;
         $order->created_at = CarbonImmutable::parse($date, 'Asia/Manila')->utc();
         $order->updated_at = $order->created_at;
+        $order->delivered_at = $status === 'delivered' ? $order->created_at : null;
         $order->save();
 
         return $order;

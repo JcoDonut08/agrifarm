@@ -71,7 +71,7 @@ export default function Welcome() {
                                 </Link>
                                 <div className="hero-values modern-hero-values">
                                     <div><Icon name="leaf" /><span>{filipino ? '100% Lokal' : '100% Locally Grown'}</span></div>
-                                    <div><Icon name="sprout" /><span>{filipino ? 'Anihin Ngayong Araw' : 'Same-day Harvest'}</span></div>
+                                    <div><Icon name="sprout" /><span>{filipino ? 'Sariwang ani' : 'Freshly harvested'}</span></div>
                                     <div><Icon name="people" /><span>{filipino ? 'Suportahan ang Pasig' : 'Support Pasig Farmers'}</span></div>
                                 </div>
                             </div>
@@ -114,7 +114,7 @@ export default function Welcome() {
                                 <div className="featured-actions"><Link className="store-button white-button" href={bestBarangayProduct ? productHref(bestBarangayProduct.id) : marketHref()}>{bestBarangayProduct ? (filipino ? 'Tingnan ang produkto' : 'View featured product') : 'Browse marketplace'} <Icon name="arrow" /></Link>{bestBarangay && <Link className="featured-market-link" href={marketHref(bestBarangay.name)}>{filipino ? 'Bumili sa' : 'Shop'} {bestBarangay.name} <Icon name="arrow" size={17} /></Link>}</div>
                             </div>
                             {bestBarangayProduct ? <div className="featured-product-stage">
-                                <div className="featured-stage-image"><ProducePhoto product={bestBarangayProduct} className="featured-product-photo" /></div>
+                                <div className="featured-stage-image"><ProducePhoto product={bestBarangayProduct} className="featured-product-photo" priority /></div>
                                 <div className="featured-stage-copy">
                                     <span className="featured-stage-kicker"><Icon name="sprout" size={16} /> {bestBarangaySale.orderCount ? (filipino ? 'PINAKAMABENTA' : 'MOST ORDERED') : (filipino ? 'LOKAL NA PRODUKTO' : 'LOCAL LISTING')}</span>
                                     <Link href={productHref(bestBarangayProduct.id)} className="featured-stage-name">{bestBarangayProduct.name} <Icon name="arrow" size={18} /></Link>
@@ -126,7 +126,7 @@ export default function Welcome() {
                         </section>
                         <section className="home-section top-selling-section" aria-labelledby="top-selling-heading">
                             <div className="section-heading"><div><h2 id="top-selling-heading">{filipino ? 'Pinakamabentang mga halaman' : 'Best-selling plants'}</h2><p>{filipino ? 'Mga produktong pinakamaraming order na naihatid.' : 'Most ordered products from delivered sales.'}</p></div>{bestSellingProducts.length > 0 && <Link className="section-link" href={marketHref(null, 'best-selling')}>{filipino ? 'Tingnan lahat' : 'View all'} <Icon name="arrow" size={17} /></Link>}</div>
-                            {bestSellingProducts.length > 0 ? <div className="home-product-grid">{bestSellingProducts.map((product) => <ProductCard product={product} key={product.id} />)}</div> : <div className="top-selling-empty"><Icon name="trophy" size={28} /><div><h3>{filipino ? 'Wala pang pinakamabenta' : 'No best sellers yet'}</h3><p>{filipino ? 'Lilitaw dito ang mga produkto na may naihatid nang order.' : 'Products with delivered orders will appear here.'}</p></div></div>}
+                            {bestSellingProducts.length > 0 ? <div className="home-product-grid">{bestSellingProducts.map((product, index) => <ProductCard product={product} key={product.id} priority={index < 4} />)}</div> : <div className="top-selling-empty"><Icon name="trophy" size={28} /><div><h3>{filipino ? 'Wala pang pinakamabenta' : 'No best sellers yet'}</h3><p>{filipino ? 'Lilitaw dito ang mga produkto na may naihatid nang order.' : 'Products with delivered orders will appear here.'}</p></div></div>}
                         </section>
                         <ProductSection id="popular-heading" title={hasSellerProducts ? (filipino ? 'Sariwa mula sa mga lokal na nagtitinda' : 'Fresh from local sellers') : (filipino ? 'Mga Sikat na Produkto' : 'Popular Products')} description={hasSellerProducts ? (filipino ? 'Mga totoong ani mula sa mga magsasaka ng AgriFarm.' : 'Real harvests listed by AgriFarm growers.') : (filipino ? 'Mga paborito sa araw-araw mula sa mga nagtitinda sa kapitbahayan.' : 'Everyday favorites from neighborhood growers.')} products={popularProducts} />
                         {newProducts.length > 0 && <ProductSection id="fresh-heading" title={hasSellerProducts ? (filipino ? 'Marami pang pagpipilian' : 'More to explore') : (filipino ? 'Mga Bagong Produkto' : 'Fresh New Products')} description={hasSellerProducts ? (filipino ? 'Maghanap ng iba pang produkto mula sa mga lokal na nagtitinda.' : 'Find more produce from local sellers.') : (filipino ? 'Mga bagong pagpipilian para sa iyong susunod na lutuin.' : 'A fresh selection for your next meal.')} products={newProducts} />}

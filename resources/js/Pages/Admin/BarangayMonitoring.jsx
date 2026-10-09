@@ -164,7 +164,7 @@ function BarangayDetails({ data, filipino }) {
                 ["Active Reports", integer(summary.activeReports), "Requiring action", AlertCircle],
             ]} />
             <section className="barangay-monitoring__grid">
-                <Trend title="Sales Performance" description="Monthly completed sales" chart={data.salesTrend} formatter={money} color="#2e7d56" />
+                <Trend title="Sales Performance" description={filipino ? 'Mga nakumpletong benta ayon sa petsa ng paghatid, sa oras ng Pilipinas' : 'Monthly completed sales by delivery date in Philippine time'} chart={data.salesTrend} formatter={money} color="#2e7d56" filipino={filipino} />
                 <Trend title="Harvest Trend" description="Monthly recorded harvest" chart={data.harvestTrend} formatter={integer} color="#b7791f" />
             </section>
             <section className="admin-panel">
@@ -219,7 +219,7 @@ function Comparison({ data = {}, metric }) {
     </div>;
 }
 
-function Trend({ title, description, chart = {}, formatter, color, line }) {
+function Trend({ title, description, chart = {}, formatter, color, line, filipino = false }) {
     const values = chart.data || [];
     const labels = chart.labels || [];
     const available = chart.available && values.some((value) => Number(value) > 0);
@@ -232,6 +232,9 @@ function Trend({ title, description, chart = {}, formatter, color, line }) {
                     <small>{labels[index]}</small>
                 </div>)}
             </div>}
+        {chart.undatedOrders > 0 && <DataNote text={filipino
+            ? 'Kasama sa kabuuan ng lahat ng panahon ang mga lumang naihatid na order na walang petsa ng paghatid, ngunit hindi sa chart na ito.'
+            : 'Older delivered orders without a delivery date remain in all-time totals, but are excluded from this chart.'} />}
     </article>;
 }
 

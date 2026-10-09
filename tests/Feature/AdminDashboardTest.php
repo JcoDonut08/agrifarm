@@ -106,7 +106,7 @@ class AdminDashboardTest extends TestCase
         $this->order($seller, $product, '100.00', 'delivered', now()->startOfMonth()->subMonths(11));
         $this->order($seller, $product, '200.00', 'delivered', now()->subMonths(8));
         $this->order($seller, $product, '25.00', 'delivered', now());
-        $this->order($seller, $product, '999.00', 'delivered', now()->startOfMonth()->subMonths(11)->subSecond());
+        $this->order($seller, $product, '999.00', 'delivered', now('Asia/Manila')->startOfMonth()->subMonths(11)->subSecond()->utc());
         $this->order($seller, $product, '888.00', 'pending', now()->subMonths(8));
 
         $this->actingAs($admin)->get('/admin/dashboard')->assertOk()
@@ -188,6 +188,7 @@ class AdminDashboardTest extends TestCase
         $order->product_id = $product->id;
         $order->created_at = $createdAt;
         $order->updated_at = $createdAt;
+        $order->delivered_at = $status === 'delivered' ? $createdAt : null;
         $order->save();
 
         return $order;

@@ -10,6 +10,7 @@ export default function HelpWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const { filipino } = useShop();
     const scrollRef = useRef(null);
+    const lookupGeneration = useRef(0);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -33,23 +34,25 @@ export default function HelpWidget() {
     ];
 
     const [messages, setMessages] = useState([]);
-    
-    // Initialize greeting only when opened or mounted
-    useEffect(() => {
-        if (messages.length === 0) {
-            setMessages([
-                { 
-                    sender: 'bot', 
-                    text: `${getGreeting()} ${user ? user.name.split(' ')[0] : ''} \n\n${filipino ? 'Ako ang Kuya Ani. Paano kita matutulungan ngayon?' : 'I am the Kuya Ani. How can I help you today?'}`,
-                    options: initialOptions
-                }
-            ]);
-        }
-    }, [user, filipino]);
-
     const [isTyping, setIsTyping] = useState(false);
     const [awaitingInput, setAwaitingInput] = useState(false);
     const [inputValue, setInputValue] = useState('');
+
+    // Clear the conversation when the account or language changes.
+    useEffect(() => {
+        setIsTyping(false);
+        setAwaitingInput(false);
+        setInputValue('');
+        setMessages([
+            {
+                sender: 'bot',
+                text: `${getGreeting()} ${user ? user.name.split(' ')[0] : ''} \n\n${filipino ? 'Ako ang Kuya Ani. Paano kita matutulungan ngayon?' : 'I am the Kuya Ani. How can I help you today?'}`,
+                options: initialOptions
+            }
+        ]);
+        // Discard responses from a previous account or unmounted assistant.
+        return () => { lookupGeneration.current += 1; };
+    }, [user?.id, filipino]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -59,6 +62,39 @@ export default function HelpWidget() {
 
     const addMessage = (sender, text, options = null) => {
         setMessages(prev => [...prev, { sender, text, options, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]);
+    };
+
+    const backOption = { id: 'reset', label: filipino ? 'Bumalik sa Menu' : 'Back to Menu' };
+    const orderOptions = [
+        { id: 'order-reference', label: filipino ? 'Tingnan ang ibang order' : 'Check another order' },
+        backOption,
+    ];
+    const promptSignIn = () => {
+        setIsTyping(false);
+        setAwaitingInput(false);
+        addMessage('bot', filipino ? 'Mag-sign in para makita ang iyong mga order.' : 'Sign in to check your orders.', [
+            { id: 'login', label: filipino ? 'Mag-sign in' : 'Sign in', href: '/login' },
+            backOption,
+        ]);
+    };
+    const fetchOrder = async (url) => {
+        const generation = lookupGeneration.current;
+        const response = await fetch(url, { headers: { Accept: 'application/json' } });
+        if (generation !== lookupGeneration.current) return null;
+        if (response.status === 401) {
+            promptSignIn();
+            return null;
+        }
+        if (response.status === 403 || response.status === 429) {
+            setIsTyping(false);
+            addMessage('bot', response.status === 403
+                ? (filipino ? 'Mag-sign in gamit ang customer account para makita ang iyong mga order.' : 'Sign in with a customer account to check your orders.')
+                : (filipino ? 'Masyadong maraming pagsubok. Maghintay sandali bago subukan muli.' : 'Too many requests. Wait a moment and try again.'), [backOption]);
+            return null;
+        }
+        if (!response.ok) throw new Error('Order lookup failed');
+        const data = await response.json();
+        return generation === lookupGeneration.current ? data : null;
     };
 
             const formatStatus = (status, orderId, summary) => {
@@ -139,32 +175,41 @@ const handleOptionClick = async (option) => {
             }, 800);
         }
         else if (option.id === 'order') {
+            if (!user) {
+                promptSignIn();
+                return;
+            }
+            if (user.role !== 'customer') {
+                addMessage('bot', filipino ? 'Mag-sign in gamit ang customer account para makita ang iyong mga order.' : 'Sign in with a customer account to check your orders.', [backOption]);
+                return;
+            }
             setIsTyping(true);
             
-            if (user) {
-                addMessage('bot', filipino ? `Tinitingnan ko ang pinakabagong order sa iyong account, sandali lamang...` : `Pulling up the latest order on your account, one moment...`);
+            addMessage('bot', filipino ? `Tinitingnan ko ang pinakabagong order sa iyong account, sandali lamang...` : `Pulling up the latest order on your account, one moment...`);
+
+            try {
+                const data = await fetchOrder('/api/chatbot/latest-order');
+                if (!data) return;
                 
-                try {
-                    const response = await fetch('/api/chatbot/latest-order');
-                    const data = await response.json();
-                    
-                    setIsTyping(false);
-                    if (data.status === 'not_found') {
-                        addMessage('bot', filipino ? 'Wala kang anumang kamakailang order sa system.' : 'You do not have any recent orders in the system.', [{ id: 'reset', label: filipino ? 'Bumalik' : 'Go Back' }]);
-                    } else {
-                        addMessage('bot', formatStatus(data.status, data.reference, data.summary), [{ id: 'reset', label: filipino ? 'Bumalik sa Menu' : 'Back to Menu' }]);
-                    }
-                } catch (e) {
-                    setIsTyping(false);
-                    addMessage('bot', filipino ? 'Nagkaroon ng problema sa pagkuha ng iyong order.' : 'There was a problem retrieving your order.', [{ id: 'reset', label: filipino ? 'Bumalik' : 'Go Back' }]);
+                setIsTyping(false);
+                if (data.status === 'not_found') {
+                    addMessage('bot', filipino ? 'Wala kang anumang kamakailang order sa system.' : 'You do not have any recent orders in the system.', orderOptions);
+                } else {
+                    addMessage('bot', formatStatus(data.status, data.reference, data.summary), orderOptions);
                 }
-            } else {
-                setTimeout(() => {
-                    setIsTyping(false);
-                    addMessage('bot', filipino ? 'Pakibigay ang iyong Order ID (hal. ORD-12345):' : 'Please type or paste your exact Order ID below:');
-                    setAwaitingInput(true);
-                }, 600);
+            } catch (e) {
+                setIsTyping(false);
+                addMessage('bot', filipino ? 'Nagkaroon ng problema sa pagkuha ng iyong order.' : 'There was a problem retrieving your order.', [{ id: 'reset', label: filipino ? 'Bumalik' : 'Go Back' }]);
             }
+        }
+        else if (option.id === 'order-reference') {
+            if (!user) {
+                promptSignIn();
+                return;
+            }
+            if (user.role !== 'customer') return;
+            addMessage('bot', filipino ? 'Ilagay ang Order ID mula sa iyong mga order:' : 'Enter an Order ID from your orders:');
+            setAwaitingInput(true);
         }
         else if (option.id === 'reset') {
             setIsTyping(true);
@@ -177,9 +222,14 @@ const handleOptionClick = async (option) => {
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
+        if (!user) {
+            promptSignIn();
+            return;
+        }
+        if (user.role !== 'customer') return;
         if (!inputValue.trim()) return;
 
-        const orderId = inputValue.trim().toUpperCase();
+        const orderId = inputValue.trim();
         addMessage('user', orderId);
         setInputValue('');
         setAwaitingInput(false);
@@ -188,11 +238,11 @@ const handleOptionClick = async (option) => {
         addMessage('bot', filipino ? `Hinahanap ang ${orderId}...` : `Searching for ${orderId}...`);
         
         try {
-            const response = await fetch(`/api/chatbot/order-status?reference=${orderId}`);
-            const data = await response.json();
+            const data = await fetchOrder(`/api/chatbot/order-status?reference=${encodeURIComponent(orderId)}`);
+            if (!data) return;
             
             setIsTyping(false);
-            addMessage('bot', formatStatus(data.status, data.reference || orderId, data.summary), [{ id: 'reset', label: filipino ? 'Bumalik sa Menu' : 'Back to Menu' }]);
+            addMessage('bot', formatStatus(data.status, data.reference || orderId, data.summary), orderOptions);
         } catch (e) {
             setIsTyping(false);
             addMessage('bot', filipino ? 'Paumanhin, nagkaroon ng error sa system.' : 'Sorry, there was a system error.', [{ id: 'reset', label: filipino ? 'Bumalik' : 'Go Back' }]);
@@ -262,6 +312,8 @@ const handleOptionClick = async (option) => {
                                 <input 
                                     type="text" 
                                     placeholder={filipino ? "Ilagay ang Order ID..." : "Enter Order ID..."}
+                                    aria-label="Order ID"
+                                    maxLength={64}
                                     value={inputValue} 
                                     onChange={(e) => setInputValue(e.target.value)} 
                                     autoFocus

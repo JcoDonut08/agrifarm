@@ -37,6 +37,8 @@ const directMessages = {
     'Profile photo removed.': 'Inalis ang larawan sa profile.',
     'The photo could not be saved. Please try again.': 'Hindi na-save ang larawan. Pakisubukan muli.',
     'One or more selected products could not be deleted.': 'Hindi nabura ang isa o higit pang napiling produkto.',
+    'This product has unfinished orders or reservations. Finish or cancel them before deleting it.': 'May hindi pa tapos na mga order o reserbasyon ang produktong ito. Tapusin o kanselahin muna ang mga ito bago burahin ang produkto.',
+    'One or more selected products have unfinished orders or reservations. No products were deleted. Finish or cancel those orders, or remove those products from your selection.': 'May hindi pa tapos na mga order o reserbasyon ang isa o higit pang napiling produkto. Walang produktong nabura. Tapusin o kanselahin muna ang mga order na iyon, o alisin ang mga produktong iyon sa iyong napili.',
     'That order status change is not allowed.': 'Hindi pinapayagan ang pagbabagong iyon sa status ng order.',
     'The current password is incorrect.': 'Mali ang kasalukuyang password.',
     'The password field confirmation does not match.': 'Hindi magkatugma ang bagong password at kumpirmasyon nito.',

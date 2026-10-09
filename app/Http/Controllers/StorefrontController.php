@@ -79,6 +79,7 @@ class StorefrontController extends Controller
                 'sellerAvatarUrl' => $this->sellerAvatarUrl($product->seller),
                 'barangay' => $this->sellerBarangay($product->seller),
                 'photoUrl' => '/marketplace/products/'.$product->id.'/photo?v='.$product->photoVersion(),
+                'thumbnailUrl' => '/marketplace/products/'.$product->id.'/photo?v='.$product->photoVersion().'&size=card',
                 'listedAt' => $product->created_at->toDateString(),
                 'salesRankScore' => (int) ($salesByProduct->get($product->id)?->order_count ?? 0),
                 'isBestSeller' => $bestSellerIds->contains($product->id),
@@ -179,12 +180,33 @@ class StorefrontController extends Controller
             if ($request->query('page') === 'notifications') {
                 $user->unreadNotifications->markAsRead();
             }
-            $props['notifications'] = $user->notifications()->latest()->limit(50)->get()->map(fn ($notification) => [
-                'id' => $notification->id,
-                'data' => $notification->data,
-                'created_at' => $notification->created_at->toIso8601String(),
-                'read_at' => $notification->read_at ? $notification->read_at->toIso8601String() : null,
-            ]);
+            $notifications = $user->notifications()->latest()->limit(50)->get();
+            // Resolve older notifications in one batch, using only this customer's orders.
+            $notificationOrders = $request->query('page') === 'notifications'
+                ? WalkInOrder::query()
+                    ->whereIn('id', $notifications->pluck('data.order_id')->filter(fn ($id) => is_numeric($id)))
+                    ->whereHas('checkout', fn ($checkout) => $checkout->where('user_id', $user->id))
+                    ->with('seller:id,name,avatar_url')->get()->keyBy('id')
+                : collect();
+            $props['notifications'] = $notifications->map(function ($notification) use ($notificationOrders) {
+                $data = $notification->data;
+                $seller = $notificationOrders->get($data['order_id'] ?? null)?->seller;
+                if ($seller) {
+                    $data['seller_id'] = $seller->id;
+                    $data['seller_name'] = $seller->name;
+                    $data['seller_avatar_url'] = $this->sellerAvatarUrl($seller);
+                    if ($data['seller_avatar_url'] && str_starts_with($data['seller_avatar_url'], '/marketplace/sellers/')) {
+                        $data['seller_avatar_url'] .= '?v='.substr(sha1($seller->avatar_url), 0, 12);
+                    }
+                }
+
+                return [
+                    'id' => $notification->id,
+                    'data' => $data,
+                    'created_at' => $notification->created_at->toIso8601String(),
+                    'read_at' => $notification->read_at ? $notification->read_at->toIso8601String() : null,
+                ];
+            });
         }
 
         return Inertia::render('Welcome', $props);

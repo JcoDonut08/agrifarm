@@ -2,8 +2,8 @@ import { Link } from '@inertiajs/react';
 import Icon from './Icon';
 import { marketHref } from './catalog';
 
-export default function CollectionPage({ title, children }) {
-    return <div className="store-container collection-page">
+export default function CollectionPage({ title, children, className = '' }) {
+    return <div className={`store-container collection-page ${className}`.trim()}>
         <div className="collection-heading"><h1>{title}</h1></div>
         {children}
     </div>;

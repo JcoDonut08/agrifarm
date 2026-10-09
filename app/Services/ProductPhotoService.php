@@ -33,6 +33,56 @@ class ProductPhotoService
             throw ValidationException::withMessages(['photo' => 'The photo could not be saved. Please try again.']);
         }
 
+        try {
+            $this->createThumbnail($path);
+        } catch (\Throwable $exception) {
+            $this->delete($path);
+            throw ValidationException::withMessages(['photo' => 'The photo could not be processed. Please use a valid image.']);
+        }
+
         return $path;
+    }
+
+    public function thumbnailPath(string $path): string
+    {
+        return $path.'.card.webp';
+    }
+
+    public function createThumbnail(string $path, bool $force = false): bool
+    {
+        if (! extension_loaded('gd') && ! extension_loaded('imagick')) {
+            return false;
+        }
+
+        $disk = Storage::disk('local');
+        $thumbnail = $this->thumbnailPath($path);
+        if (! $force && $disk->exists($thumbnail)) {
+            return false;
+        }
+
+        // Generate outside image requests so viewing a card never waits for compression.
+        $encoded = Image::read($disk->path($path))->scaleDown(width: 800, height: 800)->toWebp(quality: 82);
+        if (! $disk->put($thumbnail, (string) $encoded)) {
+            throw new \RuntimeException('The product thumbnail could not be saved.');
+        }
+
+        return true;
+    }
+
+    public function displayPath(string $path, bool $thumbnail): string
+    {
+        $candidate = $this->thumbnailPath($path);
+
+        return $thumbnail && Storage::disk('local')->exists($candidate) ? $candidate : $path;
+    }
+
+    public function delete(string|array $paths): void
+    {
+        $files = [];
+        foreach ((array) $paths as $path) {
+            $files[] = $path;
+            $files[] = $this->thumbnailPath($path);
+        }
+        Storage::disk('local')->delete($files);
     }
 }

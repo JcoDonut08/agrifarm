@@ -863,8 +863,8 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
                             </h2>
                             <p>
                                 {filipino
-                                    ? "Mga nakumpletong benta sa mga partner na barangay"
-                                    : "Completed sales across partner barangays"}
+                                    ? "Mga nakumpletong benta ayon sa buwan ng paghatid, sa oras ng Pilipinas"
+                                    : "Completed sales by delivery month in Philippine time"}
                             </p>
                         </div>
                     </div>
@@ -877,8 +877,8 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
                             <EmptyIllustration icon={TrendingUp} />
                             <strong>
                                 {filipino
-                                    ? "Wala pang nakumpletong benta"
-                                    : "No completed sales yet"}
+                                    ? "Walang benta na may naitalang petsa ng paghatid"
+                                    : "No sales with a recorded delivery date"}
                             </strong>
                             <p>
                                 {filipino
@@ -887,6 +887,9 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
                             </p>
                         </div>
                     )}
+                    {monthlySales.undatedOrders > 0 && <p className="barangay-monitoring__data-note">{filipino
+                        ? 'Kasama sa kabuuan ng lahat ng panahon ang mga lumang naihatid na order na walang petsa ng paghatid, ngunit hindi sa chart na ito.'
+                        : 'Older delivered orders without a delivery date remain in all-time totals, but are excluded from this chart.'}</p>}
                 </article>
 
                 {preferences.showRecentActivity && (
@@ -1251,7 +1254,7 @@ function MonthlySalesChart({ data }) {
                 viewBox="0 0 730 260"
                 preserveAspectRatio="xMidYMid meet"
                 role="img"
-                aria-label="Six-month completed sales by barangay"
+                aria-label="Completed sales by delivery month and barangay"
             >
                 <title>Monthly completed sales for each partner barangay</title>
                 {gridValues.map((value) => (

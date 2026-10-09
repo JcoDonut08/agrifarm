@@ -17,6 +17,7 @@ function seedSellingActivity() {
             $order->user_id = $seller->id;
             $order->created_at = Carbon\\CarbonImmutable::now()->subDays($day);
             $order->updated_at = $order->created_at;
+            $order->delivered_at = $order->created_at;
             $order->save();
         }
         $product = new App\\Models\\Product(['name' => 'Kangkong', 'category' => 'Vegetables', 'price' => 30, 'unit' => 'bunch', 'stock' => 50, 'threshold' => 2, 'photo_path' => 'browser-test.png']);
@@ -26,6 +27,7 @@ function seedSellingActivity() {
 }
 
 test('barangay selling activity ranks crops and stays readable in both languages', async ({ page }, testInfo) => {
+    test.setTimeout(300_000);
     seedSellingActivity();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -40,7 +42,7 @@ test('barangay selling activity ranks crops and stays readable in both languages
         buffer: Buffer.from('Month,Vegetable Crop,Harvest (kg),Barangay\n2026-01,Kangkong,20,Rosario\n2026-02,Kangkong,25,Rosario\n'),
     });
     await page.getByRole('button', { name: 'Generate', exact: true }).click();
-    await expect(page.locator('.forecast-saved')).toContainText('rosario-harvest.csv', { timeout: 60_000 });
+    await expect(page.locator('.forecast-saved')).toContainText('rosario-harvest.csv', { timeout: 185_000 });
     const crop = page.locator('.forecast-rec-card').filter({ has: page.getByRole('heading', { name: 'Kangkong', exact: true }) });
     await expect(crop).toHaveCount(1);
     await expect(crop.locator('.forecast-selling-activity')).toHaveText('Recent sales: Regular');

@@ -1,0 +1,23 @@
+{
+  "Pipino": {
+    "aliases": ["Pipino", "Cucumber", "Cucumis sativus"],
+    "days_to_harvest": 40,
+    "growth_class": "fast",
+    "recommendable": true,
+    "source_name": "DA–ATI MIMAROPA",
+    "source_url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2024-12/GABAY%20SA%20PRODUKSYON%20NG%20PIPINO.pdf",
+    "reviewed_on": "2026-10-09",
+    "timing_note": "Planning estimate within the guide's 38–45 days for slicing cucumber; variety and planting conditions affect timing.",
+    "timing_note_fil": "Tantya mula sa 38–45 araw sa gabay para sa slicing cucumber; nakadepende sa uri at kondisyon ng taniman.",
+    "guidance": "Provide drainage and a trellis, especially during rainy months.",
+    "guidance_fil": "Maghanda ng maayos na daluyan ng tubig at balag, lalo na sa tag-ulan.",
+    "short_description": "Suited to warm weather; needs drainage in rain",
+    "short_description_fil": "Angkop sa mainit na panahon; kailangan ng daluyan ng tubig kapag umuulan",
+    "weather_source_url": "https://cagayanvalley.da.gov.ph/wp-content/uploads/2018/02/Cucumber-Production-Guide.pdf",
+    "weather_note": "The DA guide gives about 30°C as the optimum growing temperature and recommends raised beds and drainage during the wet season. Warm-weather suitability does not mean tolerance to extreme heat or drought.",
+    "weather_note_fil": "Ayon sa gabay ng DA, nasa 30°C ang angkop na temperatura sa paglaki. Inirerekomenda ang mataas na taniman at daluyan ng tubig sa tag-ulan. Hindi ito nangangahulugang matibay sa matinding init o tagtuyot.",
+    "annual_profile_index": [0.7, 0.7, 0.7, 0.7, 0.7, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.7],
+    "weather_tolerance": {"rain": 4, "heat": 8},
+    "scoring_note": "Seasonal indices and weather scores are illustrative AgriFarm planning heuristics, not DA–ATI measurements, harvest quantities, probabilities, or verified Pasig yields. Rainy months receive a lower seasonal fit because the guide cautions against waterlogging."
+  }
+}

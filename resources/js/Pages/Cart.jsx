@@ -17,7 +17,7 @@ export default function Cart() {
             <section className="basket-products" aria-labelledby="basket-items-heading">
                 
                 {items.map((product) => <article className="basket-product" key={product.id}>
-                    <ProducePhoto product={product} />
+                    <ProducePhoto product={product} thumbnail />
                     <div className="basket-product-copy">
                         <h3>{product.name}</h3>
                         {product.barangay ? <Link className="basket-grower" href={marketHref(product.barangay)}><Icon name="pin" size={14} />{product.barangay}</Link> : <span className="basket-grower"><Icon name="people" size={14} />{product.sellerName}</span>}

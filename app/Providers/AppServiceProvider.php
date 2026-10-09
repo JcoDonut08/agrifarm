@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
+use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +25,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(Login::class, function (Login $event): void {
+            if (request()->hasSession()) {
+                // Bind the session immediately, including Google and remembered logins.
+                request()->session()->put('password_hash_'.$event->guard,
+                    Auth::guard($event->guard)->hashPasswordForCookie($event->user->getAuthPassword()));
+            }
+        });
+
         RateLimiter::for('seller-forecast-uploads', function (Request $request): Limit {
             $seller = $request->user()?->getAuthIdentifier() ?? $request->ip();
 

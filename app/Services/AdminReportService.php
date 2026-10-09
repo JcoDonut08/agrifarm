@@ -52,6 +52,7 @@ class AdminReportService
                 'walk_in_orders.total',
                 'walk_in_orders.status',
                 'walk_in_orders.created_at',
+                'walk_in_orders.delivered_at',
                 'users.barangay',
             ])
             ->orderBy('walk_in_orders.created_at')
