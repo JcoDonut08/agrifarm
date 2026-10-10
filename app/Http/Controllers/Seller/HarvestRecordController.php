@@ -75,7 +75,7 @@ class HarvestRecordController extends Controller
             // Existing plural/custom units can be retained when correcting a record.
             'unit' => ['required', Rule::in($record ? [...self::UNITS, $record->unit] : self::UNITS)],
             'measured_weight_kg' => [Rule::excludeIf($request->input('unit') === 'kg'), 'nullable', 'numeric', 'gt:0', 'max:999999999.999', 'decimal:0,3'],
-            'harvest_date' => ['required', 'date', 'before_or_equal:today'],
+            'harvest_date' => ['required', 'date', 'before_or_equal:'.now('Asia/Manila')->toDateString()],
             'notes' => ['nullable', 'string', 'max:1000'],
         ], [
             'measured_weight_kg.*' => $request->input('language') === 'filipino'

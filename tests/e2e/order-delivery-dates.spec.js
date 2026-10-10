@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -7,7 +7,7 @@ import ExcelJS from 'exceljs';
 test.use({ timezoneId: 'UTC' });
 let dates;
 
-test.beforeAll(() => {
+test.beforeEach(() => {
     dates = JSON.parse(execFileSync('php', ['-r', String.raw`
         require 'vendor/autoload.php';
         $app = require 'bootstrap/app.php';

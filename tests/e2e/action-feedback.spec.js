@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
@@ -20,7 +20,7 @@ function seedProduct() {
         $product->user_id = $seller->id;
         $product->save();
         echo $product->id;
-    `], { encoding: 'utf8', cwd: process.cwd(), env: { ...process.env, APP_ENV: 'local', DB_CONNECTION: 'sqlite', DB_DATABASE: path.resolve('database/playwright.sqlite'), CACHE_STORE: 'file' } }).trim();
+    `], { encoding: 'utf8', cwd: process.cwd(), env: { ...process.env, APP_ENV: 'local', DB_CONNECTION: 'sqlite', DB_DATABASE: path.resolve('database/playwright.sqlite'), CACHE_STORE: 'e2e' } }).trim();
 }
 
 async function signIn(page, email) {

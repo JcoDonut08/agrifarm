@@ -28,6 +28,11 @@ class OrderStatusEmail extends Notification implements ShouldQueue
         return ['mail'];
     }
 
+    public function shouldSend(object $notifiable, string $channel): bool
+    {
+        return $notifiable->order_update_emails;
+    }
+
     public function toMail(object $notifiable): MailMessage
     {
         return $this->message;

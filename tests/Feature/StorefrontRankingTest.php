@@ -136,7 +136,7 @@ class StorefrontRankingTest extends TestCase
         $flat = $this->product($seller, 'Flat Sales Lettuce', 'head');
 
         $oldOrder = $this->order($seller, $trending, 1, '50.00', 'delivered');
-        DB::table('walk_in_orders')->where('id', $oldOrder->id)->update(['updated_at' => now()->subDays(10)]);
+        DB::table('walk_in_orders')->where('id', $oldOrder->id)->update(['delivered_at' => now()->subDays(10)]);
         $this->order($seller, $trending, 1, '50.00', 'delivered');
         $this->order($seller, $trending, 1, '50.00', 'delivered');
         $this->order($seller, $flat, 1, '50.00', 'delivered');
@@ -200,6 +200,7 @@ class StorefrontRankingTest extends TestCase
         ]);
         $order->user_id = $seller->id;
         $order->product_id = $product->id;
+        $order->delivered_at = $status === 'delivered' ? now()->utc() : null;
         $order->save();
 
         return $order;

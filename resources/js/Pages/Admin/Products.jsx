@@ -107,7 +107,7 @@ export default function AdminProducts({ productManagement, filipino }) {
 
 
     const dismissReport = (id) => {
-
+        setActionError('');
         setDismissTarget(id);
 
     };
@@ -330,6 +330,10 @@ export default function AdminProducts({ productManagement, filipino }) {
                                     
 
                                     <div className="admin-seller-actions">
+                                        {product.reports.length > 0 && <button type="button" disabled={dismissing} onClick={() => dismissReport(product.id)} className="admin-action-btn">
+                                            <ShieldAlert aria-hidden="true" />
+                                            <span>{filipino ? 'Suriin ang mga report' : 'Review reports'} ({product.reports.length})</span>
+                                        </button>}
                                         {product.display_status !== 'delisted' ? (
                                             <button type="button" disabled={updating} onClick={() => updateStatus(product, 'delist')} className="admin-action-btn admin-action-btn--suspend" title={filipino ? 'Itago ang produkto' : 'Hide product'}>
                                                 <Trash2 aria-hidden="true" />
@@ -388,7 +392,26 @@ export default function AdminProducts({ productManagement, filipino }) {
             
 
 
-                <ConfirmationDialog open={dismissTarget !== null} title={filipino ? 'I-dismiss ang mga report?' : 'Dismiss reports?'} description={filipino ? 'I-clear ang mga report ng customer para sa produktong ito.' : 'Clear the customer reports for this product.'} confirmLabel={filipino ? 'I-dismiss ang mga report' : 'Dismiss reports'} cancelLabel={filipino ? 'Kanselahin' : 'Cancel'} workingLabel={filipino ? 'Dini-dismiss…' : 'Dismissing…'} busy={dismissing} onCancel={() => setDismissTarget(null)} onConfirm={() => { if (dismissTarget === null || dismissing) return; router.post(`/admin/products/${dismissTarget}/dismiss`, {}, { preserveScroll: true, onStart: () => setDismissing(true), onSuccess: () => setDismissTarget(null), onFinish: () => setDismissing(false) }); }} />
+                <ConfirmationDialog open={dismissTarget !== null} title={filipino ? 'I-dismiss ang mga report?' : 'Dismiss reports?'}
+                    description={filipino ? 'Suriin ang mga report bago i-dismiss. Mananatili ang kasaysayan ng mga report.' : 'Review these reports before dismissing them. Their history will be retained.'}
+                    confirmLabel={filipino ? 'I-dismiss ang mga report' : 'Dismiss reports'} cancelLabel={filipino ? 'Kanselahin' : 'Cancel'} workingLabel={filipino ? 'Dini-dismiss…' : 'Dismissing…'} busy={dismissing}
+                    onCancel={() => setDismissTarget(null)} onConfirm={() => {
+                        if (dismissTarget === null || dismissing) return;
+                        const failed = () => { setActionError(filipino ? 'Hindi ma-dismiss ang mga report. Subukan muli.' : 'Could not dismiss the reports. Please try again.'); return false; };
+                        router.post(`/admin/products/${dismissTarget}/dismiss`, {}, {
+                            preserveScroll: true,
+                            onStart: () => setDismissing(true),
+                            onSuccess: () => { setDismissTarget(null); setNotice({ id: Date.now(), message: filipino ? 'Na-dismiss ang mga nakabinbing report.' : 'Pending reports dismissed.' }); },
+                            onError: failed, onNetworkError: failed, onHttpException: failed,
+                            onFinish: () => setDismissing(false),
+                        });
+                    }}>
+                    {products.find(product => product.id === dismissTarget)?.reports.map(report => <div key={report.id}>
+                        <p><strong>{report.reason}</strong> · {report.reporter_name} · {report.date}</p>
+                        <p>{report.description}</p>
+                    </div>)}
+                    {actionError && <FormStatus tone="error">{actionError}</FormStatus>}
+                </ConfirmationDialog>
             </section>
 
         </section>

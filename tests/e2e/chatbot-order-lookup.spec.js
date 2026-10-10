@@ -1,11 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
 const ownReference = 'AgFrm-A1ABCDEFGHIJ';
 const otherReference = 'AgFrm-B2ABCDEFGHIJ';
 
-test.beforeAll(() => {
+test.beforeEach(() => {
     // Seed only the isolated Playwright database, never the application database.
     execFileSync('php', ['-r', String.raw`
         require 'vendor/autoload.php';

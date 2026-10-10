@@ -13,9 +13,11 @@ const UNITS = ['kg', 'bunch', 'piece', 'head', 'pack'];
 const UNIT_DEFAULTS = { kg: 'kg', piece: 'piece', pieces: 'piece', bunch: 'bunch', bunches: 'bunch', head: 'head', heads: 'head', pack: 'pack', packs: 'pack' };
 
 function today() {
-    const now = new Date();
-    const timezoneOffset = now.getTimezoneOffset() * 60000;
-    return new Date(now.getTime() - timezoneOffset).toISOString().slice(0, 10);
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(new Date());
+    const value = type => parts.find(part => part.type === type).value;
+    return `${value('year')}-${value('month')}-${value('day')}`;
 }
 
 function initialForm(products) {
@@ -266,7 +268,7 @@ export default function HarvestRecords({ products = [], harvestRecords = [], fil
                         {errors.notes && <small role="alert">{localizeMessage(errors.notes, filipino)}</small>}
                     </label>
                 </div></fieldset>
-                {errors.submit && <p className="app-field-error" role="alert">{errors.submit}</p>}
+                {(errors.submit || errors.request) && <p className="app-field-error" role="alert">{errors.submit || errors.request}</p>}
                 <div className="harvest-form-actions">
                     <button type="button" className="seller-outline-button" onClick={closeEditor} disabled={processing}>{filipino ? 'Kanselahin' : 'Cancel'}</button>
                     <button className="seller-save-button" disabled={processing || !products.length}>{processing ? (filipino ? 'Sine-save…' : 'Saving…') : editingRecord ? (filipino ? 'I-save ang pagbabago' : 'Save changes') : (filipino ? 'I-save ang tala ng ani' : 'Save Harvest Record')}</button>

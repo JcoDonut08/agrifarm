@@ -23,7 +23,7 @@ class OrderStatusUpdated extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return $notifiable->order_update_emails ? ['database', 'mail'] : ['database'];
     }
 
     /**

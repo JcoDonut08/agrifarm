@@ -10,16 +10,16 @@ class Report extends Model
     use HasFactory;
 
     protected $fillable = [
-        "reporter_name",
-        "seller_name",
-        "product_name",
-        "barangay",
-        "type",
-        "description",
-        "attachment_path",
-        "status",
-        "remarks",
-        "resolution",
+        'product_id',
+        'reporter_name',
+        'seller_name',
+        'product_name',
+        'barangay',
+        'type',
+        'description',
+        'attachment_path',
+        'status',
+        'remarks',
+        'resolution',
     ];
 }
-

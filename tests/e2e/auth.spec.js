@@ -1,8 +1,8 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const logPath = path.resolve('storage/logs/laravel.log');
+const logPath = path.resolve('storage/logs/playwright.log');
 const developmentPassword = 'AgriFarm123!';
 const viewports = [
     { name: 'mobile-390', width: 390, height: 844 },
@@ -18,7 +18,7 @@ for (const viewport of viewports) {
         });
 
         await page.goto('/');
-        await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh from');
+        await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh produce, grown in Pasig.');
         await expect(page.getByRole('link', { name: 'Create account', exact: true }).first()).toBeVisible();
         await expect(page.locator('header').getByRole('link', { name: 'Log in' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Open account menu' })).toHaveCount(0);
@@ -81,7 +81,7 @@ for (const viewport of viewports) {
             exerciseControls: true,
             loginScreenshotPath: testInfo.outputPath(`${viewport.name}-login.png`),
         });
-        await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh from');
+        await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh produce, grown in Pasig.');
         await expect(page.getByRole('button', { name: 'Open account menu' })).toBeVisible();
         await expect(page.locator('header').getByRole('link', { name: 'Log in' })).toHaveCount(0);
         await page.goto('/?page=cart');
@@ -91,7 +91,7 @@ for (const viewport of viewports) {
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-cart-signed-in.png`), fullPage: true });
         await page.goto('/');
         await page.getByRole('button', { name: 'Open account menu' }).click();
-        await page.getByRole('button', { name: 'Settings', exact: true }).click();
+        await page.getByRole('link', { name: 'Settings', exact: true }).click();
         await page.getByRole('button', { name: 'Dark', exact: true }).click();
         await expect(page.locator('html')).toHaveClass(/dark/);
         expect(await page.evaluate(() => localStorage.getItem('agrifarm-theme'))).toBe('dark');
@@ -99,7 +99,7 @@ for (const viewport of viewports) {
         await expect(page.locator('html')).toHaveClass(/dark/);
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-home-dark.png`), fullPage: true });
         await page.getByRole('button', { name: 'Open account menu' }).click();
-        await page.getByRole('button', { name: 'Settings', exact: true }).click();
+        await page.getByRole('link', { name: 'Settings', exact: true }).click();
         await page.getByRole('button', { name: 'Light', exact: true }).click();
         await page.keyboard.press('Escape');
         await expect(page.locator('html')).not.toHaveClass(/dark/);
@@ -112,14 +112,18 @@ for (const viewport of viewports) {
         await expect(page).toHaveURL(/\/login$/);
 
         await completeLogin(page, 'seller@agrifarm.test', '/seller/dashboard');
+        await openRoleSettings(page, '/seller/dashboard?section=settings');
+        await page.goto('/seller/dashboard');
         await expect(page.getByRole('heading', { name: 'Barangay store overview', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Sales overview' })).toBeVisible();
         if (viewport.width <= 800) await page.getByRole('button', { name: 'Toggle seller navigation' }).click();
         await page.getByRole('button', { name: 'Sign out' }).click();
 
         await completeLogin(page, 'pasigcenro@gmail.com', '/admin/dashboard');
+        await openRoleSettings(page, '/admin/dashboard?section=settings');
+        await page.goto('/admin/dashboard');
         await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
-        await expect(page.locator('.admin-performance-item')).toHaveCount(3);
+        await expect(page.locator('.admin-performance-item')).toHaveCount(4);
         if (viewport.width <= 800) await page.getByRole('button', { name: 'Open admin navigation' }).click();
         await page.getByRole('button', { name: 'Logout' }).click();
 
@@ -181,6 +185,15 @@ async function openCustomerProfile(page) {
     await page.getByRole('link', { name: 'My profile', exact: true }).click();
 }
 
+async function openRoleSettings(page, path) {
+    await page.goto('/about');
+    await page.getByRole('button', { name: 'Open account menu' }).click();
+    const settings = page.getByRole('link', { name: 'Settings', exact: true });
+    await expect(settings).toHaveAttribute('href', path);
+    await settings.click();
+    await expect(page).toHaveURL(new RegExp(`${escapeRegExp(path)}$`));
+}
+
 async function pasteOtp(page, code) {
     await page.getByLabel('Code digit 1 of 6').evaluate((element, value) => {
         const data = new DataTransfer();
@@ -195,11 +208,11 @@ function currentLogSize() {
 
 async function waitForLogMatch(offset, pattern, group = 0) {
     await expect.poll(() => {
-        const contents = fs.readFileSync(logPath, 'utf8').slice(offset);
+        const contents = fs.readFileSync(logPath).subarray(offset).toString('utf8');
         return contents.match(pattern)?.[group] ?? '';
     }, { timeout: 10_000 }).not.toBe('');
 
-    return fs.readFileSync(logPath, 'utf8').slice(offset).match(pattern)[group];
+    return fs.readFileSync(logPath).subarray(offset).toString('utf8').match(pattern)[group];
 }
 
 function escapeRegExp(value) {

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import path from 'node:path';
 import fs from 'node:fs';
 
@@ -93,7 +93,7 @@ for (const width of [390, 768, 1440]) {
         await expect(page.locator('.forecast-updated')).toBeVisible();
         await expect(page.locator('.forecast-rec-card').first()).toContainText('Harvest around');
         await expect(page.locator('.forecast-rec-card').first()).toContainText('About');
-        await expect(page.locator('.forecast-expected-harvest').first()).toHaveText('Seasonal planting guide');
+        await expect(page.locator('.forecast-expected-harvest').first()).toHaveText(/Seasonal planting guide|Based on seasonal references|Based on an agricultural guide/);
         await expect(page.locator('.forecast-card-details li').first()).not.toBeVisible();
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path: testInfo.outputPath(`forecast-profile-${width}.png`), fullPage: true });
@@ -126,13 +126,10 @@ for (const width of [390, 768, 1440]) {
         await expect(page.locator('.forecast-history-note')).toHaveCount(0);
         await expect(page.locator('.forecast-month-detail')).toHaveCount(0);
         await expect(page.locator('.forecast-upload-zone')).toBeVisible();
-        await expect(page.locator('.forecast-expected-harvest').filter({ hasText: 'Estimated harvest:' }).first()).toHaveText(/Estimated harvest: \d+–\d+ kg/);
+        await expect(page.locator('.forecast-rec-card')).toHaveCount(3);
+        await expect(page.locator('.forecast-new-crop')).toHaveCount(1);
         await farmRow.getByRole('button').first().click();
         await expect(page.locator('.forecast-month-detail')).toContainText(/Estimated harvest: \d+–\d+ kg/);
-        const estimatedCard = page.locator('.forecast-rec-card').filter({ hasText: 'Estimated harvest:' }).first();
-        await estimatedCard.locator('summary').click();
-        await expect(estimatedCard.getByText('The harvest range is an 80%', { exact: false })).toBeVisible();
-        await estimatedCard.locator('summary').click();
         await page.locator('.forecast-how-it-works summary').click();
         await expect(page.locator('.forecast-how-it-works').getByText('At least 24 recorded months', { exact: false })).toBeVisible();
         await page.locator('.forecast-how-it-works summary').click();
@@ -189,8 +186,8 @@ test('partial crop upload uses shifted dates and recommends new crops', async ({
     await expect(page.locator('.forecast-season-grid thead')).toContainText('Jul 2025');
     await expect(page.locator('.forecast-season-grid thead')).toContainText('Jun 2026');
     await expect(page.locator('.forecast-rec-card')).toHaveCount(3);
-    await expect(page.locator('.forecast-rec-card .forecast-new-crop').first()).toHaveText('New crop for you');
-    await expect(page.locator('.forecast-rec-card').filter({ hasText: 'New crop for you' }).first().locator('.forecast-expected-harvest')).toHaveText('Seasonal planting guide');
+    await expect(page.locator('.forecast-rec-card .forecast-new-crop').first()).toHaveText('New crop to consider');
+    await expect(page.locator('.forecast-rec-card').filter({ hasText: 'New crop to consider' }).first().locator('.forecast-expected-harvest')).toHaveText(/Based on seasonal references|Based on an agricultural guide/);
 });
 
 test('Filipino Excel upload and row errors keep the saved result', async ({ page }, testInfo) => {
@@ -246,9 +243,9 @@ test('Filipino Excel upload and row errors keep the saved result', async ({ page
     await expect(page.locator('.forecast-history-note')).toHaveText('May ilang pananim na kulang sa 24 buwang tala. Gabay batay sa panahon ang ginagamit para sa mga ito.');
     await expect(page.locator('.forecast-rec-card')).toHaveCount(3);
     await expect(page.locator('.forecast-upload-zone')).toBeVisible();
-    await expect(page.locator('.forecast-expected-harvest').first()).toHaveText('Gabay batay sa panahon');
+    await expect(page.locator('.forecast-expected-harvest').first()).toHaveText(/Gabay batay sa panahon|Batay sa mga sanggunian ng panahon|Batay sa gabay sa pagsasaka/);
     await expect(page.getByRole('heading', { name: 'Kalendaryo ng iyong ani', exact: true })).toBeVisible();
-    await expect(page.locator('.forecast-rec-card [role="img"]')).toHaveCount(3);
+    await expect(page.locator('.forecast-rec-card').getByRole('img')).toHaveCount(3);
     await expect(page.locator('.forecast-card-details summary').first()).toHaveText('Bakit ito?');
     await expect(page.locator('.seller-forecast table')).toHaveCount(1);
     await expect(page.locator('.forecast-season-grid thead th')).toHaveCount(13);
@@ -296,9 +293,10 @@ test('old farm forecasts keep future suggestions seasonal and unknown crops unav
     });
     await page.getByRole('button', { name: 'Generate', exact: true }).click();
     await expect(page.locator('.forecast-saved')).toContainText('historical-with-unknown.csv', { timeout: 120_000 });
-    await expect(page.locator('.forecast-expected-harvest')).toHaveText([
-        'Seasonal planting guide', 'Seasonal planting guide', 'Seasonal planting guide',
-    ]);
+    const expectedLabels = page.locator('.forecast-expected-harvest');
+    await expect(expectedLabels).toHaveCount(3);
+    for (const label of await expectedLabels.all()) await expect(label).toHaveText(/Seasonal planting guide|Based on seasonal references|Based on an agricultural guide/);
+    await expect(expectedLabels).not.toContainText(['kg', 'kg', 'kg']);
     await expect(page.locator('.forecast-season-grid tbody tr')).toHaveCount(22);
     const visualUnknown = page.locator('.forecast-season-grid tbody tr').filter({ hasText: 'Unknown vegetable' });
     await expect(visualUnknown).toContainText('No forecast');

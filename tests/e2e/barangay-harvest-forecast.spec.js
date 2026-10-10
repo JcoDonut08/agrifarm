@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import fs from 'node:fs';
 import ExcelJS from 'exceljs';
 
@@ -51,7 +51,7 @@ test('admin Excel and CSV previews reach farmer forecasting with persistent bara
         await product.getByLabel('Price (PHP)', { exact: true }).fill('35');
         await product.getByLabel('Selling unit', { exact: true }).selectOption('kg');
         await product.getByLabel('Available stock', { exact: true }).fill('12');
-        await product.locator('#product-photo').setInputFiles({ name: 'kangkong.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
+        await product.locator('#product-photo').setInputFiles({ name: 'kangkong.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC', 'base64') });
         await product.getByRole('button', { name: 'Add product', exact: true }).click();
         await expect(product).not.toBeVisible();
         await seller.goto('/seller/dashboard?section=harvest-records');
@@ -81,7 +81,8 @@ test('admin Excel and CSV previews reach farmer forecasting with persistent bara
         await panel.getByRole('button', { name: 'Generate preview', exact: true }).click();
         await expect(panel.locator('.harvest-export-preview')).toContainText('12 harvest records · 12 monthly crop totals');
         await expect(panel.locator('.report-paper')).toContainText('Rosario');
-        await expect(panel.locator('.report-table-wrap tbody tr')).toHaveCount(12);
+        await expect(panel.locator('.report-table-wrap tbody tr')).toHaveCount(5);
+        await expect(panel.getByRole('combobox', { name: 'Rows per page' })).toHaveValue('5');
         const downloadPromise = admin.waitForEvent('download');
         await panel.getByRole('button', { name: 'Download Excel', exact: true }).click();
         const shortDownload = await downloadPromise;
@@ -106,7 +107,7 @@ test('admin Excel and CSV previews reach farmer forecasting with persistent bara
         await panel.getByRole('button', { name: 'Generate preview', exact: true }).click();
         await expect(panel.locator('.harvest-export-preview')).toContainText('24 harvest records · 24 monthly crop totals');
         await panel.getByRole('button', { name: 'Next page', exact: true }).click();
-        await expect(panel.locator('tbody tr').first()).toContainText('2025-10');
+        await expect(panel.locator('tbody tr').first()).toContainText('2025-03');
         await panel.getByRole('button', { name: 'Previous page', exact: true }).click();
         await expect(panel.locator('tbody tr').first()).toContainText('2024-10');
         await panel.getByText('CSV', { exact: true }).click();
@@ -124,7 +125,7 @@ test('admin Excel and CSV previews reach farmer forecasting with persistent bara
             await from.fill('2024-10-15');
             await to.fill('2026-09-30');
             await panel.getByLabel('Barangay', { exact: true }).selectOption('Rosario');
-            await panel.getByRole('button', { name: language === 'english' ? 'Generate preview' : 'Bumuo ng preview', exact: true }).click();
+            await panel.getByRole('button', { name: language === 'english' ? 'Generate preview' : 'Gumawa ng preview', exact: true }).click();
             await expect(panel.locator('.harvest-export-warning')).toContainText('2024-10');
             for (const width of [390, 768, 1440]) {
                 await admin.setViewportSize({ width, height: 1000 });

@@ -13,6 +13,7 @@ use App\Http\Controllers\Customer\HomeController as CustomerHomeController;
 use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
 use App\Http\Controllers\Customer\ReportController;
+use App\Http\Controllers\Customer\SettingsController;
 use App\Http\Controllers\CustomerCheckoutController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\ProductReviewController;
@@ -30,7 +31,6 @@ use App\Http\Controllers\StorefrontCustomerPhotoController;
 use App\Http\Controllers\StorefrontProductPhotoController;
 use App\Http\Controllers\StorefrontSellerPhotoController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', [StorefrontController::class, 'index'])->name('home');
 Route::get('/marketplace/products/{product}/photo', StorefrontProductPhotoController::class)->name('marketplace.products.photo');
@@ -46,24 +46,24 @@ Route::get('/privacy', [LegalPageController::class, 'privacy'])->name('privacy')
 require __DIR__.'/auth.php';
 
 Route::post('/product-reviews', [ProductReviewController::class, 'store'])
-    ->middleware(['auth', 'role:customer', 'throttle:10,1'])
+    ->middleware(['auth', 'role:customer', 'throttle:10,1,reviews:'])
     ->name('product-reviews.store');
 Route::patch('/product-reviews/{productReview}', [ProductReviewController::class, 'update'])
-    ->middleware(['auth', 'role:customer', 'throttle:10,1'])
+    ->middleware(['auth', 'role:customer', 'throttle:10,1,reviews:'])
     ->name('product-reviews.update');
 Route::delete('/product-reviews/{productReview}', [ProductReviewController::class, 'destroy'])
-    ->middleware(['auth', 'role:customer', 'throttle:10,1'])
+    ->middleware(['auth', 'role:customer', 'throttle:10,1,reviews:'])
     ->name('product-reviews.destroy');
 
 Route::post('/product-reviews/{productReview}/react', [ReviewReactionController::class, 'toggle'])
-    ->middleware(['auth', 'throttle:20,1'])
+    ->middleware(['auth', 'throttle:20,1,review-reactions:'])
     ->name('product-reviews.react');
 
 Route::post('/checkout', [CustomerCheckoutController::class, 'store'])
-    ->middleware(['auth', 'role:customer', 'throttle:10,1'])
+    ->middleware(['auth', 'role:customer', 'throttle:10,1,checkout:'])
     ->name('checkout.store');
 
-Route::middleware(['auth', 'role:customer', 'throttle:30,1'])->group(function () {
+Route::middleware(['auth', 'role:customer', 'throttle:30,1,chatbot-orders:'])->group(function () {
     Route::get('/api/chatbot/latest-order', [ChatbotOrderController::class, 'latest'])->name('chatbot.orders.latest');
     Route::get('/api/chatbot/order-status', [ChatbotOrderController::class, 'show'])->name('chatbot.orders.show');
 });
@@ -73,19 +73,18 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         ->middleware('role:customer')
         ->name('customer.home');
 
-    Route::get('/customer/settings', function () {
-        return Inertia::render('Customer/Settings');
-    })->name('customer.settings');
+    Route::get('/customer/settings', [SettingsController::class, 'index'])->middleware('role:customer')->name('customer.settings');
+    Route::patch('/customer/settings', [SettingsController::class, 'update'])->middleware(['role:customer', 'throttle:10,1,customer-settings:'])->name('customer.settings.update');
 
     Route::get('/customer/orders', [OrderController::class, 'index'])
         ->middleware('role:customer')
         ->name('customer.orders');
 
     Route::middleware('role:customer')->group(function () {
-        Route::post('/customer/reports', [ReportController::class, 'store'])->middleware('throttle:10,1')->name('customer.reports.store');
-        Route::patch('/customer/profile', [CustomerProfileController::class, 'update'])->middleware('throttle:6,1')->name('customer.profile.update');
-        Route::put('/customer/password', [CustomerProfileController::class, 'password'])->middleware('throttle:6,1')->name('customer.password.update');
-        Route::post('/customer/profile/photo', [CustomerProfileController::class, 'photo'])->middleware('throttle:10,1')->name('customer.profile.photo');
+        Route::post('/customer/reports', [ReportController::class, 'store'])->middleware('throttle:10,1,customer-reports:')->name('customer.reports.store');
+        Route::patch('/customer/profile', [CustomerProfileController::class, 'update'])->middleware('throttle:6,1,customer-profile:')->name('customer.profile.update');
+        Route::put('/customer/password', [CustomerProfileController::class, 'password'])->middleware('throttle:6,1,customer-password:')->name('customer.password.update');
+        Route::post('/customer/profile/photo', [CustomerProfileController::class, 'photo'])->middleware('throttle:10,1,customer-photo:')->name('customer.profile.photo');
         Route::get('/customer/profile/photo', [CustomerProfileController::class, 'showPhoto'])->name('customer.profile.photo.show');
         Route::delete('/customer/profile/photo', [CustomerProfileController::class, 'removePhoto'])->name('customer.profile.photo.remove');
     });
@@ -100,25 +99,25 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         ->name('seller.dashboard');
 
     Route::middleware(['role:seller', 'seller.password-change'])->group(function () {
-        Route::post('/seller/crop-yields', [HarvestRecordController::class, 'store'])->middleware('throttle:30,1')->name('seller.harvest-records.store');
-        Route::patch('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'update'])->middleware('throttle:30,1')->name('seller.harvest-records.update');
-        Route::delete('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'destroy'])->middleware('throttle:30,1')->name('seller.harvest-records.destroy');
+        Route::post('/seller/crop-yields', [HarvestRecordController::class, 'store'])->middleware('throttle:30,1,seller-harvest:')->name('seller.harvest-records.store');
+        Route::patch('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'update'])->middleware('throttle:30,1,seller-harvest:')->name('seller.harvest-records.update');
+        Route::delete('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'destroy'])->middleware('throttle:30,1,seller-harvest:')->name('seller.harvest-records.destroy');
         Route::post('/seller/products', [ProductController::class, 'store'])->middleware('throttle:seller-product-management')->name('seller.products.store');
         Route::patch('/seller/products/{product}', [ProductController::class, 'update'])->middleware('throttle:seller-product-management')->name('seller.products.update');
         Route::delete('/seller/products', [ProductController::class, 'bulkDestroy'])->middleware('throttle:seller-product-management')->name('seller.products.bulk-destroy');
         Route::delete('/seller/products/{product}', [ProductController::class, 'destroy'])->middleware('throttle:seller-product-management')->name('seller.products.destroy');
-        Route::post('/seller/orders/walk-in', [WalkInOrderController::class, 'store'])->middleware('throttle:30,1')->name('seller.orders.walk-in.store');
+        Route::post('/seller/orders/walk-in', [WalkInOrderController::class, 'store'])->middleware('throttle:30,1,seller-walk-in:')->name('seller.orders.walk-in.store');
         Route::patch('/seller/orders/{walkInOrder}/status', [WalkInOrderController::class, 'updateStatus'])->middleware('throttle:seller-order-status')->name('seller.orders.status.update');
         Route::get('/seller/products/{product}/photo', [ProductController::class, 'photo'])->name('seller.products.photo');
-        Route::post('/seller/profile/photo', [ProfileController::class, 'photo'])->middleware('throttle:10,1')->name('seller.profile.photo');
+        Route::post('/seller/profile/photo', [ProfileController::class, 'photo'])->middleware('throttle:10,1,seller-photo:')->name('seller.profile.photo');
         Route::get('/seller/profile/photo', [ProfileController::class, 'showPhoto']);
         Route::post('/seller/forecasting', [ForecastController::class, 'store'])->middleware('throttle:seller-forecast-uploads')->name('seller.forecasting.store');
         Route::get('/seller/forecasting/sample', [ForecastController::class, 'sample'])->name('seller.forecasting.sample');
-        Route::post('/seller/planting-plans', [PlantingPlanController::class, 'store'])->middleware('throttle:30,1')->name('seller.planting-plans.store');
-        Route::delete('/seller/planting-plans/{plantingPlan}', [PlantingPlanController::class, 'destroy'])->middleware('throttle:30,1')->name('seller.planting-plans.destroy');
+        Route::post('/seller/planting-plans', [PlantingPlanController::class, 'store'])->middleware('throttle:30,1,seller-plans:')->name('seller.planting-plans.store');
+        Route::delete('/seller/planting-plans/{plantingPlan}', [PlantingPlanController::class, 'destroy'])->middleware('throttle:30,1,seller-plans:')->name('seller.planting-plans.destroy');
         Route::delete('/seller/profile/photo', [ProfileController::class, 'removePhoto']);
-        Route::patch('/seller/profile', [ProfileController::class, 'update'])->middleware('throttle:6,1')->name('seller.profile.update');
-        Route::put('/seller/password', [ProfileController::class, 'password'])->middleware('throttle:6,1')->name('seller.password.update');
+        Route::patch('/seller/profile', [ProfileController::class, 'update'])->middleware('throttle:6,1,seller-profile:')->name('seller.profile.update');
+        Route::put('/seller/password', [ProfileController::class, 'password'])->middleware('throttle:6,1,seller-password:')->name('seller.password.update');
         Route::get('/seller/profile/email/verify', [ProfileController::class, 'verifyEmail'])->middleware('signed')->name('seller.profile.email.verify');
     });
 

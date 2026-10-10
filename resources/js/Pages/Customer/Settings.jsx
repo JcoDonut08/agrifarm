@@ -1,9 +1,9 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import StorefrontLayout from '../../Layouts/StorefrontLayout';
 import ThemeToggle from '../../Components/ThemeToggle';
 import { useShop, ShopProvider } from '../../Components/Storefront/ShopContext';
 import Icon from '../../Components/Storefront/Icon';
-import { useState } from 'react';
+import FormStatus from '../../Components/FormStatus';
 
 export default function Settings() {
     return (
@@ -15,17 +15,26 @@ export default function Settings() {
 
 function SettingsInner() {
     const { filipino, changeLanguage } = useShop();
-    const { auth } = usePage().props;
-    const user = auth.user;
+    const { orderUpdateEmails, flash } = usePage().props;
+    const preference = useForm({ order_update_emails: orderUpdateEmails });
 
-    const [notifications, setNotifications] = useState({
-        orderUpdates: true,
-        promotions: false,
-        communityNews: true
-    });
-
-    const toggleNotification = (key) => {
-        setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+    const toggleEmails = () => {
+        if (preference.processing) return;
+        const next = !preference.data.order_update_emails;
+        preference.setData('order_update_emails', next);
+        const failed = () => {
+            preference.setData('order_update_emails', orderUpdateEmails);
+            preference.setError('request', filipino ? 'Hindi ma-save ang setting. Subukan muli.' : 'Could not save your preference. Please try again.');
+            return false;
+        };
+        preference.clearErrors();
+        preference.transform(() => ({ order_update_emails: next }));
+        preference.patch('/customer/settings', {
+            preserveScroll: true,
+            onError: () => preference.setData('order_update_emails', orderUpdateEmails),
+            onNetworkError: failed,
+            onHttpException: failed,
+        });
     };
 
     return (
@@ -37,7 +46,7 @@ function SettingsInner() {
                         <div className="customer-settings-icon"><Icon name="settings" size={24} /></div>
                         <div>
                             <h1>{filipino ? 'Mga Setting' : 'Settings'}</h1>
-                            <p>{filipino ? 'Iangkop ang wika, itsura, at mga abiso sa device na ito.' : 'Customize how the dashboard works on this device.'}</p>
+                            <p>{filipino ? 'Piliin ang itsura, wika, at mga email na matatanggap.' : 'Choose your appearance, language, and email preferences.'}</p>
                         </div>
                     </header>
 
@@ -71,36 +80,23 @@ function SettingsInner() {
 
                     <fieldset className="customer-settings-group">
                         <legend>{filipino ? 'Mga Notipikasyon' : 'Notifications'}</legend>
-                        <p>{filipino ? 'Piliin kung aling mahahalagang abiso ang gusto mong makita.' : 'Choose which important alerts you want to see.'}</p>
+                        <p>{filipino ? 'Palaging makikita ang mga update sa order sa Mga Notipikasyon at Mga Order.' : 'Order updates always remain available in Notifications and Orders.'}</p>
+                        <FormStatus dismissible messageId={flash?.id}>{filipino && flash?.status === 'Notification preference saved.' ? 'Na-save ang kagustuhan sa mga abiso.' : flash?.status}</FormStatus>
+                        <FormStatus tone="error">{preference.errors.request || preference.errors.order_update_emails}</FormStatus>
                         <div className="customer-notification-options">
-                            <div className="customer-notification-item">
-                                <span><Icon name="cart" size={20} /></span>
-                                <div>
-                                    <strong>{filipino ? 'Mga update sa order' : 'Order updates'}</strong>
-                                    <small>{filipino ? 'Makatanggap ng alerto kapag ang iyong order ay inihahanda, naipalaot, o naihatid.' : 'Get alerted when your order is prepared, out for delivery, or delivered.'}</small>
-                                </div>
-                                <button type="button" role="switch" aria-checked={notifications.orderUpdates} onClick={() => toggleNotification('orderUpdates')} aria-label="Order updates"><span /></button>
-                            </div>
-                            <div className="customer-notification-item">
-                                <span><Icon name="tag" size={20} /></span>
-                                <div>
-                                    <strong>{filipino ? 'Mga promosyon at alok' : 'Promotions and offers'}</strong>
-                                    <small>{filipino ? 'Paminsan-minsang mensahe tungkol sa mga seasonal na ani at diskwento mula sa mga lokal na nagtitinda.' : 'Occasional messages about seasonal harvests and local seller discounts.'}</small>
-                                </div>
-                                <button type="button" role="switch" aria-checked={notifications.promotions} onClick={() => toggleNotification('promotions')} aria-label="Promotions and offers"><span /></button>
-                            </div>
                             <div className="customer-notification-item">
                                 <span><Icon name="bell" size={20} /></span>
                                 <div>
-                                    <strong>{filipino ? 'Mga balita sa komunidad' : 'Community news'}</strong>
-                                    <small>{filipino ? 'Makatanggap ng mga update tungkol sa mga bagong ani at kaganapan sa iyong barangay.' : 'Receive updates about new harvests and events in your barangay.'}</small>
+                                    <strong>{filipino ? 'Mga email sa update ng order' : 'Order update emails'}</strong>
+                                    <small>{filipino ? 'Makatanggap ng email kapag inihahanda, ipinapadala, naihatid, o kinansela ang iyong order.' : 'Receive an email when your order is being prepared, out for delivery, delivered, or cancelled.'}</small>
                                 </div>
-                                <button type="button" role="switch" aria-checked={notifications.communityNews} onClick={() => toggleNotification('communityNews')} aria-label="Community news"><span /></button>
+                                <button type="button" role="switch" disabled={preference.processing} aria-busy={preference.processing} aria-checked={preference.data.order_update_emails} onClick={toggleEmails} aria-label={filipino ? 'Mga email sa update ng order' : 'Order update emails'}><span /></button>
                             </div>
                         </div>
+                        <p>{filipino ? 'Naka-save sa iyong account ang kagustuhan sa email.' : 'Your email preference is saved to your account.'}</p>
                     </fieldset>
 
-                    <p className="customer-settings-note"><Icon name="check" size={16} />{filipino ? 'Awtomatikong nase-save ang mga pagbabago sa device na ito.' : 'Changes are saved automatically on this device.'}</p>
+                    <p className="customer-settings-note"><Icon name="check" size={16} />{filipino ? 'Naka-save sa device na ito ang tema at wika.' : 'Appearance and language are saved on this device.'}</p>
                 </div>
             </div>
         </StorefrontLayout>

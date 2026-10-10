@@ -8,6 +8,7 @@ use App\Models\HarvestRecord;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\WeatherService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Mockery;
@@ -97,7 +98,7 @@ class SellerHarvestRecordTest extends TestCase
             'product_id' => $otherProduct->id,
             'quantity' => '-0.5',
             'unit' => 'invalid',
-            'harvest_date' => now()->addDay()->toDateString(),
+            'harvest_date' => now('Asia/Manila')->addDay()->toDateString(),
         ])->assertSessionHasErrors(['product_id', 'quantity', 'unit', 'harvest_date']);
 
         $this->assertDatabaseCount('harvest_records', 0);
@@ -107,6 +108,25 @@ class SellerHarvestRecordTest extends TestCase
             'unit' => 'kg',
             'harvest_date' => now()->toDateString(),
         ])->assertForbidden();
+    }
+
+    public function test_harvest_today_uses_philippine_time_and_still_rejects_future_dates(): void
+    {
+        $this->travelTo(Carbon::parse('2026-10-10 16:15:00', 'UTC'));
+        $seller = User::factory()->seller()->create();
+        $product = $this->product($seller, 'Pechay', 'kg', 12);
+        $payload = ['product_id' => $product->id, 'quantity' => 5, 'unit' => 'kg', 'harvest_date' => '2026-10-11'];
+
+        $this->actingAs($seller)->postJson(route('seller.harvest-records.store'), $payload)->assertOk();
+        $record = HarvestRecord::sole();
+        $this->assertSame('2026-10-11', $record->harvest_date->toDateString());
+        $this->postJson(route('seller.harvest-records.store'), [...$payload, 'harvest_date' => '2026-10-12'])
+            ->assertUnprocessable()->assertJsonValidationErrors('harvest_date');
+        $this->patchJson(route('seller.harvest-records.update', $record), [...$payload, 'harvest_date' => '2026-10-12'])
+            ->assertUnprocessable()->assertJsonValidationErrors('harvest_date');
+        $this->patchJson(route('seller.harvest-records.update', $record), [...$payload, 'quantity' => 6])->assertOk();
+        $this->assertSame('6.000', $record->fresh()->quantity);
+        $this->assertDatabaseCount('harvest_records', 1);
     }
 
     public function test_seller_can_update_or_delete_their_own_harvest_record_without_changing_stock(): void

@@ -365,8 +365,8 @@ export default function Forecasting({ filipino = false }) {
             </div>}
 
             <FormStatus dismissible messageId={planNoticeId} dismissLabel={text('Dismiss message', 'Isara ang mensahe')}>{planNotice}</FormStatus>
-            {(planForm.errors.crop || planForm.errors.planting_month) && <p className="forecast-error" role="alert">
-                {planForm.errors.crop || planForm.errors.planting_month}
+            {(planForm.errors.crop || planForm.errors.planting_month || planForm.errors.request) && <p className="forecast-error" role="alert">
+                {planForm.errors.crop || planForm.errors.planting_month || planForm.errors.request}
             </p>}
             <ConfirmationDialog open={Boolean(planToRemove)} title={text('Remove planting plan?', 'Alisin ang plano sa pagtatanim?')}
                 description={text(`Remove ${planToRemove?.crop || ''} from your planting plan?`, `Alisin ang ${planToRemove?.crop || ''} sa iyong plano sa pagtatanim?`)}
@@ -405,7 +405,7 @@ export default function Forecasting({ filipino = false }) {
                     >
                         <button type="button" className="forecast-file-picker" ref={filePickerRef} disabled={processing}
                             aria-label={text('Choose harvest file', 'Pumili ng file ng ani')}
-                            aria-describedby={errors.harvest_data || flash?.forecastError ? 'forecast-upload-error' : undefined}
+                            aria-describedby={errors.harvest_data || errors.request || flash?.forecastError ? 'forecast-upload-error' : undefined}
                             onClick={() => fileInputRef.current?.click()}>
                             <span className="forecast-upload-icon">{data.harvest_data ? <Icon name="receipt" /> : <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>}</span>
                             <span className="forecast-file-copy">
@@ -423,8 +423,8 @@ export default function Forecasting({ filipino = false }) {
                         {processing ? <span className="forecast-loading-spinner" aria-hidden="true" /> : <Icon name="sprout" />}
                         {processing ? text('Preparing guide…', 'Inihahanda ang gabay…') : text('Generate', 'Bumuo')}
                     </button>
-                    {(errors.harvest_data || flash?.forecastError) && <p id="forecast-upload-error" ref={uploadErrorRef} tabIndex={-1} className="forecast-error" role="alert">
-                        {errors.harvest_data || errorText(flash.forecastError)}
+                    {(errors.harvest_data || errors.request || flash?.forecastError) && <p id="forecast-upload-error" ref={uploadErrorRef} tabIndex={-1} className="forecast-error" role="alert">
+                        {errors.harvest_data || errors.request || errorText(flash.forecastError)}
                     </p>}
                 </form>
                 <div className="forecast-generation-status" role="status" aria-live="polite" aria-atomic="true">

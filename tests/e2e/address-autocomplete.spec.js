@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test('customer address suggestions can be selected or ignored at each viewport', async ({ page }, testInfo) => {
     await page.route('https://photon.komoot.io/api/**', async route => {

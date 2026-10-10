@@ -52,6 +52,32 @@ class OrderStatusQueueTest extends TestCase
         $this->assertStringContainsString('AgFrm-QUEUE123456', $email->getTextBody());
     }
 
+    public function test_customer_can_disable_order_email_without_losing_in_app_updates(): void
+    {
+        [$seller, $buyer, , $order] = $this->order();
+        $buyer->forceFill(['order_update_emails' => false])->save();
+        $this->update($seller, $order, 'preparing');
+
+        $this->assertSame('preparing', $order->fresh()->status);
+        $this->assertSame('preparing', $buyer->notifications()->sole()->data['status']);
+        $this->assertDatabaseCount('jobs', 0);
+        $this->assertCount(0, Mail::getSymfonyTransport()->messages());
+    }
+
+    public function test_queued_email_respects_a_preference_changed_before_the_worker_sends_it(): void
+    {
+        [$seller, $buyer, , $order] = $this->order();
+        $this->update($seller, $order, 'preparing');
+        $this->assertDatabaseCount('jobs', 1);
+        $buyer->forceFill(['order_update_emails' => false])->save();
+
+        $this->processNextEmail();
+
+        $this->assertDatabaseCount('jobs', 0);
+        $this->assertCount(0, Mail::getSymfonyTransport()->messages());
+        $this->assertSame(1, $buyer->notifications()->count());
+    }
+
     public function test_delayed_emails_keep_the_status_at_the_time_of_each_update(): void
     {
         [$seller, $buyer, , $order] = $this->order();

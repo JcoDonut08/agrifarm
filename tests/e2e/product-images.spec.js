@@ -1,8 +1,8 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
-test.beforeAll(() => {
+test.beforeEach(() => {
     execFileSync('php', ['-r', String.raw`
         require 'vendor/autoload.php';
         $app = require 'bootstrap/app.php';
@@ -20,7 +20,7 @@ test.beforeAll(() => {
             $product->user_id = $seller->id;
             $product->save();
         }
-    `], { env: { ...process.env, DB_CONNECTION: 'sqlite', DB_DATABASE: path.resolve('database/playwright.sqlite'), MAIL_MAILER: 'log', CACHE_STORE: 'file', SESSION_DRIVER: 'file' } });
+    `], { env: { ...process.env, DB_CONNECTION: 'sqlite', DB_DATABASE: path.resolve('database/playwright.sqlite'), MAIL_MAILER: 'log', CACHE_STORE: 'e2e', SESSION_DRIVER: 'file' } });
 });
 
 for (const width of [390, 768, 1440]) {

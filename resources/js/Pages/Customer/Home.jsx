@@ -27,16 +27,6 @@ export default function Home() {
     const password = useForm({ current_password: '', password: '', password_confirmation: '' });
     const photo = useForm({ photo: null });
     const photoInput = useRef(null);
-    const [notifications, setNotifications] = useState(() => {
-        try {
-            return JSON.parse(localStorage.getItem('agrifarm-customer-notifications') || '{"orderUpdates":true,"promotions":false}');
-        } catch { return {"orderUpdates":true,"promotions":false}; }
-    });
-    const onNotificationChange = (key, val) => {
-        const next = { ...notifications, [key]: val };
-        setNotifications(next);
-        localStorage.setItem('agrifarm-customer-notifications', JSON.stringify(next));
-    };
     const [preview, setPreview] = useState(null);
     const [removingPhoto, setRemovingPhoto] = useState(false);
     const statusMessages = {
@@ -81,6 +71,7 @@ export default function Home() {
             <div className="customer-profile-content">
                 <div className="customer-profile-identity"><ProfileAvatar user={user} /><div><strong>{user.name}</strong><span>{user.username ? `@${user.username} · ${user.email}` : user.email}</span></div></div>
                 <FormStatus dismissible messageId={flash?.id} dismissLabel={filipino ? 'Isara ang mensahe' : 'Dismiss message'}>{filipino ? statusMessages[flash?.status] || flash?.status : flash?.status}</FormStatus>
+                <FormStatus tone="error">{profile.errors.request || password.errors.request || photo.errors.request}</FormStatus>
 
                 <form onSubmit={savePhoto} className="customer-settings-section">
                     <div className="customer-settings-intro"><h2>{filipino ? 'Larawan sa profile' : 'Profile photo'}</h2><p>{filipino ? 'Pumili ng larawan para sa iyong AgriFarm account.' : 'Choose a photo for your AgriFarm account.'}</p></div>

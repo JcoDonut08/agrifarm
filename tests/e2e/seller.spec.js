@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 async function downloadBuffer(download) {
     const stream = await download.createReadStream();
@@ -87,10 +87,10 @@ for (const [email, name, width] of accounts) {
         await page.getByLabel('Price (PHP)', { exact: true }).fill('35');
         await page.getByLabel('Selling unit', { exact: true }).selectOption('bunch');
         await page.getByLabel('Available stock', { exact: true }).fill('3');
-        await page.locator('#product-photo').setInputFiles({ name: 'pechay.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
+        await page.locator('#product-photo').setInputFiles({ name: 'pechay.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC', 'base64') });
         await productModal.getByRole('button', { name: 'Add product', exact: true }).click();
         await expect(productModal).not.toBeVisible();
-        await expect(page.getByRole('status')).toHaveText('Product added successfully.');
+        await expect(page.getByRole('status')).toHaveText('Product added.');
         await expect(page.locator('.seller-product-card')).toHaveCount(1);
         await page.reload();
         await expect(page.locator('.seller-product-card h2')).toHaveText('Fresh Pechay');
@@ -109,7 +109,7 @@ for (const [email, name, width] of accounts) {
         await editProductModal.getByLabel('Description', { exact: false }).fill('Updated harvest from our barangay garden.');
         await editProductModal.getByRole('button', { name: 'Save changes' }).click();
         await expect(editProductModal).not.toBeVisible();
-        await expect(page.getByRole('status')).toHaveText('Product updated successfully.');
+        await expect(page.getByRole('status')).toHaveText('Product updated.');
         await expect(pechayCard).toContainText('Updated harvest');
 
         await page.getByRole('button', { name: 'Add product', exact: true }).click();
@@ -119,7 +119,7 @@ for (const [email, name, width] of accounts) {
         await page.getByLabel('Price (PHP)', { exact: true }).fill('30');
         await page.getByLabel('Selling unit', { exact: true }).selectOption('bunch');
         await page.getByLabel('Available stock', { exact: true }).fill('8');
-        await page.locator('#product-photo').setInputFiles({ name: 'basil.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
+        await page.locator('#product-photo').setInputFiles({ name: 'basil.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC', 'base64') });
         await productModal.getByRole('button', { name: 'Add product', exact: true }).click();
         await expect(page.locator('.seller-product-card')).toHaveCount(2);
         const productPagination = page.getByRole('navigation', { name: 'Products pagination' });
@@ -257,7 +257,8 @@ for (const [email, name, width] of accounts) {
                 await expect(page.locator('.analytics-customer-avatar')).toHaveAttribute('data-source', 'walk-in');
                 await expect(page.locator('.analytics-customer-rank--1')).toHaveAttribute('aria-label', 'Rank 1');
                 await expect(page.getByRole('heading', { name: 'Inventory insights' })).toHaveCount(0);
-                await expect(page.locator('.analytics-data-note')).toContainText('does not confirm payment received and is not profit');
+                await expect(page.locator('.analytics-data-note')).toContainText('Completed sales use delivery dates in Philippine time.');
+                await expect(page.locator('.analytics-data-note')).toContainText('Values represent sales, not profit or confirmed payment.');
                 await page.getByLabel('Category').selectOption('Herbs');
                 await expect(completedSalesMetric).toContainText('\u20B10.00');
                 await page.getByLabel('Category').selectOption('all');
@@ -389,7 +390,7 @@ for (const [email, name, width] of accounts) {
         await expect(page.locator('#seller-notification-panel')).toBeVisible();
         await page.keyboard.press('Escape');
         await expect(page.locator('#seller-notification-panel')).toHaveCount(0);
-        await page.getByLabel('Choose profile photo').setInputFiles({ name: 'profile.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
+        await page.getByLabel('Choose profile photo').setInputFiles({ name: 'profile.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC', 'base64') });
         await page.getByRole('button', { name: 'Save photo', exact: true }).click();
         await expect(page.getByRole('status')).toContainText('Profile photo updated.');
         await page.reload();

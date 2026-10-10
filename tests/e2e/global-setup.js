@@ -4,7 +4,7 @@ import path from "node:path";
 
 export default function globalSetup() {
     const databasePath = path.resolve("database/playwright.sqlite");
-    const logPath = path.resolve("storage/logs/laravel.log");
+    const logPath = path.resolve("storage/logs/playwright.log");
     const testEnvironment = {
         ...process.env,
         APP_ENV: "local",
@@ -14,7 +14,11 @@ export default function globalSetup() {
         DB_DATABASE: databasePath,
         MAIL_MAILER: "log",
         SESSION_DRIVER: "file",
-        CACHE_STORE: "file",
+        CACHE_STORE: "e2e",
+        LOG_CHANNEL: "e2e",
+        DB_URL: "",
+        OPEN_METEO_ENABLED: "false",
+        GOOGLE_WEATHER_ENABLED: "false",
         QUEUE_CONNECTION: "sync",
     };
 
@@ -34,4 +38,5 @@ export default function globalSetup() {
         env: testEnvironment,
         stdio: "inherit",
     });
+    fs.copyFileSync(databasePath, path.resolve('database/playwright-baseline.sqlite'));
 }

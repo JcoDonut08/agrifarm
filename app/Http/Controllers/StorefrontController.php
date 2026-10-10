@@ -49,7 +49,7 @@ class StorefrontController extends Controller
         $recentSales = WalkInOrder::query()
             ->where('status', 'delivered')
             ->whereIn('product_id', $productModels->pluck('id'))
-            ->where('updated_at', '>=', $recentCutoff)
+            ->where('delivered_at', '>=', $recentCutoff)
             ->select('product_id')
             ->selectRaw('COUNT(*) as order_count')
             ->groupBy('product_id')
@@ -57,8 +57,8 @@ class StorefrontController extends Controller
         $previousSales = WalkInOrder::query()
             ->where('status', 'delivered')
             ->whereIn('product_id', $productModels->pluck('id'))
-            ->where('updated_at', '>=', $previousCutoff)
-            ->where('updated_at', '<', $recentCutoff)
+            ->where('delivered_at', '>=', $previousCutoff)
+            ->where('delivered_at', '<', $recentCutoff)
             ->select('product_id')
             ->selectRaw('COUNT(*) as order_count')
             ->groupBy('product_id')
@@ -404,7 +404,7 @@ class StorefrontController extends Controller
                 'displayName' => $review->anonymous ? 'Anonymous customer' : $review->user?->name,
                 'avatar' => $review->anonymous ? null : $review->user?->avatar_url,
                 'createdAt' => $review->created_at->toIso8601String(),
-                'attachment' => $review->attachment_path ? asset('storage/' . $review->attachment_path) : null,
+                'attachment' => $review->attachment_path ? asset('storage/'.$review->attachment_path) : null,
                 'likes' => $review->likes_count ?? 0,
                 'dislikes' => $review->dislikes_count ?? 0,
                 'myReaction' => $review->reactions->first()?->type,

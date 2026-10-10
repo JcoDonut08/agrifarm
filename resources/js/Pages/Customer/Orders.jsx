@@ -152,7 +152,7 @@ export default function Orders({ checkouts }) {
                                                         <div key={item.id} style={{ marginBottom: index !== checkout.items.length - 1 ? '16px' : '0', paddingBottom: index !== checkout.items.length - 1 ? '16px' : '0', borderBottom: index !== checkout.items.length - 1 ? '1px solid var(--store-border)' : 'none' }}>
                                                               <div style={{ display: 'flex', gap: '16px' }}>
                                                             {/* Product Image */}
-                                                            <Link href={`/?page=product&product=${item.product_id}`} style={{ width: '80px', height: '80px', background: 'var(--store-bg)', border: '1px solid var(--store-border)', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, display: 'block', transition: 'border-color 0.2s' }}>
+                                                            <Link href={`/?page=product&product=seller-${item.product_id}`} style={{ width: '80px', height: '80px', background: 'var(--store-bg)', border: '1px solid var(--store-border)', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, display: 'block', transition: 'border-color 0.2s' }}>
                                                                 {item.photoUrl ? (
                                                                     <img src={item.photoUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                                 ) : (
@@ -166,7 +166,7 @@ export default function Orders({ checkouts }) {
                                                             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                                                                     <div>
-                                                                        <Link href={`/?page=product&product=${item.product_id}`} style={{ display: 'block', fontSize: '15px', fontWeight: 650, margin: '0 0 4px 0', color: 'var(--store-ink)', textDecoration: 'none' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--store-green-dark)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--store-ink)'}>
+                                                                        <Link href={`/?page=product&product=seller-${item.product_id}`} style={{ display: 'block', fontSize: '15px', fontWeight: 650, margin: '0 0 4px 0', color: 'var(--store-ink)', textDecoration: 'none' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--store-green-dark)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--store-ink)'}>
                                                                             {item.name}
                                                                         </Link>
                                                                         <p style={{ fontSize: '13px', color: 'var(--store-muted)', margin: '0 0 4px 0' }}>
@@ -181,7 +181,7 @@ export default function Orders({ checkouts }) {
                                                                             {orderStatusLabel(item.status, filipino)}
                                                                         </span>
                                                                         {item.status === 'delivered' && (
-                                                                            <Link href={`/?page=product&product=${item.product_id}`} className="order-action-link" style={{ fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                                                                            <Link href={`/?page=product&product=seller-${item.product_id}`} className="order-action-link" style={{ fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
                                                                             <Icon name="edit" size={14} /> {filipino ? 'Sumulat ng review' : 'Write review'}
                                                                             </Link>
                                                                         )}

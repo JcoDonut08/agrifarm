@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const accounts = [
     ['brgyrosario@gmail.com', 390],
@@ -74,7 +74,7 @@ for (const [email, width] of accounts) {
         await productModal.getByLabel('Presyo (PHP)', { exact: true }).fill('35');
         await productModal.getByLabel('Unit ng bentahan', { exact: true }).selectOption('kg');
         await productModal.getByLabel('Available na stock', { exact: true }).fill('10');
-        await productModal.locator('#product-photo').setInputFiles({ name: 'pechay.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
+        await productModal.locator('#product-photo').setInputFiles({ name: 'pechay.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC', 'base64') });
         await productModal.getByRole('button', { name: 'Idagdag ang produkto', exact: true }).click();
         await expect(productModal).not.toBeVisible();
         const productCard = page.locator('.seller-product-card').filter({ hasText: productName });
@@ -105,7 +105,8 @@ for (const [email, width] of accounts) {
         await orderRow.getByRole('button', { name: 'Kanselahin ang order', exact: true }).click();
         const cancelOrderConfirmation = page.getByRole('dialog', { name: 'Kanselahin ang order?' });
         await expect(cancelOrderConfirmation).toBeVisible();
-        await expect(cancelOrderConfirmation).toContainText('Ibabalik sa imbentaryo ang nakalaang stock.');
+        await expect(cancelOrderConfirmation).toContainText('Ibabalik ang daming inilaan para sa order na ito.');
+        await expect(cancelOrderConfirmation.getByRole('combobox', { name: 'Dahilan', exact: true })).toBeVisible();
         await expect(cancelOrderConfirmation.getByRole('button', { name: 'Panatilihin ang order', exact: true })).toBeFocused();
         await page.keyboard.press('Escape');
         await expect(cancelOrderConfirmation).not.toBeVisible();

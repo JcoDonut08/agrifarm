@@ -184,7 +184,7 @@ export default function Checkout({ order, successPage = false }) {
                             <div className="checkout-final-section checkout-final-products"><h3>Products</h3><ProductRows items={items} quantities={cart} /></div>
                             <div className="checkout-final-totals"><div><span>Goods subtotal</span><strong>{money(goodsTotal)}</strong></div><div><span>Delivery charge</span><strong>To be confirmed by seller</strong></div><div className="checkout-final-payable"><span>Payable for goods</span><strong>{money(goodsTotal)}</strong></div></div>
                             <p className="checkout-fee-note">The goods amount is not the final delivered total. The seller must confirm any delivery charge with you before fulfillment.</p>
-                            {form.errors.items && <p className="checkout-error" role="alert">{form.errors.items}</p>}
+                            {(form.errors.items || form.errors.request) && <p className="checkout-error" role="alert">{form.errors.items || form.errors.request}</p>}
                             <div className="checkout-review-actions"><button type="button" className="checkout-outline-button" onClick={() => goToStep(2)}>Back to payment</button><button type="button" className="store-button" disabled={form.processing} onClick={placeOrder}>{form.processing ? 'Placing order…' : 'Place COD order'}</button></div>
                         </section> : <div className="checkout-layout"><div className="checkout-main">
                             {step === 1 ? <form className="checkout-panel checkout-details" onSubmit={next} noValidate>

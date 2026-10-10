@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import path from 'node:path';
 
 test('seller product photo picker accepts 10 MB and explains the limit', async ({ page }) => {
@@ -43,7 +43,7 @@ test('seller can paste a product photo from the clipboard and save it', async ({
     expect(textPastePrevented).toBe(false);
 
     await dialog.locator('#product-name').evaluate(input => {
-        const bytes = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII='), character => character.charCodeAt(0));
+        const bytes = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC'), character => character.charCodeAt(0));
         const data = new DataTransfer();
         data.items.add(new File([bytes], 'clipboard.png', { type: 'image/png' }));
         input.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: data }));
@@ -71,7 +71,7 @@ test('replacing a product photo updates the displayed image', async ({ page }) =
     await addDialog.getByLabel('Category').selectOption('Vegetables');
     await addDialog.getByLabel('Price (PHP)').fill('45');
     await addDialog.getByLabel('Available stock').fill('8');
-    await addDialog.locator('#product-photo').setInputFiles({ name: 'first.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
+    await addDialog.locator('#product-photo').setInputFiles({ name: 'first.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC', 'base64') });
     await addDialog.getByRole('button', { name: 'Add product', exact: true }).click();
     await expect(addDialog).not.toBeVisible();
 
@@ -83,7 +83,7 @@ test('replacing a product photo updates the displayed image', async ({ page }) =
     await card.getByRole('button', { name: 'Edit Photo Update Pechay' }).click();
     const editDialog = page.getByRole('dialog', { name: 'Edit product' });
     await editDialog.locator('#product-photo').setInputFiles(path.resolve('public/images/market-pechay-feature.png'));
-    await expect(editDialog.locator('.product-preview-image img')).toHaveAttribute('src', /^blob:/);
+    await expect(editDialog.getByRole('img', { name: 'Selected product' })).toHaveAttribute('src', /^blob:/);
     await editDialog.getByRole('button', { name: 'Save changes' }).click();
     await expect(editDialog).not.toBeVisible();
     await expect(image).not.toHaveAttribute('src', originalUrl);

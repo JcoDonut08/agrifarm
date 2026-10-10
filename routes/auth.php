@@ -33,10 +33,10 @@ Route::middleware('guest')->group(function () {
 
 Route::get('email/verify', EmailVerificationPromptController::class)->name('verification.notice');
 Route::post('email/verify', VerifyEmailController::class)
-    ->middleware('throttle:6,1')
+    ->middleware('throttle:6,1,email-verification:')
     ->name('verification.verify');
 Route::post('email/verification-notification', EmailVerificationNotificationController::class)
-    ->middleware('throttle:6,1')
+    ->middleware('throttle:6,1,email-verification:')
     ->name('verification.send');
 
 Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])

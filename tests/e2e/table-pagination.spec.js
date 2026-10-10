@@ -1,9 +1,9 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-test.beforeAll(() => {
+test.beforeEach(() => {
     execFileSync('php', ['-r', `
         require 'vendor/autoload.php';
         $app = require 'bootstrap/app.php';

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import fs from 'node:fs';
 
 async function login(page, email) {
@@ -29,7 +29,7 @@ test('measured harvest weight can be added to an old non-kg record and exported'
         await product.getByLabel('Price (PHP)', { exact: true }).fill('35');
         await product.getByLabel('Selling unit', { exact: true }).selectOption('bunch');
         await product.getByLabel('Available stock', { exact: true }).fill('12');
-        await product.locator('#product-photo').setInputFiles({ name: 'kangkong.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
+        await product.locator('#product-photo').setInputFiles({ name: 'kangkong.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC', 'base64') });
         await product.getByRole('button', { name: 'Add product', exact: true }).click();
         await expect(product).not.toBeVisible();
         await page.goto('/seller/dashboard?section=harvest-records');
@@ -79,7 +79,7 @@ test('measured harvest weight can be added to an old non-kg record and exported'
         await form.getByLabel('Harvest Date', { exact: true }).fill('2025-01-15');
         await form.getByRole('button', { name: 'Save Harvest Record', exact: true }).click();
         await expect(form).not.toBeVisible();
-        await page.getByRole('button', { name: 'Close', exact: true }).click();
+        await page.getByRole('button', { name: 'Dismiss message', exact: true }).click();
 
         await login(admin, 'pasigcenro@gmail.com');
         await admin.goto('/admin/dashboard?section=reports');
@@ -96,7 +96,7 @@ test('measured harvest weight can be added to an old non-kg record and exported'
         await edit.getByRole('spinbutton', { name: /Total harvest weight/ }).fill('5.125');
         await edit.getByRole('button', { name: 'Save changes', exact: true }).click();
         await expect(edit).not.toBeVisible();
-        await page.getByRole('button', { name: 'Close', exact: true }).click();
+        await page.getByRole('button', { name: 'Dismiss message', exact: true }).click();
         await page.reload();
         await page.locator('.harvest-history-panel').getByRole('button', { name: 'View', exact: true }).click();
         await expect(page.getByRole('dialog', { name: 'Harvest Record', exact: true })).toContainText('5.125 kg');
@@ -129,7 +129,7 @@ test('measured harvest weight can be added to an old non-kg record and exported'
         await page.reload();
         await page.locator('.harvest-history-panel').getByRole('button', { name: 'Edit', exact: true }).click();
         await expect(edit.getByRole('spinbutton', { name: /Total harvest weight/ })).toHaveValue('5.125');
-        await expect(edit.getByRole('spinbutton', { name: 'Quantity', exact: true })).toHaveValue('20.000');
+        await expect(edit.getByRole('spinbutton', { name: 'Quantity', exact: true })).toHaveValue('20');
         await expect(edit.getByLabel('Unit', { exact: false })).toHaveValue('bunch');
         await page.keyboard.press('Escape');
         await panel.getByRole('button', { name: 'Generate preview', exact: true }).click();

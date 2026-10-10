@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import path from 'node:path';
 
 test('listing corrections preserve order details and receipts while open orders protect the selling unit', async ({ page }, testInfo) => {

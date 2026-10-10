@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
-const photo = { name: 'consistency.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') };
+const photo = { name: 'consistency.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC', 'base64') };
 const roles = [
     { name: 'customer', email: 'customer@agrifarm.test', profile: '/customer', input: '#customer-photo', form: '.customer-profile-page' },
     { name: 'seller', email: 'seller@agrifarm.test', profile: '/seller/dashboard?section=profile', input: '#profile-photo', form: '.seller-profile-form' },

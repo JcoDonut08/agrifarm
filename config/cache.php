@@ -32,6 +32,11 @@ return [
     */
 
     'stores' => [
+        'e2e' => [
+            'driver' => 'file',
+            'path' => storage_path('framework/testing/cache'),
+            'lock_path' => storage_path('framework/testing/cache'),
+        ],
 
         'array' => [
             'driver' => 'array',

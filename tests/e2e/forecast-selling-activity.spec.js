@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
@@ -23,7 +23,7 @@ function seedSellingActivity() {
         $product = new App\\Models\\Product(['name' => 'Kangkong', 'category' => 'Vegetables', 'price' => 30, 'unit' => 'bunch', 'stock' => 50, 'threshold' => 2, 'photo_path' => 'browser-test.png']);
         $product->user_id = $seller->id;
         $product->save();
-    `], { cwd: process.cwd(), env: { ...process.env, APP_ENV: 'local', DB_CONNECTION: 'sqlite', DB_DATABASE: path.resolve('database/playwright.sqlite'), CACHE_STORE: 'file' } });
+    `], { cwd: process.cwd(), env: { ...process.env, APP_ENV: 'local', DB_CONNECTION: 'sqlite', DB_DATABASE: path.resolve('database/playwright.sqlite'), CACHE_STORE: 'e2e' } });
 }
 
 test('barangay selling activity ranks crops and stays readable in both languages', async ({ page }, testInfo) => {

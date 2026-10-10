@@ -5,6 +5,7 @@ import PasswordField from '../../Components/PasswordField';
 import { useEffect, useRef, useState } from 'react';
 import Avatar from './Avatar';
 import SellerFlashStatus from './SellerFlashStatus';
+import FormStatus from '../../Components/FormStatus';
 import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import { localizeMessage } from './SellerLocale';
 
@@ -42,6 +43,7 @@ export default function ProfileForm({ filipino = false }) {
     return <div className="seller-profile-form">
         <div className="seller-profile-heading"><Avatar user={auth.user} className="seller-store-icon" filipino={filipino} /><div><h2>{auth.user.name}</h2><p>{filipino ? 'Katuwang na barangay · Pasig City' : 'Partner barangay · Pasig City'}</p></div></div>
         <SellerFlashStatus flash={flash} filipino={filipino} />
+        <FormStatus tone="error">{profile.errors.request || password.errors.request || photo.errors.request}</FormStatus>
         <form onSubmit={savePhoto} className="seller-settings-section">
             <div><h2>{filipino ? 'Larawan sa profile' : 'Profile photo'}</h2><p>{filipino ? 'Gamitin ang logo ng inyong barangay o larawan ng inyong urban farm.' : 'Use your barangay logo or a photo of your urban farm.'}</p></div>
             <div className="seller-settings-fields">

@@ -43,6 +43,7 @@ export default function AdminOrders({ orderManagement, filipino }) {
     const getStatusIcon = (status) => {
         switch (status) {
             case 'delivered': return <CheckCircle2 aria-hidden="true" />;
+            case 'completed': return <CheckCircle2 aria-hidden="true" />;
             case 'shipped': return <Truck aria-hidden="true" />;
             case 'pending': return <Clock aria-hidden="true" />;
             case 'processing': return <Package aria-hidden="true" />;
@@ -96,6 +97,7 @@ export default function AdminOrders({ orderManagement, filipino }) {
                                     <option value="pending">{filipino ? "Nakabinbin" : "Pending"}</option>
                                     <option value="processing">{filipino ? "Pinoproseso" : "Processing"}</option>
                                     <option value="delivered">{filipino ? "Naihatid na" : "Delivered"}</option>
+                                    <option value="completed">{filipino ? "Tapos na (may kinansela)" : "Completed (partly cancelled)"}</option>
                                     <option value="cancelled">{filipino ? "Kinansela" : "Cancelled"}</option>
                                 </select>
                             </label>
@@ -146,13 +148,13 @@ export default function AdminOrders({ orderManagement, filipino }) {
                                         
                                         {(() => {
                                             let variant = 'default';
-                                            if (order.status === 'delivered' || order.status === 'shipped') variant = 'active';
+                                            if (['delivered', 'completed', 'shipped'].includes(order.status)) variant = 'active';
                                             if (order.status === 'cancelled' || order.status === 'empty') variant = 'suspended';
                                             if (order.status === 'pending' || order.status === 'processing') variant = 'warning';
                                             return (
                                                 <span className={`admin-status admin-status--${variant}`} style={{ width: 'fit-content' }}>
                                                     {getStatusIcon(order.status)}
-                                                    <span style={{ textTransform: 'capitalize' }}>{order.status}</span>
+                                                    <span style={{ textTransform: 'capitalize' }}>{order.status === 'completed' ? (filipino ? 'Tapos na (may kinansela)' : 'Completed (partly cancelled)') : order.status}</span>
                                                 </span>
                                             );
                                         })()}

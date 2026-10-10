@@ -133,7 +133,9 @@ class WalkInOrderController extends Controller
                 $customer = $order->checkout->customer;
                 $notification = new OrderStatusUpdated($order);
                 $customer->notifyNow($notification, ['database']);
-                $customer->notify(new OrderStatusEmail($notification->toMail($customer)));
+                if ($customer->order_update_emails) {
+                    $customer->notify(new OrderStatusEmail($notification->toMail($customer)));
+                }
             }
         });
 

@@ -1,8 +1,8 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
-test.beforeAll(() => {
+test.beforeEach(() => {
     execFileSync('php', ['-r', String.raw`
         require 'vendor/autoload.php';
         $app = require 'bootstrap/app.php';
@@ -19,7 +19,7 @@ test.beforeAll(() => {
         }
         $seller->forecastRuns()->create(['source_filename' => 'synthetic_harvest_1_year.csv', 'result' => $result]);
     `], { cwd: process.cwd(), env: { ...process.env, APP_ENV: 'local', DB_CONNECTION: 'sqlite',
-        DB_DATABASE: path.resolve('database/playwright.sqlite'), CACHE_STORE: 'file' } });
+        DB_DATABASE: path.resolve('database/playwright.sqlite'), CACHE_STORE: 'e2e' } });
 });
 
 for (const width of [390, 768, 1440]) {

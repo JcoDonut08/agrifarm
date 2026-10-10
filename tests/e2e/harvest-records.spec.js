@@ -1,4 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
+
+test.use({ timezoneId: 'UTC' });
 
 const sellers = [
     ['brgyrosario@gmail.com', 390],
@@ -27,7 +29,7 @@ for (const [email, width] of sellers) {
         await productModal.getByLabel('Price (PHP)', { exact: true }).fill('35');
         await productModal.getByLabel('Selling unit', { exact: true }).selectOption('kg');
         await productModal.getByLabel('Available stock', { exact: true }).fill('12');
-        await productModal.locator('#product-photo').setInputFiles({ name: 'pechay.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII=', 'base64') });
+        await productModal.locator('#product-photo').setInputFiles({ name: 'pechay.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMwanAAAAHaAPMeQxVKAAAAAElFTkSuQmCC', 'base64') });
         await productModal.getByRole('button', { name: 'Add product', exact: true }).click();
         await expect(productModal).not.toBeVisible();
 
@@ -40,6 +42,11 @@ for (const [email, width] of sellers) {
         const recordModal = page.getByRole('dialog', { name: 'Record Harvest' });
         await expect(recordModal).toBeVisible();
         await expect(recordModal.getByLabel('Unit')).toHaveValue('kg');
+        const philippineToday = await page.evaluate(() => {
+            const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+            return ['year', 'month', 'day'].map(type => parts.find(part => part.type === type).value).join('-');
+        });
+        await expect(recordModal.getByLabel('Harvest Date', { exact: true })).toHaveValue(philippineToday);
         if (width === 1440) {
             const bounds = await recordModal.boundingBox();
             expect(bounds).not.toBeNull();

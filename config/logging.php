@@ -51,6 +51,11 @@ return [
     */
 
     'channels' => [
+        'e2e' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/playwright.log'),
+            'level' => 'debug',
+        ],
 
         'stack' => [
             'driver' => 'stack',

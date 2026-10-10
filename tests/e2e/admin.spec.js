@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 const viewports = [
     { name: "mobile-390", width: 390, height: 844 },
@@ -240,14 +240,14 @@ for (const viewport of viewports) {
                 "No reports have been recorded yet. They will appear when CENRO reporting records are connected.",
             ),
         ).toBeVisible();
-        await page.getByLabel("Barangay").selectOption("Rosario");
+        await page.locator(".barangay-monitoring__filter select").selectOption("Rosario");
         await expect(
             page.getByRole("heading", {
                 name: "Product & Harvest Monitoring",
                 exact: true,
             }),
         ).toBeVisible();
-        await page.getByLabel("Barangay").selectOption("all");
+        await page.locator(".barangay-monitoring__filter select").selectOption("all");
         await page.getByLabel("Compare by").selectOption("demand");
         await expect(page.getByText("Demand uses quantity from actual recorded orders.")).toBeVisible();
         await assertNoHorizontalOverflow(page);

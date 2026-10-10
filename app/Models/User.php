@@ -14,6 +14,8 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements MustVerifyEmailContract
 {
+    protected $attributes = ['order_update_emails' => true];
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, MustVerifyEmail, Notifiable;
 
@@ -119,6 +121,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
             'terms_accepted_at' => 'immutable_datetime',
             'privacy_accepted_at' => 'immutable_datetime',
             'password' => 'hashed',
+            'order_update_emails' => 'boolean',
         ];
     }
 }

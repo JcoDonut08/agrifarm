@@ -15,26 +15,27 @@ class AdminOrderService
                 // Determine overall status based on items
                 $items = $checkout->items;
                 $totalItems = $items->count();
-                
+
                 if ($totalItems === 0) {
                     $overallStatus = 'empty';
                 } else {
                     $statuses = $items->pluck('status');
-                    $deliveredCount = $statuses->filter(fn($s) => $s === 'delivered')->count();
-                    $cancelledCount = $statuses->filter(fn($s) => $s === 'cancelled')->count();
-                    $pendingCount = $statuses->filter(fn($s) => $s === 'pending')->count();
-                    
+                    $deliveredCount = $statuses->filter(fn ($s) => $s === 'delivered')->count();
+                    $cancelledCount = $statuses->filter(fn ($s) => $s === 'cancelled')->count();
+                    $pendingCount = $statuses->filter(fn ($s) => $s === 'pending')->count();
+
                     if ($deliveredCount === $totalItems) {
                         $overallStatus = 'delivered';
                     } elseif ($cancelledCount === $totalItems) {
                         $overallStatus = 'cancelled';
+                    } elseif ($deliveredCount + $cancelledCount === $totalItems) {
+                        $overallStatus = 'completed';
                     } elseif ($pendingCount > 0) {
                         $overallStatus = 'pending';
                     } else {
                         $overallStatus = 'processing';
                     }
                 }
-
 
                 $sellerBarangays = $items->pluck('seller.barangay')->filter()->unique();
                 if ($sellerBarangays->count() === 1) {
@@ -64,7 +65,7 @@ class AdminOrderService
 
                             'id' => $item->id,
                             'product_name' => $item->product_name,
-                            'photo_url' => $item->product ? '/marketplace/products/' . $item->product->id . '/photo?v=' . $item->product->photoVersion() : null,
+                            'photo_url' => $item->product ? '/marketplace/products/'.$item->product->id.'/photo?v='.$item->product->photoVersion() : null,
 
                             'quantity' => $item->quantity,
                             'unit' => $item->unit,

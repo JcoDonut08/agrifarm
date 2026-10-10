@@ -91,7 +91,7 @@ npm run build
 npm run test:e2e
 ```
 
-PHP tests use isolated SQLite. Playwright uses `database/playwright.sqlite`, seeds development users, starts Laravel on port 8010, and checks responsive behavior in Chrome.
+PHP tests use isolated SQLite. Playwright uses `database/playwright.sqlite`, seeds development users, starts Laravel on port 8010, and checks responsive behavior in Chrome. Each browser test restores the seeded baseline before its own fixtures run. Browser cache and mail logs are isolated, and live weather requests are disabled so external network delays do not affect the checks.
 
 The photo resizing test requires PHP GD. Enable GD in your PHP configuration, or run `php -d extension=gd vendor/bin/phpunit` to include it for one test run. Passing the flag to `artisan test` does not enable it in the separate PHPUnit process.
 

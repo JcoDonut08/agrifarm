@@ -61,7 +61,7 @@ export default function AccountMenu({ user, destination, current = false, onOpen
                         <Link href="/customer/orders" onClick={() => setOpen(false)}>
                             <Icon name="receipt" />{filipino ? 'Mga order ko' : 'My orders'}<Icon name="arrow" size={16} />
                         </Link>
-                        <Link href="/customer/settings" onClick={() => setOpen(false)}>
+                        <Link href={user?.role === 'seller' ? '/seller/dashboard?section=settings' : user?.role === 'cenro_admin' ? '/admin/dashboard?section=settings' : '/customer/settings'} onClick={() => setOpen(false)}>
                             <Icon name="settings" />{filipino ? 'Mga Setting' : 'Settings'}<Icon name="arrow" size={16} />
                         </Link>
                     </div>
