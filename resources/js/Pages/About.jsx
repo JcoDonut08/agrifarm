@@ -56,24 +56,29 @@ function AboutPage() {
                 <section className="about-hero" aria-labelledby="about-heading">
                     <img
                         className="about-hero-photo"
-                        src="/images/market-hero-v2.png"
-                        alt="A lush community garden in Pasig"
+                        src="/images/pasig-planting-3.jpg"
+                        alt=""
                         fetchPriority="high"
                     />
                     <div className="about-hero-overlay" aria-hidden="true" />
                     <div className="store-container about-hero-inner">
                         <div className="about-hero-copy">
                             <h1 id="about-heading">
-                                {filipino ? 'Naglilinang ng Mas Luntian at Malusog na Pasig' : 'Cultivating a Greener, Healthier Pasig'}
+                                AgriFarm
                             </h1>
                             <p>
                                 {filipino 
-                                    ? 'Sumali sa AgriFarm Pasig sa pagbabago ng mga bakanteng espasyo sa lungsod upang maging masaganang taniman ng komunidad para sa seguridad sa pagkain at mas luntiang kapaligiran.' 
-                                    : 'Join AgriFarm Pasig in transforming urban spaces into productive community gardens for food security and a greener environment.'}
+                                    ? 'Sariwang ani. Matatag na komunidad. Mas luntiang Pasig.'
+                                    : 'Fresh harvests. Stronger communities. A greener Pasig.'}
                             </p>
-                            <Link href={marketHref()} className="store-button lime-button" style={{ marginTop: '20px' }}>
-                                {filipino ? 'Tingnan ang Pamilihan' : 'Browse Marketplace'}
-                            </Link>
+                            <div className="about-hero-actions">
+                                <Link href={marketHref()} className="store-button">
+                                    {filipino ? 'Tingnan ang pamilihan' : 'Browse marketplace'} <Icon name="arrow" size={17} />
+                                </Link>
+                                <Link href="/contact" className="checkout-outline-button about-hero-secondary">
+                                    {filipino ? 'Makipag-ugnayan' : 'Get in touch'}
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </section>
