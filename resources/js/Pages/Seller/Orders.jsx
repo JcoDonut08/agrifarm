@@ -604,11 +604,19 @@ export default function Orders({
                     </p>
                 )}
 
-                <div className={`orders-table-wrap${filteredOrders.length ? '' : ' is-empty'}`}>
-                    <table className="orders-table">
+                <div
+                    className={`orders-table-wrap${filteredOrders.length ? '' : ' is-empty'}`}
+                    role="region"
+                    aria-label={filipino ? "Talahanayan ng mga order ng customer" : "Customer orders table"}
+                    tabIndex={filteredOrders.length ? 0 : undefined}
+                >
+                    <table className="orders-table" aria-label={filipino ? "Mga order ng customer" : "Customer orders"}>
                         <thead>
                             <tr>
-                                <th>{filipino ? "ID ng order" : "Order ID"}</th>
+                                <th>
+                                    <span className="order-desktop-label">{filipino ? "ID ng order" : "Order ID"}</span>
+                                    <span className="order-mobile-label">Order</span>
+                                </th>
                                 <th>{filipino ? "Mamimili" : "Customer"}</th>
                                 <th>{filipino ? "Produkto" : "Products"}</th>
                                 <th>{filipino ? "Dami" : "Quantity"}</th>
@@ -642,6 +650,17 @@ export default function Orders({
                                                 <strong>
                                                     {orderNumber(order)}
                                                 </strong>
+                                                <div className="order-mobile-summary">
+                                                    <div className="order-product">
+                                                        <ProductThumbnail photoUrl={product?.photo_url} />
+                                                        <div className="order-product-copy">
+                                                            <strong>{order.product_name}</strong>
+                                                            <span>{order.quantity} {unitLabel(order.unit, filipino)} · {money(order.unit_price)} / {unitLabel(order.unit, filipino)}</span>
+                                                        </div>
+                                                    </div>
+                                                    <span className="order-mobile-customer">{order.customer_name}</span>
+                                                    <span className="order-mobile-date">{dateTime(order.created_at, filipino)}</span>
+                                                </div>
                                             </td>
                                             <td>{order.customer_name}</td>
                                             <td>

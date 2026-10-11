@@ -64,7 +64,7 @@ for (const [width, filipino] of [[390, false], [768, true], [1440, false]]) {
         const sales = page.locator('.seller-sales');
         await sales.getByRole('button', { name: filipino ? 'Buwan' : 'Month', exact: true }).click();
         await expect(sales.locator('.seller-sales-total')).toHaveText('₱140.00');
-        await expect(sales).toContainText(filipino ? 'petsa ng paghatid' : 'delivery dates');
+        await expect(sales).not.toContainText(filipino ? 'Batay sa petsa ng paghatid' : 'Based on delivery dates');
 
         await page.goto('/seller/dashboard?section=analytics');
         const metric = page.locator('.analytics-metric').first();

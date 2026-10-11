@@ -43,7 +43,7 @@ async function signIn(page, email, width, language = 'english') {
     await page.setViewportSize({ width, height: 1000 });
     await page.addInitScript(language => {
         localStorage.setItem('agrifarm-theme', 'light');
-        localStorage.setItem('agrifarm-seller-language', language);
+        if (!localStorage.getItem('agrifarm-seller-language')) localStorage.setItem('agrifarm-seller-language', language);
         localStorage.setItem('agrifarm-admin-language', 'english');
     }, language);
     await page.goto('/login');
@@ -103,6 +103,101 @@ async function inspectThemes(page, nav, name, width, testInfo) {
         await nav.screenshot({ path: testInfo.outputPath(`${name}-controls-${width}-${theme}.png`), animations: 'disabled' });
     }
     await page.evaluate(() => document.documentElement.classList.remove('dark'));
+}
+
+for (const width of [390, 768, 1440]) {
+    test(`${width}px: seller orders keep compact table rows and reachable actions`, async ({ page, context }, testInfo) => {
+        await signIn(page, 'brgyrosario@gmail.com', width);
+        await page.goto('/seller/dashboard?section=orders');
+        await page.getByRole('button', { name: 'Add walk-in order', exact: true }).click();
+        const add = page.getByRole('dialog', { name: 'Add walk-in order' });
+        await add.getByLabel('Customer name').fill('Mobile Table Buyer');
+        await add.getByLabel('Product', { exact: true }).selectOption({ label: 'Pagination Pechay 01 · 20 kg available' });
+        await add.getByLabel('Quantity', { exact: true }).fill('2');
+        await add.getByRole('button', { name: 'Add order', exact: true }).click();
+        await expect(add).toBeHidden();
+
+        const panel = page.locator('.orders-panel');
+        const table = page.getByRole('table', { name: 'Customer orders', exact: true });
+        const scroll = page.getByRole('region', { name: 'Customer orders table' });
+        const rows = table.locator('.order-row');
+        const nav = page.getByRole('navigation', { name: 'Orders pagination' });
+        await expect(rows).toHaveCount(5);
+        await expect(table.getByRole('columnheader')).toHaveCount(width <= 560 ? 4 : 8);
+        for (const row of await rows.all()) {
+            expect(await row.evaluate(element => getComputedStyle(element).display)).toBe('table-row');
+            if (width <= 560) expect((await row.boundingBox()).height).toBeLessThan(180);
+        }
+        const firstReference = await rows.first().locator('td > strong').first().textContent();
+        for (const theme of ['light', 'dark']) {
+            await page.evaluate(value => document.documentElement.classList.toggle('dark', value === 'dark'), theme);
+            await scroll.evaluate(element => { element.scrollLeft = 0; });
+            await panel.scrollIntoViewIfNeeded();
+            expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+            await page.screenshot({ path: testInfo.outputPath(`order-table-${width}-${theme}.png`), fullPage: true });
+            await panel.screenshot({ path: testInfo.outputPath(`order-panel-${width}-${theme}.png`) });
+        }
+        await page.evaluate(() => document.documentElement.classList.remove('dark'));
+        const navBefore = await nav.boundingBox();
+        const referenceBefore = await rows.first().locator('td').first().boundingBox();
+        if (width === 390) {
+            await scroll.scrollIntoViewIfNeeded();
+            const bounds = await scroll.boundingBox();
+            const session = await context.newCDPSession(page);
+            const x = bounds.x + bounds.width - 20;
+            const y = bounds.y + 70;
+            await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+            for (let move = 1; move <= 8; move++) {
+                await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x - move * 15, y }] });
+            }
+            await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+            await expect.poll(() => scroll.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+            await session.detach();
+        }
+        await scroll.evaluate(element => { element.scrollLeft = element.scrollWidth; });
+        expect((await nav.boundingBox()).x).toBe(navBefore.x);
+        if (width <= 560) {
+            expect((await rows.first().locator('td').first().boundingBox()).x).toBe(referenceBefore.x);
+            for (const button of await rows.first().getByRole('button').all()) {
+                expect((await button.boundingBox()).height).toBeGreaterThanOrEqual(44);
+                expect(await button.evaluate(element => {
+                    const bounds = element.getBoundingClientRect();
+                    return document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2)?.closest('button') === element;
+                })).toBeTruthy();
+            }
+        }
+        await panel.screenshot({ path: testInfo.outputPath(`order-actions-${width}.png`) });
+        const pending = rows.filter({ hasText: 'Mobile Table Buyer' });
+        await pending.getByRole('button', { name: 'View order', exact: true }).click();
+        const detail = page.getByRole('dialog', { name: 'Order details' });
+        await expect(detail).toContainText('Mobile Table Buyer');
+        await expect(detail).toContainText('₱70.00');
+        await detail.getByRole('button', { name: 'Close order details', exact: true }).click();
+        await page.evaluate(() => { window.print = () => { window.__tableReceiptPrinted = true; }; });
+        await pending.getByRole('button', { name: 'Print receipt', exact: true }).click();
+        await expect.poll(() => page.evaluate(() => window.__tableReceiptPrinted)).toBeTruthy();
+        await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+        await pending.getByRole('button', { name: 'Accept order', exact: true }).click();
+        await expect(pending.locator('.order-status-icon')).toHaveAttribute('aria-label', 'Preparing');
+        await pending.getByRole('button', { name: 'Cancel order', exact: true }).click();
+        await page.getByRole('dialog', { name: 'Cancel order?' }).getByRole('button', { name: 'Keep order', exact: true }).click();
+        await expect(pending.locator('.order-status-icon')).toHaveAttribute('aria-label', 'Preparing');
+        await nav.getByRole('button', { name: 'Next page', exact: true }).click();
+        await expect(rows).toHaveCount(5);
+        expect(await rows.first().locator('td > strong').first().textContent()).not.toBe(firstReference);
+        await nav.getByLabel('Rows per page', { exact: true }).selectOption('10');
+        await expect(rows).toHaveCount(10);
+        await panel.locator('.order-filters button').filter({ hasText: /^Preparing/ }).click();
+        await expect(rows).toHaveCount(1);
+        await panel.locator('.order-filters button').filter({ hasText: /^Reservations/ }).click();
+        await expect(table.getByRole('columnheader')).toHaveCount(0);
+        await expect(panel.locator('.orders-empty')).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+        await page.evaluate(() => localStorage.setItem('agrifarm-seller-language', 'filipino'));
+        await page.reload();
+        await expect(page.getByRole('table', { name: 'Mga order ng customer' }).getByRole('columnheader', { name: 'Kabuuan' })).toBeVisible();
+        await panel.screenshot({ path: testInfo.outputPath(`order-panel-filipino-${width}.png`) });
+    });
 }
 
 for (const width of [390, 768, 1440]) {

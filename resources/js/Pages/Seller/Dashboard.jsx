@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppMark from "../../Components/AppMark";
 import Icon from "../../Components/Storefront/Icon";
 import "../../../css/seller.css";
@@ -9,6 +9,7 @@ import NavbarControls from "./NavbarControls";
 import Products from "./Products";
 import Orders from "./Orders";
 import WeatherCard from "./WeatherCard";
+import HeaderSummary from "./HeaderSummary";
 import Settings from "./Settings";
 import Analytics from "./Analytics";
 import Reports from "./Reports";
@@ -173,6 +174,37 @@ function StarVisual({ rating = 0, size = 18 }) {
     );
 }
 
+function SellerNavigation({ id, section, navigate, filipino, user, onClose }) {
+    return (
+        <div id={id} className="seller-navigation">
+            <nav aria-label={filipino ? "Menu ng seller" : "Seller navigation"}>
+                {sections.map(([label, icon]) => (
+                    <button
+                        type="button"
+                        key={label}
+                        onClick={() => navigate(label)}
+                        aria-current={section === label ? "page" : undefined}
+                    >
+                        <SellerIcon name={icon} />
+                        {filipino ? sectionLabels[label] : label}
+                    </button>
+                ))}
+            </nav>
+            <Link href="/logout" method="post" as="button" className="seller-logout" onClick={onClose}>
+                <Icon name="logout" />
+                {filipino ? "Mag-sign out" : "Sign out"}
+            </Link>
+            <div className="seller-store">
+                <Avatar user={user} className="seller-store-icon" filipino={filipino} />
+                <div>
+                    <strong>{user.name}</strong>
+                    <span>{filipino ? "Katuwang na barangay · Pasig City" : "Partner barangay · Pasig City"}</span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function Dashboard() {
     const {
         auth,
@@ -193,6 +225,9 @@ export default function Dashboard() {
         );
     });
     const [menuOpen, setMenuOpen] = useState(false);
+    const menuDialog = useRef(null);
+    const menuTrigger = useRef(null);
+    const menuClose = useRef(null);
     const [language, setLanguage] = useState(savedLanguage);
     const [notificationPreferences, setNotificationPreferences] =
         useState(savedNotifications);
@@ -240,6 +275,24 @@ export default function Dashboard() {
     useEffect(() => {
         document.documentElement.lang = filipino ? "fil" : "en";
     }, [filipino]);
+    useEffect(() => {
+        if (!menuOpen) return;
+        const element = menuDialog.current;
+        const previousOverflow = document.body.style.overflow;
+        const desktop = window.matchMedia("(min-width: 801px)");
+        const closeOnDesktop = () => { if (desktop.matches) setMenuOpen(false); };
+        element.showModal();
+        document.body.style.overflow = "hidden";
+        menuClose.current?.focus();
+        desktop.addEventListener("change", closeOnDesktop);
+        closeOnDesktop();
+        return () => {
+            desktop.removeEventListener("change", closeOnDesktop);
+            element.close();
+            document.body.style.overflow = previousOverflow;
+            if (!desktop.matches) menuTrigger.current?.focus();
+        };
+    }, [menuOpen]);
     const changeLanguage = (next) => {
         setLanguage(next);
         try {
@@ -279,6 +332,8 @@ export default function Dashboard() {
                     <AppMark storefront href="/seller/dashboard" />
                 </div>
                 <button
+                    ref={menuTrigger}
+                    type="button"
                     className="seller-menu-toggle"
                     aria-label={
                         filipino
@@ -286,65 +341,72 @@ export default function Dashboard() {
                             : "Toggle seller navigation"
                     }
                     aria-expanded={menuOpen}
-                    aria-controls="seller-navigation"
-                    onClick={() => setMenuOpen(!menuOpen)}
+                    aria-controls="seller-mobile-menu"
+                    aria-haspopup="dialog"
+                    onClick={() => setMenuOpen(true)}
                 >
-                    <Icon name={menuOpen ? "close" : "menu"} />
+                    <Icon name="menu" />
                 </button>
-                <div
+                <SellerNavigation
                     id="seller-navigation"
-                    className={`seller-navigation ${menuOpen ? "is-open" : ""}`}
-                >
-                    <nav
-                        aria-label={
-                            filipino ? "Menu ng seller" : "Seller navigation"
-                        }
-                    >
-                        {sections.map(([label, icon]) => (
-                            <button
-                                key={label}
-                                onClick={() => navigate(label)}
-                                aria-current={
-                                    section === label ? "page" : undefined
-                                }
-                            >
-                                <SellerIcon name={icon} />
-                                {filipino ? sectionLabels[label] : label}
-                            </button>
-                        ))}
-                    </nav>
-                    <Link
-                        href="/logout"
-                        method="post"
-                        as="button"
-                        className="seller-logout"
-                    >
-                        <Icon name="logout" />
-                        {filipino ? "Mag-sign out" : "Sign out"}
-                    </Link>
-                    <div className="seller-store">
-                        <Avatar
-                            user={auth.user}
-                            className="seller-store-icon"
-                            filipino={filipino}
-                        />
-                        <div>
-                            <strong>{name}</strong>
-                            <span>
-                                {filipino
-                                    ? "Katuwang na barangay · Pasig City"
-                                    : "Partner barangay · Pasig City"}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                    section={section}
+                    navigate={navigate}
+                    filipino={filipino}
+                    user={auth.user}
+                />
             </aside>
+            <dialog
+                ref={menuDialog}
+                id="seller-mobile-menu"
+                className="seller-mobile-drawer"
+                aria-label={filipino ? "Menu ng AgriFarm seller" : "AgriFarm seller menu"}
+                onCancel={event => { event.preventDefault(); setMenuOpen(false); }}
+                onKeyDown={event => {
+                    if (event.key !== "Tab") return;
+                    const controls = [...event.currentTarget.querySelectorAll("a[href], button:not([disabled])")]
+                        .filter(element => element.getClientRects().length > 0);
+                    const first = controls[0];
+                    const last = controls[controls.length - 1];
+                    if (event.shiftKey && document.activeElement === first) {
+                        event.preventDefault();
+                        last?.focus();
+                    } else if (!event.shiftKey && document.activeElement === last) {
+                        event.preventDefault();
+                        first?.focus();
+                    }
+                }}
+                onClick={event => {
+                    if (event.target !== event.currentTarget) return;
+                    const bounds = event.currentTarget.getBoundingClientRect();
+                    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) setMenuOpen(false);
+                }}
+            >
+                <div className="seller-mobile-drawer-heading">
+                    <div className="seller-brand" onClick={event => { if (event.target.closest("a")) setMenuOpen(false); }}>
+                        <AppMark storefront href="/seller/dashboard" />
+                    </div>
+                    <button
+                        ref={menuClose}
+                        type="button"
+                        className="seller-icon-button"
+                        aria-label={filipino ? "Isara ang menu ng seller" : "Close seller navigation"}
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        <Icon name="close" />
+                    </button>
+                </div>
+                <SellerNavigation
+                    id="seller-mobile-navigation"
+                    section={section}
+                    navigate={navigate}
+                    filipino={filipino}
+                    user={auth.user}
+                    onClose={() => setMenuOpen(false)}
+                />
+            </dialog>
             <div className="seller-workspace">
                 <header className="seller-topbar">
-                    <span className="seller-location">
-                        <Icon name="pin" size={17} />
-                        Pasig City
-                    </span>
+                    <HeaderSummary user={auth.user} weather={weather} filipino={filipino} />
                     <div className="seller-navbar-actions">
                         <NavbarControls
                             alerts={notificationItems}
@@ -373,7 +435,7 @@ export default function Dashboard() {
                                     ? "Pangkalahatang-tanaw ng tindahan ng barangay"
                                     : "Barangay store overview"}
                             </h1>
-                            <div className="seller-stats">
+                            <div className="seller-stats seller-dashboard-stats">
                                 {[
                                     {
                                         icon: "trend",
@@ -449,7 +511,7 @@ export default function Dashboard() {
                                         hasRating,
                                     }) => (
                                         <article
-                                            className={`seller-stat seller-stat--sales ${icon === "star" ? "seller-stat--rating" : ""}`}
+                                            className={`seller-stat seller-stat--sales ${icon === "trend" ? "seller-stat--total" : icon === "star" ? "seller-stat--rating" : ""}`}
                                             key={label}
                                         >
                                             <div className="seller-stat-heading">

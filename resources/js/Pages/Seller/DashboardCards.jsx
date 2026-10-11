@@ -324,7 +324,6 @@ export function SalesOverview({ orders = [], SellerIcon, filipino = false }) {
                     ))}
                 </div>
             </div>
-            <p>{filipino ? 'Batay sa petsa ng paghatid, sa oras ng Pilipinas.' : 'Based on delivery dates in Philippine time.'}{orders.some(order => order.status === 'delivered' && !deliveryDate(order)) && (filipino ? ' Hindi kasama sa chart ang mga lumang order na walang petsa ng paghatid.' : 'Older orders without a delivery date are excluded from this chart.')}</p>
         </section>
     );
 }
