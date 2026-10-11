@@ -13,11 +13,36 @@ export default function StorefrontLayout({ children, market }) {
     const { props, url } = usePage();
     const user = props.auth?.user;
     const pathname = url.split('?')[0];
-    const currentPage = pathname === '/contact' ? 'contact' : pathname === '/customer' ? 'profile' : new URLSearchParams(url.split('?')[1] || '').get('page') || 'home';
+    const isCustomerAccountPage = ['/customer', '/customer/orders', '/customer/settings'].includes(pathname);
+    const currentPage = pathname === '/contact' ? 'contact' : pathname === '/about' ? 'about' : pathname === '/customer' ? 'profile' : new URLSearchParams(url.split('?')[1] || '').get('page') || 'home';
     const { filipino, count, favorites, panel, setPanel, notice, noticeId, noticeTarget, noticeTone, dismissNotice } = useShop();
     const [menuOpen, setMenuOpen] = useState(false);
+    const menuDialog = useRef(null);
+    const menuTrigger = useRef(null);
+    const menuClose = useRef(null);
     const destination = user ? ({ customer: '/customer', seller: '/seller/dashboard', cenro_admin: '/admin/dashboard' }[user.role] || '/') : '/login';
     const links = [{ label: filipino ? 'Home' : 'Home', href: '/', active: currentPage === 'home' }, { label: filipino ? 'Pamilihan' : 'Marketplace', href: marketHref(), active: market }, { label: filipino ? 'Tungkol' : 'About', href: '/about', active: currentPage === 'about' }];
+
+    useEffect(() => { setMenuOpen(false); }, [url]);
+
+    useEffect(() => {
+        if (!menuOpen) return;
+        const element = menuDialog.current;
+        const previousOverflow = document.body.style.overflow;
+        const desktop = window.matchMedia('(min-width: 1001px)');
+        const closeOnDesktop = () => { if (desktop.matches) setMenuOpen(false); };
+        element.showModal();
+        document.body.style.overflow = 'hidden';
+        menuClose.current?.focus();
+        desktop.addEventListener('change', closeOnDesktop);
+        closeOnDesktop();
+        return () => {
+            desktop.removeEventListener('change', closeOnDesktop);
+            element.close();
+            document.body.style.overflow = previousOverflow;
+            if (!desktop.matches) menuTrigger.current?.focus();
+        };
+    }, [menuOpen]);
 
     return (
         <div className="storefront">
@@ -36,16 +61,30 @@ export default function StorefrontLayout({ children, market }) {
                         {user
                             ? <AccountMenu user={user} destination={destination} current={currentPage === 'profile'} onOpen={() => setMenuOpen(false)} />
                             : <Link className="store-button header-login" href={destination}>Log in</Link>}
-                        <button className="store-icon-button store-menu-button" aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={menuOpen} aria-controls="store-mobile-nav" onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
+                        <button ref={menuTrigger} type="button" className="store-icon-button store-menu-button" aria-label={filipino ? 'Buksan ang menu' : 'Open navigation menu'} aria-expanded={menuOpen} aria-controls="store-mobile-menu" aria-haspopup="dialog" onClick={() => setMenuOpen(true)}><Icon name="menu" /></button>
                     </div>
                 </div>
-                {menuOpen && <nav id="store-mobile-nav" className="store-mobile-nav" aria-label="Mobile navigation">
-                    {links.map((link) => <Link key={link.label} href={link.href} aria-current={link.active ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{link.label}</Link>)}
-                    {['favorites', 'cart', 'notifications'].map((page) => <Link key={page} href={`/?page=${page}`} aria-current={currentPage === page ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{filipino ? {favorites: 'Mga Paborito', cart: 'Cart', notifications: 'Mga Notipikasyon'}[page] : page.charAt(0).toUpperCase() + page.slice(1)}</Link>)}
-                    <Link href="/contact" aria-current={currentPage === 'contact' ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{filipino ? 'Makipag-ugnayan' : 'Contact'}</Link>
-                    {['about'].map((panel) => <button key={panel} onClick={() => { setMenuOpen(false); setPanel(panel); }}>{filipino ? 'Tungkol sa amin' : 'About'}</button>)}
-                </nav>}
             </header>
+            <dialog ref={menuDialog} id="store-mobile-menu" className="store-mobile-drawer" aria-label={filipino ? 'Menu ng AgriFarm' : 'AgriFarm menu'}
+                onCancel={event => { event.preventDefault(); setMenuOpen(false); }}
+                onClick={event => {
+                    if (event.target !== event.currentTarget) return;
+                    const bounds = event.currentTarget.getBoundingClientRect();
+                    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) setMenuOpen(false);
+                }}>
+                <div className="store-mobile-drawer-heading" onClick={event => { if (event.target.closest('a')) setMenuOpen(false); }}>
+                    <AppMark storefront />
+                    <button ref={menuClose} type="button" className="store-icon-button" aria-label={filipino ? 'Isara ang menu' : 'Close navigation menu'} onClick={() => setMenuOpen(false)}><Icon name="close" /></button>
+                </div>
+                <nav id="store-mobile-nav" className="store-mobile-nav" aria-label={filipino ? 'Nabigasyon sa mobile' : 'Mobile navigation'}>
+                    {links.map((link, index) => <Link key={link.href} href={link.href} aria-current={link.active ? 'page' : undefined} onClick={() => setMenuOpen(false)}><Icon name={['home', 'leaf', 'people'][index]} />{link.label}</Link>)}
+                    {['favorites', 'cart', 'notifications'].map((page) => <Link key={page} href={`/?page=${page}`} aria-current={currentPage === page ? 'page' : undefined} onClick={() => setMenuOpen(false)}><Icon name={{ favorites: 'heart', cart: 'cart', notifications: 'bell' }[page]} />{filipino ? {favorites: 'Mga Paborito', cart: 'Cart', notifications: 'Mga Notipikasyon'}[page] : page.charAt(0).toUpperCase() + page.slice(1)}</Link>)}
+                    <Link href="/contact" aria-current={currentPage === 'contact' ? 'page' : undefined} onClick={() => setMenuOpen(false)}><Icon name="mail" />{filipino ? 'Makipag-ugnayan' : 'Contact'}</Link>
+                </nav>
+                <div className="store-mobile-drawer-account">
+                    <Link href={destination} onClick={() => setMenuOpen(false)}><Icon name="user" /><span>{user ? (filipino ? (user.role === 'customer' ? 'Aking profile' : 'Aking workspace') : (user.role === 'customer' ? 'My profile' : 'My workspace')) : (filipino ? 'Mag-log in' : 'Log in')}</span><Icon name="arrow" size={18} /></Link>
+                </div>
+            </dialog>
             <main id="main-content" tabIndex={-1}>{children}</main>
             <footer className="store-footer">
                 <div className="store-container">
@@ -82,7 +121,7 @@ export default function StorefrontLayout({ children, market }) {
                 {notice}
             </FormStatus>
             <ShopDialog />
-              <HelpWidget />
+            {!isCustomerAccountPage && <HelpWidget />}
         </div>
     );
 }

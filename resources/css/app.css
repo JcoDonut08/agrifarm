@@ -211,13 +211,13 @@
     background: var(--ui-soft);
     border-color: var(--ui-action);
 }
-:is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button),
-.dark :is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button) {
+:is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button, .store-button.store-button--danger),
+.dark :is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button, .store-button.store-button--danger) {
     background: var(--ui-danger);
     color: #fff;
 }
-:is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button):hover,
-.dark :is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button):hover {
+:is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button, .store-button.store-button--danger):hover,
+.dark :is(.storefront, .seller-app, .admin-app) :is(.seller-danger-button, .admin-danger-button, .store-button.store-button--danger):hover {
     background: var(--ui-danger-hover);
 }
 :is(.storefront, .seller-app, .admin-app) :is(button, a, input, select, textarea):focus-visible {

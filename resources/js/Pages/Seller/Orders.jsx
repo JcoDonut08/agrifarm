@@ -2,6 +2,7 @@ import { router, usePage } from "@inertiajs/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Icon from "../../Components/Storefront/Icon";
+import { manilaInputDate } from '../../lib/salesDates';
 import SellerFlashStatus from "./SellerFlashStatus";
 import Pagination from "./Pagination";
 import { localizeMessage, unitLabel } from "./SellerLocale";
@@ -197,6 +198,9 @@ export default function Orders({
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [adding, setAdding] = useState(false);
     const [viewingOrder, setViewingOrder] = useState(null);
+    const [deliveredOn, setDeliveredOn] = useState('');
+    const [deliveryDateErrors, setDeliveryDateErrors] = useState({});
+    const [savingDeliveryDate, setSavingDeliveryDate] = useState(false);
     const [receiptOrder, setReceiptOrder] = useState(null);
     const [processingOrderId, setProcessingOrderId] = useState(null);
     const [cancellingOrder, setCancellingOrder] = useState(null);
@@ -304,6 +308,11 @@ export default function Orders({
     }, [viewingOrder]);
 
     useEffect(() => {
+        setDeliveredOn('');
+        setDeliveryDateErrors({});
+    }, [viewingOrder?.id]);
+
+    useEffect(() => {
         if (!receiptOrder) return;
         const clearReceipt = () => setReceiptOrder(null);
         const timer = window.setTimeout(() => window.print(), 80);
@@ -396,6 +405,27 @@ export default function Orders({
                 },
             },
         );
+    }
+
+    function saveDeliveryDate(event) {
+        event.preventDefault();
+        if (savingDeliveryDate || !viewingOrder) return;
+        setDeliveryDateErrors({});
+        setSavingDeliveryDate(true);
+        const failed = () => {
+            setDeliveryDateErrors({ delivered_on: filipino ? 'Hindi ma-save ang petsa. Pakisubukan muli.' : 'The date could not be saved. Please try again.' });
+            return false;
+        };
+        router.patch(`/seller/orders/${viewingOrder.id}/delivery-date`, {
+            delivered_on: deliveredOn, language: filipino ? 'filipino' : 'english',
+        }, {
+            preserveScroll: true,
+            onError: setDeliveryDateErrors,
+            onNetworkError: failed,
+            onHttpException: failed,
+            onSuccess: () => setViewingOrder(null),
+            onFinish: () => setSavingDeliveryDate(false),
+        });
     }
 
     function actionsFor(order) {
@@ -1141,6 +1171,16 @@ export default function Orders({
                                     <dd>{money(viewingOrder.total)}</dd>
                                 </div>
                             </dl>
+                            {viewingOrder.status === 'delivered' && (viewingOrder.delivered_at ? <div className="order-delivery-date">
+                                <strong>{filipino ? 'Petsa ng paghatid' : 'Delivered on'}</strong>
+                                <p>{new Intl.DateTimeFormat(filipino ? 'fil-PH' : 'en-PH', { dateStyle: 'medium', timeZone: 'Asia/Manila' }).format(new Date(viewingOrder.delivered_at))}</p>
+                            </div> : <form className="order-delivery-date-form" onSubmit={saveDeliveryDate}>
+                                <p>{filipino ? 'Walang petsa ng paghatid ang mas lumang order na ito. Ilagay ang aktuwal na petsa upang maisama ito sa mga benta para sa tamang panahon.' : 'This older order has no delivery date. Enter the actual date to include it in sales for the correct period.'}</p>
+                                <label htmlFor="order-delivered-on">{filipino ? 'Petsa ng paghatid' : 'Delivered on'}</label>
+                                <input id="order-delivered-on" type="date" required min={manilaInputDate(new Date(viewingOrder.created_at))} max={manilaInputDate()} value={deliveredOn} disabled={savingDeliveryDate} aria-invalid={Boolean(deliveryDateErrors.delivered_on)} aria-describedby={deliveryDateErrors.delivered_on ? 'order-delivery-date-error' : undefined} onChange={event => { setDeliveredOn(event.target.value); setDeliveryDateErrors({}); }} />
+                                {deliveryDateErrors.delivered_on && <p id="order-delivery-date-error" role="alert">{deliveryDateErrors.delivered_on}</p>}
+                                <button type="submit" className="seller-save-button" disabled={savingDeliveryDate}>{filipino ? (savingDeliveryDate ? 'Sine-save…' : 'I-save ang petsa ng paghatid') : (savingDeliveryDate ? 'Saving…' : 'Save delivery date')}</button>
+                            </form>)}
                             <OrderCancellationReason order={viewingOrder} filipino={filipino} />
                         </div>
                         <div className="walk-in-modal-actions">

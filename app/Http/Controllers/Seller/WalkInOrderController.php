@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\WalkInOrder;
 use App\Notifications\OrderStatusEmail;
 use App\Notifications\OrderStatusUpdated;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +63,36 @@ class WalkInOrderController extends Controller
         });
 
         return redirect('/seller/dashboard?section=orders')->with('status', 'Walk-in order added successfully.');
+    }
+
+    public function recordDeliveryDate(Request $request, WalkInOrder $walkInOrder): RedirectResponse
+    {
+        abort_unless($walkInOrder->user_id === $request->user()->id, 404);
+        $filipino = $request->input('language') === 'filipino';
+        $data = $request->validate([
+            'delivered_on' => ['required', 'date_format:Y-m-d',
+                'after_or_equal:'.$walkInOrder->created_at->timezone('Asia/Manila')->toDateString(),
+                'before_or_equal:'.now('Asia/Manila')->toDateString()],
+        ], [
+            'delivered_on.required' => $filipino ? 'Ilagay ang aktuwal na petsa ng paghatid.' : 'Enter the actual delivery date.',
+            'delivered_on.date_format' => $filipino ? 'Pumili ng wastong petsa.' : 'Choose a valid date.',
+            'delivered_on.after_or_equal' => $filipino ? 'Hindi maaaring mas maaga sa petsa ng order ang paghatid.' : 'Delivery cannot be before the order was placed.',
+            'delivered_on.before_or_equal' => $filipino ? 'Hindi maaaring nasa hinaharap ang petsa ng paghatid.' : 'Delivery cannot be in the future.',
+        ]);
+
+        DB::transaction(function () use ($walkInOrder, $data, $filipino): void {
+            $order = WalkInOrder::whereKey($walkInOrder->id)->lockForUpdate()->firstOrFail();
+            if ($order->status !== 'delivered' || $order->delivered_at !== null) {
+                throw ValidationException::withMessages([
+                    'delivered_on' => $filipino ? 'Para lamang ito sa mga naihatid na order na walang petsa ng paghatid.' : 'Only delivered orders without a delivery date can use this action.',
+                ]);
+            }
+            // The seller confirms a calendar date, not a historical time of day.
+            $order->delivered_at = CarbonImmutable::createFromFormat('!Y-m-d', $data['delivered_on'], 'Asia/Manila')->utc();
+            $order->save();
+        });
+
+        return redirect()->back()->with('status', $filipino ? 'Naitala ang petsa ng paghatid.' : 'Delivery date recorded.');
     }
 
     public function updateStatus(Request $request, WalkInOrder $walkInOrder): RedirectResponse

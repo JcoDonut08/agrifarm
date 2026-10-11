@@ -14,6 +14,18 @@ for (const viewport of viewports) {
         });
         await page.goto('/?page=marketplace');
 
+        for (const theme of ['light', 'dark']) {
+            await page.evaluate(value => document.documentElement.classList.toggle('dark', value === 'dark'), theme);
+            const cards = page.locator('.market-product-grid .produce-card');
+            await expect(cards.first()).toBeVisible();
+            for (const button of await cards.locator('.market-add-button').all()) {
+                expect((await button.boundingBox()).height).toBeGreaterThanOrEqual(44);
+            }
+            await assertNoHorizontalOverflow(page);
+            await page.locator('.market-product-grid').screenshot({ path: testInfo.outputPath(`${viewport.name}-product-cards-${theme}.png`), animations: 'disabled' });
+        }
+        await page.evaluate(() => document.documentElement.classList.remove('dark'));
+
         await page.getByRole('link', { name: 'View Fresh Pechay details' }).click();
         await expect(page).toHaveURL(/\?page=product&product=pechay$/);
         await expect(page.getByRole('heading', { name: 'Fresh Pechay', level: 1 })).toBeVisible();

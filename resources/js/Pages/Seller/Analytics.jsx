@@ -550,7 +550,7 @@ export default function Analytics({
                 )}
                 <div className="analytics-selects">
                     <label>
-                        {filipino ? "Produkto" : "Product"}
+                        <span className="sr-only">{filipino ? "Produkto" : "Product"}</span>
                         <select
                             value={productFilter}
                             onChange={(event) =>
@@ -570,7 +570,7 @@ export default function Analytics({
                         </select>
                     </label>
                     <label>
-                        {filipino ? "Kategorya" : "Category"}
+                        <span className="sr-only">{filipino ? "Kategorya" : "Category"}</span>
                         <select
                             value={categoryFilter}
                             onChange={(event) =>
@@ -598,79 +598,71 @@ export default function Analytics({
                     filipino ? "Buod ng pagganap" : "Performance summary"
                 }
             >
-                <article className="analytics-metric">
-                    <span>
-                        <SellerIcon name="trend" />
-                    </span>
-                    <div>
+                <article className="analytics-metric seller-stat seller-stat--sales">
+                    <div className="seller-stat-heading">
                         <h2>
                             {filipino
                                 ? "Halaga ng nakumpletong benta"
                                 : "Completed sales value"}
                         </h2>
-                        <strong>{formatMoney(completedValue)}</strong>
-                        <p>
-                            {range.previousStart
-                                ? comparison === 0
-                                    ? filipino
-                                        ? "Kapareho ng nakaraang panahon"
-                                        : "Same as the previous period"
-                                    : `${formatMoney(Math.abs(comparison))} ${comparison > 0 ? (filipino ? "mas mataas" : "higher") : filipino ? "mas mababa" : "lower"} ${filipino ? "kaysa nakaraan" : "than before"}`
-                                : filipino
-                                  ? `${completedOrders.length} naihatid na order`
-                                  : `${completedOrders.length} delivered ${completedOrders.length === 1 ? "order" : "orders"}`}
-                        </p>
+                        <span className="seller-stat-icon"><SellerIcon name="trend" /></span>
                     </div>
+                    <strong className="seller-stat-value">{formatMoney(completedValue)}</strong>
+                    <p>
+                        {range.previousStart
+                            ? comparison === 0
+                                ? filipino
+                                    ? "Kapareho ng nakaraang panahon"
+                                    : "Same as the previous period"
+                                : `${formatMoney(Math.abs(comparison))} ${comparison > 0 ? (filipino ? "mas mataas" : "higher") : filipino ? "mas mababa" : "lower"} ${filipino ? "kaysa nakaraan" : "than before"}`
+                            : filipino
+                              ? `${completedOrders.length} naihatid na order`
+                              : `${completedOrders.length} delivered ${completedOrders.length === 1 ? "order" : "orders"}`}
+                    </p>
                 </article>
-                <article className="analytics-metric">
-                    <span>
-                        <SellerIcon name="check" />
-                    </span>
-                    <div>
+                <article className="analytics-metric seller-stat seller-stat--sales">
+                    <div className="seller-stat-heading">
                         <h2>
                             {filipino
                                 ? "Mga naihatid na order"
                                 : "Delivered orders"}
                         </h2>
-                        <strong>{completedOrders.length}</strong>
-                        <p>
-                            {filipino
-                                ? `${percent(completedOrders.length, filteredOrders.length)}% ng mga naitalang order`
-                                : `${percent(completedOrders.length, filteredOrders.length)}% of recorded orders`}
-                        </p>
+                        <span className="seller-stat-icon"><SellerIcon name="check" /></span>
                     </div>
+                    <strong className="seller-stat-value">{completedOrders.length}</strong>
+                    <p>
+                        {filipino
+                            ? `${percent(completedOrders.length, filteredOrders.length)}% ng mga naitalang order`
+                            : `${percent(completedOrders.length, filteredOrders.length)}% of recorded orders`}
+                    </p>
                 </article>
-                <article className="analytics-metric">
-                    <span>
-                        <SellerIcon name="cart" />
-                    </span>
-                    <div>
+                <article className="analytics-metric seller-stat seller-stat--sales">
+                    <div className="seller-stat-heading">
                         <h2>
                             {filipino
                                 ? "Karaniwang halaga ng order"
                                 : "Average completed order"}
                         </h2>
-                        <strong>{formatMoney(averageValue)}</strong>
-                        <p>
-                            {filipino
-                                ? "Batay lamang sa mga naihatid na order"
-                                : "Based on delivered orders only"}
-                        </p>
+                        <span className="seller-stat-icon"><SellerIcon name="cart" /></span>
                     </div>
+                    <strong className="seller-stat-value">{formatMoney(averageValue)}</strong>
+                    <p>
+                        {filipino
+                            ? "Batay lamang sa mga naihatid na order"
+                            : "Based on delivered orders only"}
+                    </p>
                 </article>
-                <article className="analytics-metric">
-                    <span>
-                        <SellerIcon name="people" />
-                    </span>
-                    <div>
+                <article className="analytics-metric seller-stat seller-stat--sales">
+                    <div className="seller-stat-heading">
                         <h2>{filipino ? "Mga customer" : "Customers"}</h2>
-                        <strong>{customerKeys.size}</strong>
-                        <p>
-                            {filipino
-                                ? `${deliveredCustomerKeys.size} may naihatid na order`
-                                : `${deliveredCustomerKeys.size} ${deliveredCustomerKeys.size === 1 ? "customer has" : "customers have"} delivered orders`}
-                        </p>
+                        <span className="seller-stat-icon"><SellerIcon name="people" /></span>
                     </div>
+                    <strong className="seller-stat-value">{customerKeys.size}</strong>
+                    <p>
+                        {filipino
+                            ? `${deliveredCustomerKeys.size} may naihatid na order`
+                            : `${deliveredCustomerKeys.size} ${deliveredCustomerKeys.size === 1 ? "customer has" : "customers have"} delivered orders`}
+                    </p>
                 </article>
             </section>
 

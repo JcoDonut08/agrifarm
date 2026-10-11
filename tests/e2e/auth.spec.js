@@ -11,6 +11,78 @@ const viewports = [
 ];
 
 for (const viewport of viewports) {
+    test(`${viewport.name}: storefront navigation drawer`, async ({ page }, testInfo) => {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await page.addInitScript(() => localStorage.setItem('agrifarm-theme', 'light'));
+        await page.goto('/');
+        const trigger = page.getByRole('button', { name: 'Open navigation menu' });
+        const drawer = page.getByRole('dialog', { name: 'AgriFarm menu' });
+        if (viewport.width > 1000) {
+            await expect(trigger).toBeHidden();
+            await expect(drawer).toBeHidden();
+            await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible();
+            await assertNoHorizontalOverflow(page);
+            await page.screenshot({ path: testInfo.outputPath('desktop-navigation.png') });
+            return;
+        }
+
+        for (const theme of ['light', 'dark']) {
+            await page.evaluate(value => document.documentElement.classList.toggle('dark', value === 'dark'), theme);
+            await trigger.click();
+            await expect(drawer).toBeVisible();
+            await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+            const close = drawer.getByRole('button', { name: 'Close navigation menu' });
+            await expect(close).toBeFocused();
+            await expect(drawer.getByRole('link', { name: 'Home', exact: true })).toHaveAttribute('aria-current', 'page');
+            await expect(drawer.getByRole('link', { name: 'About', exact: true })).toHaveCount(1);
+            await expect.poll(async () => {
+                const bounds = await drawer.boundingBox();
+                return Math.round(bounds.x + bounds.width);
+            }).toBe(viewport.width);
+            const bounds = await drawer.boundingBox();
+            expect(bounds.width).toBeLessThan(viewport.width);
+            expect(Math.round(bounds.height)).toBe(viewport.height);
+            expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+            await page.keyboard.press('Tab');
+            expect(await drawer.evaluate(element => element.contains(document.activeElement))).toBeTruthy();
+            await assertNoHorizontalOverflow(page);
+            await page.screenshot({ path: testInfo.outputPath(`navigation-drawer-${theme}.png`) });
+            await page.keyboard.press('Escape');
+            await expect(drawer).toBeHidden();
+            await expect(trigger).toBeFocused();
+            expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
+        }
+
+        await trigger.click();
+        await page.mouse.click(10, 160);
+        await expect(drawer).toBeHidden();
+        await expect(trigger).toBeFocused();
+        await trigger.click();
+        await drawer.getByRole('button', { name: 'Close navigation menu' }).click();
+        await expect(drawer).toBeHidden();
+        await trigger.click();
+        await drawer.getByRole('link', { name: 'Marketplace', exact: true }).click();
+        await expect(page).toHaveURL(/\?page=marketplace$/);
+        await expect(drawer).toBeHidden();
+        await trigger.click();
+        await expect(drawer.getByRole('link', { name: 'Marketplace', exact: true })).toHaveAttribute('aria-current', 'page');
+        await page.setViewportSize({ width: 1440, height: 1000 });
+        await expect(drawer).toBeHidden();
+        expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
+
+        await page.evaluate(() => localStorage.setItem('agrifarm-customer-language', 'filipino'));
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await page.reload();
+        await page.getByRole('button', { name: 'Buksan ang menu' }).click();
+        const translatedDrawer = page.getByRole('dialog', { name: 'Menu ng AgriFarm' });
+        await expect(translatedDrawer.getByRole('link', { name: 'Pamilihan', exact: true })).toHaveAttribute('aria-current', 'page');
+        await expect(translatedDrawer.getByRole('link', { name: 'Mga Notipikasyon', exact: true })).toBeVisible();
+        await translatedDrawer.getByRole('button', { name: 'Isara ang menu' }).click();
+        await expect(translatedDrawer).toBeHidden();
+    });
+}
+
+for (const viewport of viewports) {
     test(`${viewport.name}: marketplace account experience`, async ({ page }, testInfo) => {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
         await page.addInitScript(() => {

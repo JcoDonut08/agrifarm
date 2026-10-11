@@ -136,6 +136,14 @@
 .dark .order-detail-product > div > span,.dark .order-detail-product > div > small { color: #9fafa4; }
 .dark .order-detail-product > div > strong { color: #edf2ee; }
 
+.order-delivery-date, .order-delivery-date-form { display: grid; gap: 10px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--ui-border); }
+.order-delivery-date p, .order-delivery-date-form p { margin: 0; color: var(--ui-muted); font-size: 13px; line-height: 1.6; }
+.order-delivery-date-form label, .order-delivery-date strong { color: var(--ui-ink); font-size: 13px; font-weight: 600; }
+.order-delivery-date-form input { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--ui-border); border-radius: 10px; background: var(--ui-surface); color: var(--ui-ink); color-scheme: light; }
+.order-delivery-date-form input:focus-visible { outline: 2px solid var(--ui-action); outline-offset: 2px; }
+.order-delivery-date-form p[role="alert"] { color: var(--ui-error-ink); }
+.order-delivery-date-form .seller-save-button { width: auto; justify-self: start; padding-inline: 16px; }
+.dark .order-delivery-date-form input { color-scheme: dark; }
 @media(max-width:560px){.order-detail-grid{grid-template-columns:1fr}.order-detail-body{padding:18px}.order-detail-modal .walk-in-modal-actions{display:grid;grid-template-columns:1fr 1fr}.order-detail-modal .walk-in-modal-actions button{width:100%;justify-content:center}}
 
 @media print {

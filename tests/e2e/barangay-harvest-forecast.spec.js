@@ -148,7 +148,7 @@ test('admin Excel and CSV previews reach farmer forecasting with persistent bara
         await seller.getByLabel('Harvest file', { exact: true }).setInputFiles(shortFile);
         await seller.getByRole('button', { name: 'Generate', exact: true }).click();
         await expect(seller.locator('.forecast-dataset-source')).toContainText('Harvest records: Rosario', { timeout: 60_000 });
-        await expect(seller.locator('.forecast-history-note')).toBeVisible();
+        await expect(seller.locator('.forecast-history-note')).toHaveCount(0);
         await expect(seller.locator('.forecast-calendar-crop').filter({ hasText: 'Kangkong' })).toContainText('Seasonal guide');
         await seller.reload();
         await expect(seller.locator('.forecast-dataset-source')).toContainText('Rosario');

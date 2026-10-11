@@ -110,6 +110,19 @@ test('measured harvest weight can be added to an old non-kg record and exported'
                     localStorage.setItem('agrifarm-theme', theme);
                     document.documentElement.classList.toggle('dark', theme === 'dark');
                 }, theme);
+                const actions = page.locator('.harvest-record-actions');
+                for (const label of ['Tingnan', 'I-edit', 'Burahin']) {
+                    const action = actions.getByRole('button', { name: label, exact: true });
+                    await action.hover();
+                    await expect.poll(() => action.evaluate(element => getComputedStyle(element, '::after').opacity)).toBe('1');
+                    await action.focus();
+                    await page.keyboard.press('Tab');
+                    await page.keyboard.press('Shift+Tab');
+                    await page.mouse.move(0, 0);
+                    await expect.poll(() => action.evaluate(element => getComputedStyle(element, '::after').opacity)).toBe('1');
+                }
+                await actions.getByRole('button', { name: 'Tingnan', exact: true }).focus();
+                await page.locator('.harvest-history-panel').screenshot({ path: testInfo.outputPath(`harvest-actions-filipino-${width}-${theme}.png`) });
                 await page.locator('.harvest-history-panel').getByRole('button', { name: 'Tingnan', exact: true }).click();
                 const details = page.getByRole('dialog', { name: 'Tala ng ani', exact: true });
                 await expect(details).toContainText('5.125 kg');
@@ -146,7 +159,7 @@ test('measured harvest weight can be added to an old non-kg record and exported'
         await page.getByLabel('Harvest file', { exact: true }).setInputFiles(csvPath);
         await page.getByRole('button', { name: 'Generate', exact: true }).click();
         await expect(page.locator('.forecast-dataset-source')).toContainText('Harvest records: Maybunga', { timeout: 60_000 });
-        await expect(page.locator('.forecast-history-note')).toBeVisible();
+        await expect(page.locator('.forecast-history-note')).toHaveCount(0);
         expect(errors).toEqual([]);
     } finally {
         await sellerContext.close();

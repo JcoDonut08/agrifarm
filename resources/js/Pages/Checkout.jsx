@@ -176,7 +176,7 @@ export default function Checkout({ order, successPage = false }) {
                     : <>
                         {previewItems.length > 0 && <p className="checkout-notice" role="status">{previewItems.length} sample {previewItems.length === 1 ? 'product is' : 'products are'} excluded from this order. Your sample items will stay in your cart.</p>}
                         {step === 3 ? <section className="checkout-panel checkout-final-review">
-                            <div className="checkout-final-heading"><div><span className="checkout-kicker">Final check</span><h2>Confirm your order</h2><p>Review everything below. Your order is placed only when you select “Place COD order”.</p></div><Icon name="receipt" size={28} /></div>
+                            <div className="checkout-final-heading"><div><span className="checkout-kicker">Final check</span><h2>Confirm your order</h2><p>Review everything below. Your order is placed only when you select “Place order”.</p></div><Icon name="receipt" size={28} /></div>
                             <div className="checkout-final-grid">
                                 <div className="checkout-final-section"><div className="checkout-section-heading"><h3>Delivery details</h3><button type="button" onClick={() => goToStep(1)}>Edit</button></div><dl className="checkout-final-details"><div><dt>Full name</dt><dd>{form.data.recipient_name}</dd></div>{form.data.contact_email && <div><dt>Email</dt><dd>{form.data.contact_email}</dd></div>}<div><dt>Contact number</dt><dd>{form.data.phone}</dd></div><div><dt>Address</dt><dd>{form.data.address}</dd></div>{form.data.notes && <div><dt>Delivery notes</dt><dd>{form.data.notes}</dd></div>}</dl></div>
                                 <div className="checkout-final-section"><div className="checkout-section-heading"><h3>Payment method</h3><button type="button" onClick={() => goToStep(2)}>Change</button></div><p><strong>Cash on Delivery</strong><br /><span>Pay in cash when your order arrives. No online payment is taken.</span></p></div>
@@ -185,7 +185,7 @@ export default function Checkout({ order, successPage = false }) {
                             <div className="checkout-final-totals"><div><span>Goods subtotal</span><strong>{money(goodsTotal)}</strong></div><div><span>Delivery charge</span><strong>To be confirmed by seller</strong></div><div className="checkout-final-payable"><span>Payable for goods</span><strong>{money(goodsTotal)}</strong></div></div>
                             <p className="checkout-fee-note">The goods amount is not the final delivered total. The seller must confirm any delivery charge with you before fulfillment.</p>
                             {(form.errors.items || form.errors.request) && <p className="checkout-error" role="alert">{form.errors.items || form.errors.request}</p>}
-                            <div className="checkout-review-actions"><button type="button" className="checkout-outline-button" onClick={() => goToStep(2)}>Back to payment</button><button type="button" className="store-button" disabled={form.processing} onClick={placeOrder}>{form.processing ? 'Placing order…' : 'Place COD order'}</button></div>
+                            <div className="checkout-review-actions"><button type="button" className="checkout-outline-button" onClick={() => goToStep(2)}>Back</button><button type="button" className="store-button" disabled={form.processing} onClick={placeOrder}>{form.processing ? 'Placing order…' : 'Place order'}</button></div>
                         </section> : <div className="checkout-layout"><div className="checkout-main">
                             {step === 1 ? <form className="checkout-panel checkout-details" onSubmit={next} noValidate>
                                 <h2>Shipping details</h2><p>Saved profile details are filled in for you. You can edit them for this order.</p>
@@ -205,7 +205,7 @@ export default function Checkout({ order, successPage = false }) {
                                 <PaymentOptions />
                                 <div className="checkout-review-block"><div><h3>Deliver to</h3><button type="button" onClick={() => goToStep(1)}>Edit details</button></div><strong>{form.data.recipient_name}</strong><p>{form.data.phone}{form.data.contact_email && <><br />{form.data.contact_email}</>}<br />{form.data.address}</p>{form.data.notes && <p>Note: {form.data.notes}</p>}</div>
                                 <div className="checkout-review-block"><h3>Products</h3><ProductRows items={items} quantities={cart} /></div>
-                                <div className="checkout-review-actions"><button type="button" className="checkout-outline-button" onClick={() => goToStep(1)}>Back to details</button><button type="button" className="store-button" onClick={() => goToStep(3)}>Continue to confirmation</button></div>
+                                <div className="checkout-review-actions"><button type="button" className="checkout-outline-button" onClick={() => goToStep(1)}>Back</button><button type="button" className="store-button" onClick={() => goToStep(3)}>Confirm order</button></div>
                             </section>}
                         </div><OrderSnapshot items={items} quantities={cart} goodsTotal={goodsTotal} /></div>}
                     </>}

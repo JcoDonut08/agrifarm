@@ -116,6 +116,29 @@ for (const [width, filipino] of [[390, false], [768, true], [1440, false]]) {
             expect(cells).toContain('₱140.00');
             expect(cells).not.toContain('Undated buyer');
         }
+
+        await page.goto('/seller/dashboard?section=orders');
+        await page.locator('tbody tr').filter({ hasText: 'Undated buyer' }).getByRole('button', { name: filipino ? 'Tingnan ang order' : 'View order', exact: true }).click();
+        const details = page.getByRole('dialog', { name: filipino ? 'Detalye ng order' : 'Order details', exact: true });
+        const deliveryDate = details.getByLabel(filipino ? 'Petsa ng paghatid' : 'Delivered on', { exact: true });
+        await expect(deliveryDate).toHaveValue('');
+        await deliveryDate.fill(dates.from);
+        for (const theme of ['light', 'dark']) {
+            await page.evaluate(theme => document.documentElement.classList.toggle('dark', theme === 'dark'), theme);
+            await deliveryDate.scrollIntoViewIfNeeded();
+            await details.screenshot({ path: testInfo.outputPath(`confirm-delivery-date-${width}-${theme}.png`) });
+            expect(await details.evaluate(element => element.scrollWidth <= element.clientWidth)).toBeTruthy();
+        }
+        await details.getByRole('button', { name: filipino ? 'I-save ang petsa ng paghatid' : 'Save delivery date', exact: true }).click();
+        await expect(details).not.toBeVisible();
+        await page.goto('/seller/dashboard?section=analytics');
+        await page.getByRole('button', { name: filipino ? 'Taon' : 'Year', exact: true }).click();
+        const expectedYearValue = dates.previous_from.slice(0, 4) === dates.from.slice(0, 4) ? '₱245.00' : '₱210.00';
+        await expect(metric.getByText(expectedYearValue, { exact: true })).toBeVisible();
+        await expect(page.locator('.analytics-bar-chart').getByTitle(/₱210\.00$/)).toBeVisible();
+        await page.getByRole('button', { name: filipino ? 'Lahat' : 'All time', exact: true }).click();
+        await expect(metric.getByText('₱245.00', { exact: true })).toBeVisible();
+        await expect(page.locator('.analytics-data-note')).not.toContainText(filipino ? 'walang petsa ng paghatid' : 'without a delivery date');
     });
 }
 

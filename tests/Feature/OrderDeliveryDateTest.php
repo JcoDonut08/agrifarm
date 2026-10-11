@@ -12,6 +12,7 @@ use App\Services\ForecastSellingActivityService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -167,6 +168,59 @@ class OrderDeliveryDateTest extends TestCase
         $this->assertSame('harvest_month', $signal['basis']);
         $this->assertSame(['2025-04', '2026-04'], $signal['periods']);
         $this->assertSame(3, $signal['order_count']);
+    }
+
+    public function test_seller_can_confirm_a_missing_delivery_date_without_repeating_fulfillment(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-10-11 12:00:00', 'Asia/Manila')->utc());
+        Notification::fake();
+        $seller = User::factory()->seller()->create();
+        $product = $this->product($seller);
+        $order = $this->order($seller, 'delivered');
+        $order->product_id = $product->id;
+        $order->save();
+        $this->actingAs($seller)->from('/seller/dashboard?section=orders')
+            ->patch('/seller/orders/'.$order->id.'/delivery-date', ['delivered_on' => '2026-09-30', 'status' => 'cancelled'])
+            ->assertSessionHasNoErrors()->assertRedirect('/seller/dashboard?section=orders');
+        $this->assertSame('2026-09-29 16:00:00', $order->fresh()->delivered_at->format('Y-m-d H:i:s'));
+        $this->assertSame('delivered', $order->fresh()->status);
+        $this->assertSame(10, $product->fresh()->stock);
+        Notification::assertNothingSent();
+        $this->patch('/seller/orders/'.$order->id.'/delivery-date', ['delivered_on' => '2026-10-01'])
+            ->assertSessionHasErrors('delivered_on');
+        $this->assertSame('2026-09-29 16:00:00', $order->fresh()->delivered_at->format('Y-m-d H:i:s'));
+    }
+
+    public function test_delivery_date_confirmation_rejects_invalid_dates_and_unfinished_orders(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-10-11 12:00:00', 'Asia/Manila')->utc());
+        $seller = User::factory()->seller()->create();
+        $order = $this->order($seller, 'delivered');
+        $this->actingAs($seller);
+        foreach (['', 'invalid', '2023-12-31', now('Asia/Manila')->addDay()->toDateString()] as $date) {
+            $this->patch('/seller/orders/'.$order->id.'/delivery-date', ['delivered_on' => $date])
+                ->assertSessionHasErrors('delivered_on');
+            $this->assertNull($order->fresh()->delivered_at);
+        }
+        foreach (['pending', 'reservation', 'preparing', 'out_for_delivery', 'cancelled'] as $status) {
+            $unfinished = $this->order($seller, $status);
+            $this->patch('/seller/orders/'.$unfinished->id.'/delivery-date', ['delivered_on' => '2026-09-30'])
+                ->assertSessionHasErrors('delivered_on');
+            $this->assertNull($unfinished->fresh()->delivered_at);
+            $this->assertSame($status, $unfinished->fresh()->status);
+        }
+    }
+
+    public function test_other_accounts_cannot_confirm_a_sellers_delivery_dates(): void
+    {
+        $order = $this->order(User::factory()->seller()->create(), 'delivered');
+        $this->actingAs(User::factory()->seller()->create())
+            ->patch('/seller/orders/'.$order->id.'/delivery-date', ['delivered_on' => '2026-09-30'])
+            ->assertNotFound();
+        $this->actingAs(User::factory()->create())
+            ->patch('/seller/orders/'.$order->id.'/delivery-date', ['delivered_on' => '2026-09-30'])
+            ->assertForbidden();
+        $this->assertNull($order->fresh()->delivered_at);
     }
 
     public function test_migration_does_not_guess_delivery_dates_for_existing_orders(): void

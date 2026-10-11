@@ -34,7 +34,6 @@ function CropPicture({ crop, text, large = false }) {
 function HarvestCalendar({ rows, months, filipino, text, strengthOf, headingRef, dataset }) {
     const [selected, setSelected] = useState(null);
     const ownCrops = rows.filter(([, details]) => details.status !== 'new_crop');
-    const hasShortHistory = ownCrops.some(([, details]) => details.reason === 'Insufficient Data' && details.unit === 'season_strength');
     const orderedRows = [...ownCrops, ...rows.filter(([, details]) => details.status === 'new_crop')];
     const selectedDetails = selected && rows.find(([crop]) => crop === selected.crop)?.[1];
     const selectedPoint = selectedDetails?.forecast?.find(point => point.month === selected.month);
@@ -47,13 +46,8 @@ function HarvestCalendar({ rows, months, filipino, text, strengthOf, headingRef,
             <h3 ref={headingRef} tabIndex={-1}>{text('Your harvest calendar', 'Kalendaryo ng iyong ani')}</h3>
             <span>{monthLabel(months[0], filipino)} – {monthLabel(months.at(-1), filipino)}</span>
         </div>
-        <p className="forecast-calendar-intro">{text('Find the best harvest months for each crop. Tap a month for details.', 'Tingnan ang pinakamainam na buwan ng ani. Pindutin ang buwan para sa detalye.')}</p>
         {barangay && <p className="forecast-dataset-source">{text('Harvest records', 'Mga tala ng ani')}: <strong>{barangay}</strong>
             <small>{monthLabel(dataset.record_start_month, filipino)} – {monthLabel(dataset.record_end_month, filipino)}</small></p>}
-        {hasShortHistory && <p className="forecast-history-note" role="note">{text(
-            'Some crops have fewer than 24 recorded months. Their guide uses seasonal references.',
-            'May ilang pananim na kulang sa 24 buwang tala. Gabay batay sa panahon ang ginagamit para sa mga ito.',
-        )}</p>}
         <div className="forecast-season-legend">
             <span><i className="is-best" aria-hidden="true" />{text('Peak season', 'Pinakamainam na panahon')}</span>
             <span><i className="is-good" aria-hidden="true" />{text('Okay season', 'Katamtamang panahon')}</span>
@@ -71,7 +65,7 @@ function HarvestCalendar({ rows, months, filipino, text, strengthOf, headingRef,
                 <caption className="sr-only">{text('Harvest patterns, not sales demand or guaranteed yield. Seasonal guides use illustrative reference patterns.', 'Pattern ng ani, hindi demand sa benta o garantisadong ani. Halimbawang pattern ang ginagamit sa gabay batay sa panahon.')}</caption>
                 <thead><tr><th scope="col">{text('Crop', 'Pananim')}</th>{months.map(month => <th scope="col" key={month}>{monthLabel(month, filipino)}</th>)}</tr></thead>
                 <tbody>{orderedRows.map(([crop, details]) => <tr key={crop}>
-                    <th scope="row"><div className="forecast-calendar-crop"><CropPicture crop={crop} text={text} /><span>{crop}<small>{details.status === 'success' ? (barangay ? text('Barangay records', 'Tala ng barangay') : text('Your records', 'Iyong mga tala')) : details.unit === 'unavailable' ? text('No forecast', 'Walang pagtataya') : text('Seasonal guide', 'Gabay sa panahon')}</small></span></div></th>
+                    <th scope="row"><div className="forecast-calendar-crop"><CropPicture crop={crop} text={text} /><span>{crop}{(details.status === 'success' || details.unit === 'unavailable') && <small>{details.status === 'success' ? (barangay ? text('Barangay records', 'Tala ng barangay') : text('Your records', 'Iyong mga tala')) : text('No forecast', 'Walang pagtataya')}</small>}</span></div></th>
                     {months.map(month => {
                         const point = details.forecast?.find(value => value.month === month);
                         const strength = point ? strengthOf(point, details) : null;
@@ -433,15 +427,6 @@ export default function Forecasting({ filipino = false }) {
             </section>
 
             {hasForecast && <div className="forecast-help-sections">
-                <details className="forecast-how-it-works">
-                    <summary>{text('How this works', 'Paano ito gumagana')}</summary>
-                    <p>{barangay ? text(`Kilogram estimates describe ${barangay}’s recorded production, rather than an individual farm’s yield.`, `Ang tantya sa kilo ay para sa naitalang produksyon ng ${barangay}, hindi sa ani ng isang bukid.`) : text('Your harvest records help estimate future harvest patterns.', 'Ginagamit ang iyong mga tala ng ani upang tantyahin ang mga susunod na pattern ng ani.')}</p>
-                    {barangay && <p>{text('The barangay name comes from the uploaded file; it does not verify who issued it.', 'Mula sa na-upload na file ang pangalan ng barangay; hindi nito pinatutunayan kung sino ang nagbigay ng file.')}</p>}
-                    <p>{text('Seasonal planting guides use illustrative reference patterns for Pasig. They guide timing and do not estimate kilos.', 'Mga halimbawang pattern ng panahon sa Pasig ang batayan ng gabay. Gabay ito sa panahon ng pagtatanim at walang tantya sa kilo.')}</p>
-                    <p>{text('Suggestions consider harvest patterns, seasonal rain/heat suitability, and selling activity when enough records are available. Future sales and buyer demand are not predicted.', 'Batay ang mga mungkahi sa pattern ng ani, tibay sa ulan/init ayon sa panahon, at benta kung sapat ang mga tala. Walang pagtataya ng susunod na benta o demand ng mamimili.')}</p>
-                    <p>{text('At least 24 recorded months are needed to fit a harvest model; gaps or a failed fit may still require a seasonal guide.', 'Kailangan ng hindi bababa sa 24 buwang may tala para sa modelo ng ani; maaaring gabay batay sa panahon pa rin ang gamitin kung may puwang o hindi mabuo ang modelo.')}</p>
-                    <p>{text('Use this with your local conditions and farming experience. The planting decision is yours.', 'Isaalang-alang ang kondisyon sa lugar at iyong karanasan. Ikaw ang magpapasya sa pagtatanim.')}</p>
-                </details>
                     <details className="forecast-explanation">
                         <summary>{text('Model details and crop references', 'Detalye ng modelo at mga sanggunian sa pananim')}</summary>
                         <p>{text('SARIMA estimates future monthly harvests from at least 24 recorded months. Only short gaps are interpolated; sparse records use seasonal reference profiles. Seasonal planting guides use illustrative reference patterns for Pasig, not independently measured barangay averages.', 'Tinatantya ng SARIMA ang buwanang ani mula sa hindi bababa sa 24 buwang may tala. Maiikling puwang lamang ang pinupunan; kung kulang ang tala, ginagamit ang mga pattern ng panahon. Mga halimbawang sanggunian ang mga gabay batay sa panahon, hindi hiwalay na sinusukat na barangay average.')}</p>

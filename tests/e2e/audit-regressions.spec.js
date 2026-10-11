@@ -39,6 +39,7 @@ for (const width of [390, 768, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
         await login(page, 'customer@agrifarm.test');
         await page.goto('/customer/settings');
+        await expect(page.getByRole('button', { name: 'Open Help Assistant' })).toHaveCount(0);
         const emails = page.getByRole('switch', { name: 'Order update emails' });
         await expect(emails).toHaveAttribute('aria-checked', 'true');
         await emails.click();
@@ -49,11 +50,14 @@ for (const width of [390, 768, 1440]) {
         await page.screenshot({ path: testInfo.outputPath(`customer-settings-${width}.png`), fullPage: true });
 
         await page.goto('/customer/orders');
+        await expect(page.getByRole('button', { name: 'Open Help Assistant' })).toHaveCount(0);
+        await page.screenshot({ path: testInfo.outputPath(`customer-orders-${width}.png`), fullPage: true });
         await page.getByRole('button', { name: /^Delivered/ }).click();
         const productLink = page.getByRole('link', { name: 'Verified Audit Pechay', exact: true }).first();
         await expect(productLink).toHaveAttribute('href', `/?page=product&product=seller-${productId}`);
         await productLink.click();
         await expect(page.getByRole('heading', { name: 'Verified Audit Pechay', exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Open Help Assistant' })).toBeVisible();
         await page.getByRole('button', { name: 'Report this product or seller', exact: true }).click();
         const report = page.getByRole('dialog', { name: 'Report an issue' });
         await report.getByLabel('Reason for reporting').selectOption('Product quality issue');
@@ -62,6 +66,7 @@ for (const width of [390, 768, 1440]) {
         await expect(report).not.toBeVisible();
 
         await page.goto('/customer');
+        await expect(page.getByRole('button', { name: 'Open Help Assistant' })).toHaveCount(0);
         const lookups = await page.evaluate(async () => {
             const statuses = [];
             for (let i = 0; i < 6; i++) statuses.push((await fetch('/api/chatbot/latest-order', { headers: { Accept: 'application/json' } })).status);

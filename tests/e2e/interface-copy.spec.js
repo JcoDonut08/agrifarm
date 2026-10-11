@@ -2,7 +2,7 @@ import { expect, test } from './fixtures';
 
 const brokenText = /[ÃÂâð�]/;
 
-async function inspectCopy(page, testInfo, name, footer) {
+async function inspectCopy(page, testInfo, name, footer, verifyViewport) {
     await expect(page.locator('body')).not.toContainText(brokenText);
     expect(await page.title()).not.toMatch(brokenText);
     for (const width of [390, 768, 1440]) {
@@ -14,6 +14,7 @@ async function inspectCopy(page, testInfo, name, footer) {
                 document.documentElement.style.colorScheme = theme;
             }, theme);
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+            if (verifyViewport) await verifyViewport(width, theme);
             await page.screenshot({ path: testInfo.outputPath(`${name}-${width}-${theme}.png`), fullPage: true });
             await page.locator(footer).screenshot({ path: testInfo.outputPath(`${name}-footer-${width}-${theme}.png`) });
         }
@@ -29,9 +30,43 @@ async function login(page, email, role) {
 }
 
 test('storefront and Filipino about text use readable characters', async ({ page }, testInfo) => {
-    await page.goto('/');
-    await expect(page.locator('.store-footer-bottom')).toContainText(`© ${new Date().getFullYear()} AgriFarm`);
-    await inspectCopy(page, testInfo, 'storefront', '.store-footer-bottom');
+    for (const language of ['english', 'filipino']) {
+        await page.goto('/');
+        await page.evaluate(value => localStorage.setItem('agrifarm-customer-language', value), language);
+        await page.reload();
+        await expect(page.locator('.store-footer-bottom')).toContainText(`© ${new Date().getFullYear()} AgriFarm`);
+        await inspectCopy(page, testInfo, `storefront-${language}`, '.store-footer-bottom', async (width, theme) => {
+            await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+            const copy = page.locator('.modern-hero-copy');
+            const bounds = await copy.boundingBox();
+            expect(bounds.x).toBeGreaterThanOrEqual(20);
+            expect(bounds.x + bounds.width).toBeLessThanOrEqual(width - 20);
+            const textFits = await copy.evaluate(element => [...element.querySelectorAll('h1, p, span')].every(text => {
+                const range = document.createRange();
+                range.selectNodeContents(text);
+                const bounds = range.getBoundingClientRect();
+                return bounds.left >= 0 && bounds.right <= innerWidth;
+            }));
+            expect(textFits).toBeTruthy();
+            if (width === 390) {
+                const hero = await page.locator('.modern-hero').boundingBox();
+                expect(hero.height).toBeLessThan(500);
+                const benefits = await page.locator('.modern-hero-values > div').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().top));
+                expect(Math.max(...benefits) - Math.min(...benefits)).toBeLessThan(1);
+                const button = page.locator('.modern-hero-btn');
+                const buttonBounds = await button.boundingBox();
+                expect(buttonBounds.height).toBeGreaterThanOrEqual(44);
+            }
+            await page.screenshot({ path: testInfo.outputPath(`home-viewport-${language}-${width}-${theme}.png`) });
+        });
+        await page.setViewportSize({ width: 360, height: 800 });
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+        await page.screenshot({ path: testInfo.outputPath(`home-viewport-${language}-360.png`) });
+        await page.locator('.modern-hero-btn').click();
+        await expect(page).toHaveURL(/\?page=marketplace$/);
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText('Marketplace');
+    }
     await page.evaluate(() => localStorage.setItem('agrifarm-customer-language', 'filipino'));
     await page.goto('/about');
     await expect(page.getByRole('heading', { name: 'Sariwang Ani Mula Sa Kapwa Mo Pasigueño' })).toBeVisible();

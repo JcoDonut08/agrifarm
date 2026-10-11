@@ -103,7 +103,7 @@ export default function Orders({ checkouts }) {
                     </header>
                     <div className="customer-profile-panel">
                         <div className="customer-profile-content" style={{ maxWidth: '100%' }}>
-                            <div style={{ display: 'flex', gap: '12px', marginBottom: '28px', borderBottom: '1px solid var(--store-border)', paddingBottom: '20px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                            <div className="customer-order-tabs" role="group" aria-label={filipino ? 'Status ng order' : 'Order status'}>
                                 <button type="button" onClick={() => setTab('active')} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px', borderRadius: '8px', fontWeight: 650, fontSize: '14px', transition: 'all 0.2s', background: tab === 'active' ? 'var(--store-green)' : 'var(--store-bg)', color: tab === 'active' ? '#fff' : 'var(--store-muted)', border: `1px solid ${tab === 'active' ? 'var(--store-green)' : 'var(--store-border)'}`, cursor: 'pointer', boxShadow: tab === 'active' ? '0 4px 12px rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>
                                     <Icon name="receipt" size={18} />{filipino ? 'Pending' : 'Pending'}
                                 </button>
@@ -150,7 +150,7 @@ export default function Orders({ checkouts }) {
                                                     
                                                     return (
                                                         <div key={item.id} style={{ marginBottom: index !== checkout.items.length - 1 ? '16px' : '0', paddingBottom: index !== checkout.items.length - 1 ? '16px' : '0', borderBottom: index !== checkout.items.length - 1 ? '1px solid var(--store-border)' : 'none' }}>
-                                                              <div style={{ display: 'flex', gap: '16px' }}>
+                                                              <div className="customer-order-item" style={{ display: 'flex', gap: '16px' }}>
                                                             {/* Product Image */}
                                                             <Link href={`/?page=product&product=seller-${item.product_id}`} style={{ width: '80px', height: '80px', background: 'var(--store-bg)', border: '1px solid var(--store-border)', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, display: 'block', transition: 'border-color 0.2s' }}>
                                                                 {item.photoUrl ? (
@@ -164,19 +164,20 @@ export default function Orders({ checkouts }) {
                                                             
                                                             {/* Item Details */}
                                                             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                                                                    <div>
-                                                                        <Link href={`/?page=product&product=seller-${item.product_id}`} style={{ display: 'block', fontSize: '15px', fontWeight: 650, margin: '0 0 4px 0', color: 'var(--store-ink)', textDecoration: 'none' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--store-green-dark)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--store-ink)'}>
-                                                                            {item.name}
-                                                                        </Link>
+                                                                <div className="customer-order-item-heading">
+                                                                    <Link className="customer-order-item-title" href={`/?page=product&product=seller-${item.product_id}`} onMouseEnter={e => e.currentTarget.style.color = 'var(--store-green-dark)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--store-ink)'}>
+                                                                        {item.name}
+                                                                    </Link>
+                                                                    <div className="customer-order-item-copy">
                                                                         <p style={{ fontSize: '13px', color: 'var(--store-muted)', margin: '0 0 4px 0' }}>
-                                                                            {item.quantity} × {item.unit} • Sold by {item.seller_name}
+                                                                            {item.quantity} × {item.unit}
                                                                         </p>
+                                                                        <p className="customer-order-seller"><span>{filipino ? 'Ibinenta ng' : 'Sold by'}</span><span className="customer-order-seller-name" title={item.seller_name}>{item.seller_name}</span></p>
                                                                         <span style={{ display: 'inline-block', fontSize: '13px', fontWeight: 600, color: 'var(--store-ink)' }}>
                                                                             ₱{item.price.toFixed(2)}
                                                                         </span>
                                                                     </div>
-                                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                                                                    <div className="customer-order-item-status">
                                                                         <span className={`badge-${item.status}`} style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                                                             {orderStatusLabel(item.status, filipino)}
                                                                         </span>

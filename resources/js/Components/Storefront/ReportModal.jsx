@@ -129,7 +129,7 @@ export default function ReportModal({ product, onClose }) {
                     {errors.description && <p id="report-description-error" role="alert" className="app-field-error">{errors.description}</p>}
 
                     <div className="form-actions">
-                        <button type="button" className="store-button store-button--ghost" disabled={processing} onClick={onClose}>{filipino ? 'Kanselahin' : 'Cancel'}</button>
+                        <button type="button" className="store-button store-button--danger" disabled={processing} onClick={onClose}>{filipino ? 'Kanselahin' : 'Cancel'}</button>
                         <button type="submit" className="store-button" disabled={processing}>
                             {processing ? (filipino ? 'Ipinapadala…' : 'Sending…') : (filipino ? 'Ipadala ang report' : 'Submit report')}
                         </button>

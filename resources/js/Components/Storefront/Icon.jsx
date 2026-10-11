@@ -1,5 +1,6 @@
 export default function Icon({ name, size = 20, ...props }) {
     const paths = {
+        home: <><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z" /><path d="M9 21v-8h6v8" /></>,
         mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 6 9 7 9-7" /></>,
         message: <path d="M21 11a8 8 0 0 1-8 8H7l-5 3V11a9 9 0 0 1 19 0Z" />,
         flag: <path d="M5 22V3c5-4 9 4 15 0v11c-6 4-10-4-15 0" />,

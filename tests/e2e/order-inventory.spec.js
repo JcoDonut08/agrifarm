@@ -87,10 +87,42 @@ test('accepted preorder cancellation restores future harvest at mobile tablet an
         await page.getByRole('dialog', { name: 'Order details' }).getByRole('button', { name: 'Close', exact: true }).click();
         await customer.setViewportSize({ width, height: 1000 });
         await customer.goto('/customer/orders');
+        if (width === 390) {
+            const tabs = customer.locator('.customer-order-tabs');
+            await tabs.scrollIntoViewIfNeeded();
+            expect(await tabs.evaluate(element => element.scrollWidth > element.clientWidth)).toBeTruthy();
+            const bounds = await tabs.boundingBox();
+            const touch = await customerContext.newCDPSession(customer);
+            const startX = bounds.x + bounds.width - 20;
+            const y = bounds.y + 22;
+            await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: startX, y }] });
+            for (let move = 1; move <= 10; move++) {
+                await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: startX - move * 20, y }] });
+            }
+            await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+            await expect.poll(() => tabs.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+            await touch.detach();
+        }
         await customer.getByRole('button', { name: 'Cancelled', exact: true }).click();
         const reasonText = reason === 'reserved_elsewhere' ? 'Already allocated to another customer' : reason === 'out_of_stock' ? 'Out of stock' : 'The harvest was damaged by heavy rain.';
         await expect(customer.locator('.order-cancellation-reason').filter({ hasText: reasonText })).toBeVisible();
+        for (const heading of await customer.locator('.customer-order-item-heading').all()) {
+            const title = await heading.locator('.customer-order-item-title').boundingBox();
+            const badge = await heading.locator('.customer-order-item-status > span').boundingBox();
+            const bounds = await heading.boundingBox();
+            expect(Math.abs(title.y - badge.y)).toBeLessThan(1);
+            expect(Math.abs(badge.x + badge.width - bounds.x - bounds.width)).toBeLessThan(1);
+            expect(title.x + title.width).toBeLessThanOrEqual(badge.x);
+        }
+        for (const seller of await customer.locator('.customer-order-seller-name').all()) {
+            expect(await seller.evaluate(element => ({ fits: element.scrollWidth <= element.clientWidth, wrapping: getComputedStyle(element).whiteSpace })))
+                .toEqual({ fits: true, wrapping: 'nowrap' });
+        }
+        expect(await customer.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
         await customer.screenshot({ path: testInfo.outputPath(`customer-cancellation-${width}.png`), fullPage: true });
+        await customer.evaluate(() => document.documentElement.classList.add('dark'));
+        await customer.screenshot({ path: testInfo.outputPath(`customer-cancellation-${width}-dark.png`), fullPage: true });
+        await customer.evaluate(() => document.documentElement.classList.remove('dark'));
         await customer.goto('/?page=notifications');
         await customer.locator('.customer-notification').filter({ hasText: reasonText }).first().locator('summary').click();
         await expect(customer.locator('.customer-notification').filter({ hasText: reasonText })).toBeVisible();

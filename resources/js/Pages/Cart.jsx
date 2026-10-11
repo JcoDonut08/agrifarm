@@ -35,7 +35,6 @@ export default function Cart() {
                         <div className="basket-line-total"><span>Item total</span><strong>{money(product.price * cart[product.id])}</strong></div>
                     </div>
                 </article>)}
-                <p className="basket-storage-note"><Icon name="leaf" size={18} />Your basket is saved on this device. Adding items does not reserve stock.</p>
             </section>
             <aside className="basket-summary" aria-labelledby="basket-summary-heading">
                 <h2 id="basket-summary-heading"><Icon name="receipt" size={21} />Order summary</h2>
@@ -50,7 +49,7 @@ export default function Cart() {
                         : 'These are sample products. Add a listing from a real AgriFarm seller to place an order.'}
                 </p>
                 {orderable.length > 0 && (customer
-                    ? <Link className="store-button" href="/?page=checkout">Checkout · Cash on Delivery <Icon name="arrow" size={17} /></Link>
+                    ? <Link className="store-button" href="/?page=checkout">Checkout <Icon name="arrow" size={17} /></Link>
                     : <Link className="store-button" href="/login"><Icon name="lock" size={17} />Log in to checkout</Link>)}
                 <p className="collection-footnote">No online payment is taken. The delivery charge is not yet included.</p>
             </aside>

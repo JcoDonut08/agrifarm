@@ -67,7 +67,7 @@ test('customer checks out with COD across mobile tablet and desktop; seller rece
         }
         await page.getByRole('button', { name: `Add ${productName} to cart` }).click();
         await page.goto('/?page=cart');
-        await page.getByRole('link', { name: /Checkout · Cash on Delivery/ }).click();
+        await page.getByRole('link', { name: 'Checkout', exact: true }).click();
         await expect(page.getByRole('heading', { name: 'Checkout', exact: true })).toBeVisible();
         const checkoutTypography = await page.evaluate(() => ({
             storefront: getComputedStyle(document.querySelector('.storefront')).fontFamily,
@@ -87,6 +87,14 @@ test('customer checks out with COD across mobile tablet and desktop; seller rece
         await page.getByLabel('Email address').fill('delivery@example.com');
         await expect(page.getByLabel('Email address')).toHaveValue('delivery@example.com');
         await expect(page.getByRole('navigation', { name: 'Checkout progress' })).toContainText('Confirm order');
+        if (viewport.width === 390) {
+            const centers = await page.locator('.checkout-progress li > span').evaluateAll(elements => elements.map(element => {
+                const bounds = element.getBoundingClientRect();
+                return bounds.x + bounds.width / 2;
+            }));
+            expect(Math.abs(centers[1] - viewport.width / 2)).toBeLessThan(1);
+            expect(Math.abs((centers[1] - centers[0]) - (centers[2] - centers[1]))).toBeLessThan(1);
+        }
         await expect(page.getByText('Delivery charge').first()).toBeVisible();
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-checkout-shipping.png`), fullPage: true });
@@ -99,7 +107,10 @@ test('customer checks out with COD across mobile tablet and desktop; seller rece
         await expect(page.locator('.checkout-review-block .checkout-product-row img')).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-checkout-payment.png`), fullPage: true });
-        await page.getByRole('button', { name: 'Continue to confirmation' }).click();
+        await page.getByRole('button', { name: 'Back', exact: true }).click();
+        await expect(page.getByLabel('Email address')).toHaveValue('delivery@example.com');
+        await page.getByRole('button', { name: 'Continue to payment' }).click();
+        await page.getByRole('button', { name: 'Confirm order', exact: true }).click();
         await expect(page.getByRole('heading', { name: 'Confirm your order' })).toBeVisible();
         await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
         await expect(page.locator('.checkout-final-details')).toContainText('123 Example Street near Rosario hall');
@@ -107,7 +118,7 @@ test('customer checks out with COD across mobile tablet and desktop; seller rece
         await expect(page.getByText('Payable for goods')).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-checkout-confirm.png`), fullPage: true });
-        await page.getByRole('button', { name: 'Place COD order' }).click();
+        await page.getByRole('button', { name: 'Place order', exact: true }).click();
         await expect(page).toHaveURL((url) => url.searchParams.get('page') === 'order-success' && /^[0-9a-f-]{36}$/.test(url.searchParams.get('order') || ''));
         await expect(page.getByRole('heading', { name: 'Thanks for ordering!' })).toBeVisible();
         const reference = await page.locator('.checkout-reference').textContent();

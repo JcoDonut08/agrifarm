@@ -38,10 +38,16 @@
 .harvest-unit { display: inline-flex; min-width: 42px; justify-content: center; padding: 4px 7px; border-radius: 5px; background: #edf5ec; color: #416d4c; font-size: 11px; font-weight: 750; }
 .harvest-status { display: inline-flex; align-items: center; gap: 4px; color: #22713e; font-size: 11px; font-weight: 700; }
 .harvest-record-actions { display: flex; align-items: center; gap: 6px; }
-.harvest-view-button, .harvest-action-button { display: inline-flex; min-height: 34px; align-items: center; justify-content: center; gap: 6px; padding: 5px 9px; border: 1px solid #cae0d0; border-radius: 6px; color: #186e3a; font-size: 11px; font-weight: 700; white-space: nowrap; }
-.harvest-view-button:hover, .harvest-action-button:hover { background: #eff8f0; }
-.harvest-action-button--danger { border-color: #e5c3bf; color: #a43d35; }
-.harvest-action-button--danger:hover { background: #fff4f2; }
+.harvest-view-button, .harvest-action-button { position: relative; display: inline-grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; padding: 0; border: 1px solid #dbe4dc; border-radius: 50%; background: #fff; color: #4d6255; }
+.harvest-record-actions button::after { content: attr(data-tooltip); position: absolute; z-index: 20; left: 50%; bottom: calc(100% + 9px); width: max-content; max-width: 150px; padding: 6px 8px; color: #fff; background: #17231c; border-radius: 5px; box-shadow: 0 5px 16px #1024192b; font-size: 10px; font-weight: 650; line-height: 1.2; text-align: center; white-space: normal; pointer-events: none; opacity: 0; transform: translate(-50%, 3px); transition: opacity .14s ease, transform .14s ease; }
+.harvest-record-actions button:hover::after, .harvest-record-actions button:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+.harvest-record-actions button:last-child::after { left: auto; right: 0; transform: translateY(3px); }
+.harvest-record-actions button:last-child:hover::after, .harvest-record-actions button:last-child:focus-visible::after { transform: translateY(0); }
+.harvest-view-button:hover, .harvest-action-button:hover { color: #173d29; background: #eef5ef; border-color: #aec8b4; }
+.harvest-view-button:focus-visible, .harvest-action-button:focus-visible { outline: 2px solid var(--store-green); outline-offset: 3px; }
+.harvest-action-button--danger { border-color: #edcbc5; color: #9c3e31; background: #fff5f3; }
+.harvest-action-button--danger:hover { color: #9c3e31; background: #fff4f2; }
+@media (max-width: 640px) { .harvest-view-button, .harvest-action-button { width: 44px; height: 44px; flex-basis: 44px; } }
 .harvest-pagination { margin-top: 14px; }
 .harvest-empty { min-height: 205px; padding: 24px 15px 28px; border-top: 1px dashed #dce7dd; }
 .harvest-empty-icon { display: grid; width: 45px; height: 45px; margin-bottom: 12px; place-items: center; border-radius: 13px; background: #edf5ec; color: #4f8a5d; }
@@ -106,10 +112,11 @@
 .dark .harvest-quantity { color: #fff !important; }
 .dark .harvest-unit { background: #2b4732; color: #fff; }
 .dark .harvest-status { color: #9ad5a8; }
-.dark .harvest-view-button, .dark .harvest-action-button { border-color: #91b99a; color: #fff; }
+.dark .harvest-view-button, .dark .harvest-action-button { background: #242d27; border-color: #455148; color: #c9d5cc; }
 .dark .harvest-view-button:hover, .dark .harvest-action-button:hover { background: #2b4030; }
-.dark .harvest-action-button--danger { border-color: #d9958e; color: #ffd4cf; }
+.dark .harvest-action-button--danger { background: #3b2b28; border-color: #66463f; color: #efb8ae; }
 .dark .harvest-action-button--danger:hover { background: #482c29; }
+.dark .harvest-record-actions button::after { color: #17231c; background: #eff5f0; box-shadow: 0 6px 18px #0006; }
 .dark .harvest-empty { border-color: #3a4a3c; }
 .dark .harvest-empty-icon { background: #2b4030; color: #b3d7a1; }
 .dark .harvest-summary-empty { color: #acb9b0; }

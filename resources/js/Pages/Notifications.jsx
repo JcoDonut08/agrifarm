@@ -90,7 +90,7 @@ export default function Notifications() {
                             <div className="notification-body">
                                 <div className="notification-heading">
                                     <h3>{data.seller_name || text('Seller update', 'Update mula sa nagbebenta')}</h3>
-                                    <span className="notification-status-icon" title={title} aria-hidden="true"><StatusIcon size={16} strokeWidth={1.8} /></span>
+                                    <span className="notification-status-icon" title={title} aria-hidden="true"><StatusIcon size={20} strokeWidth={2.2} /></span>
                                 </div>
                                 <p className="notification-description">{notificationMessage(data, filipino)}</p>
                                 <div className="notification-meta"><time dateTime={notification.created_at} title={fullDate}>{timestamp}</time>{data.reference && <span className="notification-reference">{data.reference}</span>}</div>

@@ -108,6 +108,7 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         Route::delete('/seller/products/{product}', [ProductController::class, 'destroy'])->middleware('throttle:seller-product-management')->name('seller.products.destroy');
         Route::post('/seller/orders/walk-in', [WalkInOrderController::class, 'store'])->middleware('throttle:30,1,seller-walk-in:')->name('seller.orders.walk-in.store');
         Route::patch('/seller/orders/{walkInOrder}/status', [WalkInOrderController::class, 'updateStatus'])->middleware('throttle:seller-order-status')->name('seller.orders.status.update');
+        Route::patch('/seller/orders/{walkInOrder}/delivery-date', [WalkInOrderController::class, 'recordDeliveryDate'])->middleware('throttle:seller-order-status')->name('seller.orders.delivery-date');
         Route::get('/seller/products/{product}/photo', [ProductController::class, 'photo'])->name('seller.products.photo');
         Route::post('/seller/profile/photo', [ProfileController::class, 'photo'])->middleware('throttle:10,1,seller-photo:')->name('seller.profile.photo');
         Route::get('/seller/profile/photo', [ProfileController::class, 'showPhoto']);

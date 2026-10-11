@@ -80,11 +80,12 @@ test('seller listing appears in customer homepage, marketplace, detail, and cart
         expect(await page.locator('.featured-product-photo img').evaluate((photo) => getComputedStyle(photo).objectFit)).toBe('cover');
         expect(await page.locator('.featured-product-stage').evaluate((stage) => getComputedStyle(stage).backgroundColor))
             .toBe(await page.locator('.featured-banner').evaluate((banner) => getComputedStyle(banner).backgroundColor));
-        expect(await page.locator('.featured-banner').evaluate((banner) => banner.getBoundingClientRect().height)).toBeLessThan(viewport.width === 390 ? 650 : 450);
+        expect(await page.locator('.featured-banner').evaluate((banner) => banner.getBoundingClientRect().height)).toBeLessThan(viewport.width === 390 ? 500 : 450);
         expect(await page.locator('.featured-product-photo img').evaluate((img) => img.naturalWidth)).toBeGreaterThan(0);
-        await expect(page.getByRole('link', { name: 'View featured product' })).toHaveAttribute('href', /\?page=product&product=seller-\d+/);
+        await expect(page.getByRole('link', { name: 'View product', exact: true })).toHaveAttribute('href', /\?page=product&product=seller-\d+/);
         await assertNoHorizontalOverflow(page);
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-seller-home.png`), fullPage: true });
+        await page.locator('.featured-banner').screenshot({ path: testInfo.outputPath(`${viewport.name}-featured-light.png`) });
 
         await page.locator('.top-selling-section .section-link').click();
         await expect(page).toHaveURL(/\?page=marketplace&sort=best-selling$/);
@@ -95,7 +96,7 @@ test('seller listing appears in customer homepage, marketplace, detail, and cart
 
         await page.goto('/?page=marketplace');
         await expect(page.getByRole('heading', { name: productName })).toBeVisible();
-        await expect(page.getByRole('status').filter({ hasText: '1 product' }).first()).toBeVisible();
+        await expect(page.locator('.market-product-grid .produce-card')).toHaveCount(1);
         await expect(page.getByLabel('Barangay')).toBeVisible();
         await expect(page.getByLabel('Sort products').locator('option[value="best-selling"]')).toHaveText('Best Selling');
         await page.getByLabel('Barangay').selectOption('Rosario');
@@ -134,16 +135,33 @@ test('seller listing appears in customer homepage, marketplace, detail, and cart
         await expect(page.getByRole('heading', { name: productName })).toBeVisible();
         await expect(page.getByText('Barangay Rosario').first()).toBeVisible();
         await assertNoHorizontalOverflow(page);
+        await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-seller-cart.png`), fullPage: true });
     }
 
-    for (const viewport of [viewports[2], viewports[0]]) {
+    for (const viewport of viewports) {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
         await page.goto('/');
         await page.evaluate(() => document.documentElement.classList.add('dark'));
         await expect(page.locator('.top-selling-section .product-badge')).toHaveCount(1);
         await assertNoHorizontalOverflow(page);
         await page.screenshot({ path: testInfo.outputPath(`${viewport.name}-dark-seller-home.png`), fullPage: true });
+        await page.locator('.featured-banner').screenshot({ path: testInfo.outputPath(`${viewport.name}-featured-dark.png`) });
     }
+
+    await page.evaluate(() => localStorage.setItem('agrifarm-customer-language', 'filipino'));
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.featured-banner')).toContainText('2 naihatid na order');
+    await expect.poll(() => page.locator('.featured-product-photo img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+    await page.locator('.featured-product-photo img').scrollIntoViewIfNeeded();
+    await page.locator('.featured-product-photo img').evaluate(async image => {
+        await image.decode();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    await assertNoHorizontalOverflow(page);
+    await page.locator('.featured-banner').screenshot({ path: testInfo.outputPath('mobile-360-featured-filipino.png') });
+    await page.locator('.featured-actions').getByRole('link', { name: 'Tingnan ang produkto', exact: true }).click();
+    await expect(page.getByRole('heading', { name: productName, level: 1 })).toBeVisible();
 });
 
 async function signIn(page, email) {

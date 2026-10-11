@@ -33,14 +33,14 @@ for (const width of [390, 768, 1440]) {
         const visualCalendar = page.getByRole('region', { name: 'Visual harvest calendar', exact: true });
         await expect(visualCalendar).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Your harvest calendar', exact: true })).toBeFocused();
-        await expect(page.locator('.forecast-history-note')).toHaveText('Some crops have fewer than 24 recorded months. Their guide uses seasonal references.');
+        await expect(page.locator('.forecast-history-note, .forecast-visual-calendar .forecast-calendar-intro, .forecast-how-it-works')).toHaveCount(0);
         if (width === 390) {
             for (const noteWidth of [390, 768, 1440]) {
                 await page.setViewportSize({ width: noteWidth, height: 1000 });
                 for (const theme of ['light', 'dark']) {
                     if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode' }).click();
                     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
-                    await page.locator('.forecast-visual-calendar').screenshot({ path: testInfo.outputPath(`forecast-history-note-${noteWidth}-${theme}.png`) });
+                    await page.locator('.forecast-visual-calendar').screenshot({ path: testInfo.outputPath(`forecast-calendar-${noteWidth}-${theme}.png`) });
                     if (theme === 'dark') await page.getByRole('button', { name: 'Switch to light mode' }).click();
                 }
             }
@@ -130,9 +130,7 @@ for (const width of [390, 768, 1440]) {
         await expect(page.locator('.forecast-new-crop')).toHaveCount(1);
         await farmRow.getByRole('button').first().click();
         await expect(page.locator('.forecast-month-detail')).toContainText(/Estimated harvest: \d+–\d+ kg/);
-        await page.locator('.forecast-how-it-works summary').click();
-        await expect(page.locator('.forecast-how-it-works').getByText('At least 24 recorded months', { exact: false })).toBeVisible();
-        await page.locator('.forecast-how-it-works summary').click();
+        await expect(page.locator('.forecast-how-it-works')).toHaveCount(0);
         await page.getByText('Model details and crop references', { exact: true }).click();
         await expect(page.locator('.forecast-explanation')).toContainText('Accuracy on real barangay records is future work');
         await expect(page.locator('.forecast-explanation')).toContainText('SARIMA (');
@@ -240,7 +238,7 @@ test('Filipino Excel upload and row errors keep the saved result', async ({ page
     await chooser.setFiles({ name: 'harvest.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from(await workbook.xlsx.writeBuffer()) });
     await page.getByRole('button', { name: 'Bumuo', exact: true }).click();
     await expect(page.locator('.forecast-saved')).toContainText('harvest.xlsx', { timeout: 60_000 });
-    await expect(page.locator('.forecast-history-note')).toHaveText('May ilang pananim na kulang sa 24 buwang tala. Gabay batay sa panahon ang ginagamit para sa mga ito.');
+    await expect(page.locator('.forecast-history-note, .forecast-visual-calendar .forecast-calendar-intro, .forecast-how-it-works')).toHaveCount(0);
     await expect(page.locator('.forecast-rec-card')).toHaveCount(3);
     await expect(page.locator('.forecast-upload-zone')).toBeVisible();
     await expect(page.locator('.forecast-expected-harvest').first()).toHaveText(/Gabay batay sa panahon|Batay sa mga sanggunian ng panahon|Batay sa gabay sa pagsasaka/);
