@@ -1,6 +1,6 @@
 # Upsun deployment and separate thesis dataset plan
 
-Status: planned. No deployment or data transfer has been performed. This document describes the work to complete when deployment is requested.
+Status: deployment preparation started on October 12, 2026. No hosted deployment or remote data transfer has been performed yet. Local backup and starting-data verification are complete; Upsun authentication, project creation, and live verification are pending.
 
 ## Goal
 
@@ -18,7 +18,7 @@ The local application and its database stay available on this computer. The host
 | Existing orders, reviews, notifications, harvest records, planting plans, and saved forecasts | Retain on localhost by default. New activity is collected on Upsun. |
 | Photos and thumbnails for selected accounts and listings | Copy only the matching files, preserving their relative paths. Retain the full upload collection locally. |
 | Historical harvest data needed for forecasting | Include only the agreed reference dataset, with its actual source and coverage identified. Keep historical or synthetic data distinct from records collected during thesis testing. |
-| Forecasting reference JSON files | Include the three files under `storage/app/forecasting` and ensure they remain accessible after storage mounts are attached. |
+| Forecasting reference JSON files | Include the four files under `storage/app/forecasting` and ensure they remain accessible after storage mounts are attached. |
 | Runtime configuration and secrets | Configure privately in Upsun; keep them out of Git and this document. |
 
 If selected accounts are copied with their existing password hashes, their passwords can be retained. Newly created accounts need their own credentials. Selective setup must preserve relationships and file paths; it is not a full database import. Raw forecasting uploads are currently temporary and removed after processing; they cannot be recovered from saved results.
@@ -37,11 +37,15 @@ Review the current deployment-readiness branch and include the intended fixes an
 
 Identify the actual local database engine, version, upload locations, and storage size without exposing credentials. The application defaults to PostgreSQL, but the active database must be confirmed before choosing the hosted service and any selective transfer tools. Record which accounts, listings, photos, and forecasting references form the hosted starting dataset.
 
+The agreed starting set is the active CENRO administrator, active sellers, and their visible products. The prepared bundle contains **4 accounts (1 admin and 3 sellers), 5 products, and 13 photo/thumbnail files**, preserving IDs and relationships. Accounts that used the published development password have new hosted-only temporary passwords in a private credential file; sellers must replace them on first sign-in. Local passwords are unchanged. Do not publish the credential file or import it as application data.
+
 Do not copy Windows executables, `node_modules`, `vendor`, the Windows Python virtual environment, or local development settings to Linux. Install dependencies from the project's lock files and Python requirements during the build.
 
 ## 2. Configure Upsun
 
 Create the Upsun configuration for Laravel, its database service, HTTPS routes, storage, and the build/deploy steps. Serve only Laravel's `public` directory.
+
+The prepared `.upsun/config.yaml` uses the supported `composable:26.05` image with PHP 8.4, Node.js 24, Python 3.13, and PostgreSQL 18. It declares persistent upload mounts and an order-email worker. `.environment` maps the database relationship and derives the hosted HTTPS URL. `.upsun/build.sh` installs dependencies and runs Python tests; `.upsun/deploy.sh` applies pending migrations and checks forecasting. Environment secrets are provisioned privately, not stored in these files. [Upsun composable image documentation](https://developer.upsun.com/docs/configure-apps/app-reference/composable-image)
 
 The hosting runtime needs PHP compatible with Laravel 12, the appropriate database extension, GD with WebP support, and Python compatible with `python/requirements.txt`. Verify that PHP can start the Python process. Prefer PHP and Python in the same application runtime to preserve the current forecasting architecture; confirm the supported Upsun image before implementing it.
 
@@ -51,7 +55,7 @@ Configure a supervised background worker for order emails using `php artisan que
 
 Configure persistent storage for the application's upload directories, including `storage/app/private` and any used public uploads. Keep private uploads outside direct web access; public product photos continue to use the application's existing controllers. Uploaded files must use a `storage` mount rather than a temporary mount. [Upsun mounts documentation](https://developer.upsun.com/docs/configure-apps/image-properties/mounts)
 
-Mounting Laravel's storage directory can hide reference files included in the code build. Arrange for the forecasting reference JSON files to be copied from a build-accessible location into the mounted directory, or use a narrower mount layout that keeps them visible.
+The prepared configuration mounts upload and framework directories individually, leaving `storage/app/forecasting` accessible from the code build. Preserve this layout so the reference JSON files remain visible.
 
 Set production environment variables privately, including `APP_ENV=production`, `APP_DEBUG=false`, the actual HTTPS `APP_URL`, secure session cookies, database connection, mail settings, and forecasting settings. Configure proxy handling so generated URLs and emails use HTTPS.
 
@@ -108,8 +112,10 @@ Do not later overwrite the live database with an older local export. New hosted 
 | --- | --- |
 | Upsun project and target environment | Pending |
 | Hosted URL and deployed revision | Pending |
-| Hosted starting dataset and matching photo setup | Pending |
-| Starting-data comparison and local dataset preservation | Pending |
+| Local backup | Completed October 12, 2026: database archive readable; 411 copied files checked. Private backup is outside Git in `D:/AgrifarmBackups/20261012-161226`. |
+| Hosted starting dataset and matching photo setup | Local bundle prepared in `D:/AgrifarmBackups/upsun-starting-data-20261012-162115`; remote import pending. |
+| Starting-data comparison and local dataset preservation | Isolated PostgreSQL import passed: counts, seller relationships, empty activity tables, photo checksums, account ID sequence, and repeat-import protection. Local records are unchanged. Hosted comparison pending. |
+| Local release checks | Frontend build, shell syntax, Composer validation, PHP formatting, and 309 PHP tests (3,409 assertions) passed. Pinned Python packages have Python 3.13 Linux wheels. YAML parsing/settings checks passed; the official Windows CLI validator failed to open `.upsun\\config.yaml`, so hosted configuration validation remains pending. |
 | Verification fixtures distinguished from participant activity | Pending |
 | HTTPS, email, privacy, and forecasting checks | Pending |
 | Restart and redeploy persistence check | Pending |

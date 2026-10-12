@@ -1,0 +1,21 @@
+# Upsun sources this at runtime. Credentials come from its service relationship.
+if [ -n "${DATABASE_HOST:-}" ]; then
+    export DB_CONNECTION=pgsql
+    export DB_HOST="$DATABASE_HOST"
+    export DB_PORT="$DATABASE_PORT"
+    export DB_DATABASE="$DATABASE_PATH"
+    export DB_USERNAME="$DATABASE_USERNAME"
+    export DB_PASSWORD="$DATABASE_PASSWORD"
+    export DB_URL=""
+fi
+
+# Derive the HTTPS URL without committing an environment-specific hostname.
+if [ -n "${PLATFORM_ROUTES:-}" ] && [ -z "${APP_URL:-}" ]; then
+    export APP_URL="$(php -r '$routes = json_decode(base64_decode(getenv("PLATFORM_ROUTES")), true) ?: []; foreach ($routes as $url => $route) { if (($route["primary"] ?? false) && str_starts_with($url, "https://")) { echo rtrim($url, "/"); break; } }')"
+fi
+
+# NumPy/SciPy Linux wheels load the C++ runtime provided by the Nix compiler.
+if command -v gcc >/dev/null 2>&1; then
+    export LD_LIBRARY_PATH="$(dirname "$(gcc -print-file-name=libstdc++.so.6)")${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+export FORECAST_PYTHON_BIN="${PLATFORM_APP_DIR:-/app}/python/.venv/bin/python"

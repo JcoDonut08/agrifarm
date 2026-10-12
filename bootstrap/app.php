@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        if (env('PLATFORM_PROJECT')) {
+            // Upsun's router terminates HTTPS before forwarding to PHP-FPM.
+            $middleware->trustProxies(at: '*');
+        }
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn (Request $request) => RoleRedirector::path($request->user()));
 
