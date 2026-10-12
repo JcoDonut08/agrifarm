@@ -1,25 +1,27 @@
-# Upsun deployment and data transfer plan
+# Upsun deployment and separate thesis dataset plan
 
 Status: planned. No deployment or data transfer has been performed. This document describes the work to complete when deployment is requested.
 
 ## Goal
 
-Put AgriFarm online on Upsun while keeping the existing accounts, products, orders, harvest records, uploaded images, and saved forecasts. Farmers and customers should be able to continue using their existing accounts without entering their records again.
+Put AgriFarm online on Upsun with a separate starting dataset for thesis testing. Keep the full existing accounts, products, orders, harvest records, uploaded images, and saved forecasts on localhost for the client demonstration.
 
-The local application stays available on this computer. Once the live system is in use, its database becomes the source of new records; changes on the computer and on Upsun will not automatically synchronize.
+The local application and its database stay available on this computer. The hosted database collects new thesis-testing records. Changes on localhost and on Upsun will not automatically synchronize. Deploying code updates does not transfer either dataset.
 
-## What will move
+## What will be deployed or initialized
 
 | Item | Transfer method |
 | --- | --- |
 | Laravel application, React interface, and public images such as Kuya Ani | Deploy the reviewed code and build its dependencies and frontend assets. |
-| Accounts, password hashes, products, orders, reviews, notifications, harvest records, and planting plans | Import the existing database, preserving relationships and record IDs. |
-| Saved forecast results | Transfer with the database, including their seller ownership and source information. |
-| Uploaded product photos, thumbnails, profile photos, and other stored documents | Copy the upload directories while preserving their relative paths. |
+| Necessary admin and seller accounts | Create hosted accounts or selectively copy the agreed accounts, preserving required relationships. Participants can register new customer accounts. |
+| Starting product listings | Create or selectively copy the agreed listings with their seller relationships, units, prices, and reviewed starting quantities. Identify setup or demonstration listings separately from participant activity. |
+| Existing orders, reviews, notifications, harvest records, planting plans, and saved forecasts | Retain on localhost by default. New activity is collected on Upsun. |
+| Photos and thumbnails for selected accounts and listings | Copy only the matching files, preserving their relative paths. Retain the full upload collection locally. |
+| Historical harvest data needed for forecasting | Include only the agreed reference dataset, with its actual source and coverage identified. Keep historical or synthetic data distinct from records collected during thesis testing. |
 | Forecasting reference JSON files | Include the three files under `storage/app/forecasting` and ensure they remain accessible after storage mounts are attached. |
 | Runtime configuration and secrets | Configure privately in Upsun; keep them out of Git and this document. |
 
-Database transfer includes existing password hashes, so users should retain their passwords. Saved results do not require uploading the original spreadsheet again. Raw forecasting uploads are currently temporary and removed after processing; they cannot be recovered from saved results.
+If selected accounts are copied with their existing password hashes, their passwords can be retained. Newly created accounts need their own credentials. Selective setup must preserve relationships and file paths; it is not a full database import. Raw forecasting uploads are currently temporary and removed after processing; they cannot be recovered from saved results.
 
 Browser-only information, such as a cart stored on a device, does not transfer with the database. Opening the new domain may start with an empty cart and require signing in again.
 
@@ -33,7 +35,7 @@ Confirm the trial's available resources, region, live URL, and account terms in 
 
 Review the current deployment-readiness branch and include the intended fixes and assets in a deployable release. Run the relevant PHP tests and frontend build before connecting that release to Upsun.
 
-Identify the actual local database engine, version, upload locations, and storage size without exposing credentials. The application defaults to PostgreSQL, but the active database must be confirmed before choosing the hosted service and import tools.
+Identify the actual local database engine, version, upload locations, and storage size without exposing credentials. The application defaults to PostgreSQL, but the active database must be confirmed before choosing the hosted service and any selective transfer tools. Record which accounts, listings, photos, and forecasting references form the hosted starting dataset.
 
 Do not copy Windows executables, `node_modules`, `vendor`, the Windows Python virtual environment, or local development settings to Linux. Install dependencies from the project's lock files and Python requirements during the build.
 
@@ -53,32 +55,32 @@ Mounting Laravel's storage directory can hide reference files included in the co
 
 Set production environment variables privately, including `APP_ENV=production`, `APP_DEBUG=false`, the actual HTTPS `APP_URL`, secure session cookies, database connection, mail settings, and forecasting settings. Configure proxy handling so generated URLs and emails use HTTPS.
 
-Preserve the existing application key securely if imported data depends on Laravel encryption. Do not automatically regenerate it on every deployment. Exclude local session and cache contents from the transfer.
+Configure a stable hosted application key securely. If selectively copied data depends on Laravel encryption, preserve the compatible key securely. Do not automatically regenerate it on every deployment. Exclude local session and cache contents from the transfer.
 
-## 3. Transfer existing records and files
+## 3. Preserve localhost and initialize the hosted dataset
 
-Prepare a one-time database export and file inventory for the migration. Store these privately outside the Git repository. This is a deployment transfer, not the previously removed automatic backup feature.
+Before deployment, make a one-time private backup of the full local database and uploaded files, and record their inventory. Store these outside the Git repository. This preserves the client-demo dataset; it is not the previously removed automatic backup feature.
 
-During the final transfer, pause new writes to the local application so orders and uploads do not change between the database export and file copy. Import into the intended empty hosted database, then apply any pending Laravel migrations needed by the deployed code. Do not run `migrate:fresh` or seed demonstration data over the imported records.
+Create a separate empty hosted database and apply Laravel migrations. Initialize only the agreed admin/seller accounts, starting listings, and any forecasting reference data. Review the initialization method before running it so it does not add the full demonstration dataset. Do not run `migrate:fresh` or repeat initialization over a database containing participant activity.
 
-Drain outstanding local order emails before taking the final export. Exclude queue work and failed-job history from the import so deployment does not resend old email tasks; keep the migrated queue table structures for new hosted jobs.
+Keep local orders, reviews, notifications, queue work, failed-job history, and other demonstration activity out of the hosted starting dataset. Use the migrated queue table structures for new hosted jobs. If selectively copying local records and their photos, pause changes to those records during the copy and preserve their relationships.
 
-Copy uploaded files into the matching persistent mounts, preserving filenames and folder structure. Include generated product thumbnails. Database photo paths and copied files must match; importing records alone would leave broken images. Upsun provides mount upload tools for this transfer. [Upsun file-transfer documentation](https://developer.upsun.com/docs/development/file-transfer)
+Copy the photos for selected accounts and listings into the matching persistent mounts, preserving filenames and folder structure. Include generated product thumbnails. Database photo paths and copied files must match; copying records alone would leave broken images. Upsun provides mount upload tools for this transfer. [Upsun file-transfer documentation](https://developer.upsun.com/docs/development/file-transfer)
 
-Compare local and hosted counts for users, products, orders, harvest records, and saved forecasts. Compare uploaded file counts, sizes, and checksums where practical, then open representative product photos, profile photos, and private documents through the application.
+Compare hosted records and files against the agreed starting-data inventory, rather than expecting the full local and hosted databases to match. Verify that orders, reviews, and other participant activity begin empty before verification tests. Confirm that the full local dataset and photos remain intact. Compare selected file counts, sizes, and checksums where practical, then open their product and profile photos through the hosted application.
 
 Existing synthetic samples remain demonstration data. Deployment does not make them actual barangay harvest records or change the source labels on saved forecasts.
 
 ## 4. Verify the live system
 
-Use designated test accounts and clearly identified test records for checks that create orders, notifications, or emails.
+Use designated test accounts and clearly identified test records for checks that create orders, notifications, or emails. Record these verification fixtures separately so they can be excluded from thesis participant results.
 
 | Check | Required result |
 | --- | --- |
 | HTTPS and production settings | Valid certificate, HTTP redirects to HTTPS, no mixed content, debug disabled, secure cookies. |
-| Existing accounts | Customer, seller, and admin can sign in with the expected permissions. |
+| Hosted accounts | Selected or newly created customer, seller, and admin accounts can sign in with the expected permissions. |
 | Password session security | Sign in to one test account in two browsers, change its password in one, and confirm that browser stays signed in while the other returns to login on its next protected request. Confirm the old password fails and the new password works. Repeat through password recovery; both earlier sessions must lose access. |
-| Records and images | Imported records match the local inventory; corresponding photos display correctly. |
+| Records and images | Hosted setup records match the agreed starting-data inventory; corresponding photos display correctly, and the full local demo dataset remains intact. |
 | Uploads and privacy | New uploads work; private files cannot be downloaded directly or accessed by another account. |
 | Checkout and order management | Place a test order, confirm stock handling, update its status, and verify cancellation reasons and customer notifications. |
 | Email delivery | Receive a real password-reset email and order update; verify their links use the hosted HTTPS domain. |
@@ -96,7 +98,7 @@ See [Deployment Verification](Deployment%20Verification.md), [SARIMA Deployment]
 
 ## 5. Start using the hosted system
 
-After verification, share the hosted URL and use the live system for new records. Keep the local copy intact until the transfer has been confirmed.
+After verification, share the hosted URL for thesis testing and collect new participant records there. Continue using localhost with its existing data and photos for the client demonstration. Keep both environments clearly identified and maintain the local copy independently.
 
 Do not later overwrite the live database with an older local export. New hosted orders and harvest records would be lost. If a release fails, return to the previous compatible code release while preserving live data; database changes need their own recovery decision.
 
@@ -106,8 +108,9 @@ Do not later overwrite the live database with an older local export. New hosted 
 | --- | --- |
 | Upsun project and target environment | Pending |
 | Hosted URL and deployed revision | Pending |
-| Database and uploaded-file transfer | Pending |
-| Record and file comparison | Pending |
+| Hosted starting dataset and matching photo setup | Pending |
+| Starting-data comparison and local dataset preservation | Pending |
+| Verification fixtures distinguished from participant activity | Pending |
 | HTTPS, email, privacy, and forecasting checks | Pending |
 | Restart and redeploy persistence check | Pending |
 | Date verified and remaining limitations | Pending |
