@@ -178,12 +178,31 @@
     width: 17px;
     height: 17px;
 }
+@media (max-width: 1000px) {
+    .admin-workspace .admin-topbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        height: auto;
+        gap: 0;
+        padding-inline: 20px;
+    }
+    .admin-topbar .admin-topbar-actions {
+        grid-row: 1;
+        justify-self: end;
+        min-height: 64px;
+    }
+}
+@media (max-width: 600px) {
+    .admin-workspace .admin-topbar { padding-inline: 14px; }
+}
 .admin-topbar-actions {
     display: flex;
     min-width: 0;
+    flex-shrink: 0;
     align-items: center;
     gap: 12px;
 }
+.admin-topbar .admin-icon-button { width: 44px; height: 44px; }
 .admin-icon-button {
     display: grid;
     width: 42px;
@@ -2927,10 +2946,14 @@
         height: 30px;
     }
     .admin-notification-panel {
-        position: fixed;
-        top: 70px;
-        right: 15px;
+        position: absolute;
+        top: calc(100% + 9px);
+        right: 0;
+        max-height: min(480px, calc(100dvh - 200px));
+        overflow-y: auto;
     }
+    .admin-topbar-actions { position: relative; }
+    .admin-topbar-actions .admin-notifications { position: static; }
     .admin-panel-heading {
         align-items: flex-start;
     }

@@ -41,11 +41,13 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import AppMark from "../../Components/AppMark";
+import ThemeToggle from "../../Components/ThemeToggle";
 import FormStatus from '../../Components/FormStatus';
 import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import "../../../css/seller.css";
 import "../../../css/admin.css";
 import WeatherCard from "../Seller/WeatherCard";
+import HeaderSummary from "../Seller/HeaderSummary";
 import Avatar from "../Seller/Avatar";
 import Profile from "./Profile";
 import AdminSettings from "./Settings";
@@ -422,15 +424,20 @@ export default function Dashboard() {
 
             <div className="admin-workspace">
                 <header className="admin-topbar">
-                    <span className="admin-location">
-                        <MapPinned />
-                        Pasig City
-                    </span>
+                    <HeaderSummary
+                        user={{ name: auth?.user?.name || "Pasig CENRO" }}
+                        weather={weather}
+                        filipino={filipino}
+                    />
                     <div className="admin-topbar-actions">
                         <AdminNotifications
                             alerts={notificationAlerts}
                             filipino={filipino}
                         />
+                        <ThemeToggle labels={filipino ? {
+                            switchToLight: "Lumipat sa maliwanag na tema",
+                            switchToDark: "Lumipat sa madilim na tema",
+                        } : undefined} />
                         <button
                             type="button"
                             className="admin-account-button"
