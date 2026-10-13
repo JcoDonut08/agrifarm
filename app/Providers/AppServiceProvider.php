@@ -7,8 +7,12 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoApiTransport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,7 +21,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(BrevoApiTransport::class, function (): BrevoApiTransport {
+            $key = (string) config('services.brevo.key');
+
+            if (trim($key) === '') {
+                throw new InvalidArgumentException('Configure BREVO_API_KEY before using the Brevo mailer.');
+            }
+
+            return new BrevoApiTransport($key, HttpClient::create([
+                'timeout' => (int) config('mail.mailers.brevo.timeout', 20),
+                'max_duration' => (int) config('mail.mailers.brevo.timeout', 20),
+            ]));
+        });
     }
 
     /**
@@ -25,6 +40,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Mail::extend('brevo', fn (array $config): BrevoApiTransport => $this->app->make(BrevoApiTransport::class));
+
         Event::listen(Login::class, function (Login $event): void {
             if (request()->hasSession()) {
                 // Bind the session immediately, including Google and remembered logins.

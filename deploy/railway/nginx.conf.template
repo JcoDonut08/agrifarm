@@ -1,0 +1,59 @@
+user www-data;
+worker_processes 1;
+pid /tmp/nginx.pid;
+error_log /dev/stderr warn;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    sendfile on;
+    keepalive_timeout 65;
+    server_tokens off;
+    log_format minimal '$remote_addr $request_method $status $body_bytes_sent';
+    access_log /dev/stdout minimal;
+
+    map $http_x_forwarded_proto $fastcgi_https {
+        default off;
+        https on;
+    }
+
+    server {
+        listen ${PORT};
+        server_name _;
+        root /app/public;
+        index index.php;
+        client_max_body_size 12m;
+
+        location / {
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location = /index.php {
+            include /etc/nginx/fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME /app/public/index.php;
+            fastcgi_param HTTPS $fastcgi_https;
+            fastcgi_param HTTP_PROXY "";
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_read_timeout 240s;
+        }
+
+        location /storage/ {
+            location ~* \.(?:jpe?g|png|webp|gif)$ {
+                try_files $uri =404;
+            }
+            return 404;
+        }
+
+        location ~ /\. {
+            deny all;
+        }
+
+        location ~* \.(?:php|env|key|sql|sqlite|ini|log|ya?ml|toml|sh)(?:$|/) {
+            deny all;
+        }
+    }
+}

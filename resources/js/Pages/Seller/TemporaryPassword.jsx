@@ -1,9 +1,62 @@
-import { Head, useForm } from "@inertiajs/react";
-import { KeyRound, LockKeyhole } from "lucide-react";
+import { Head, useForm } from '@inertiajs/react';
+
+import PasswordField from '../../Components/PasswordField';
+import SubmitButton from '../../Components/SubmitButton';
+import AuthLayout from '../../Layouts/AuthLayout';
 
 export default function TemporaryPassword() {
-    const form = useForm({ temporary_password: "", password: "", password_confirmation: "" });
-    const submit = (event) => { event.preventDefault(); form.put("/seller/temporary-password"); };
+    const { data, setData, put, processing, errors } = useForm({
+        temporary_password: '',
+        password: '',
+        password_confirmation: '',
+    });
 
-    return <main className="seller-temporary-password"><Head title="Set your password · AgriFarm" /><section><div className="seller-temporary-password-icon"><KeyRound /></div><p className="seller-temporary-password-kicker">Account security</p><h1>Set your personal password</h1><p>Your CENRO administrator issued a temporary password. Choose a new password before you access your seller dashboard.</p><form onSubmit={submit} noValidate><label>Temporary password<input type="password" value={form.data.temporary_password} autoComplete="current-password" autoFocus onChange={(event) => form.setData("temporary_password", event.target.value)} required /></label>{form.errors.temporary_password && <small>{form.errors.temporary_password}</small>}<label>New password<input type="password" value={form.data.password} autoComplete="new-password" onChange={(event) => form.setData("password", event.target.value)} required /></label>{form.errors.password && <small>{form.errors.password}</small>}<label>Confirm new password<input type="password" value={form.data.password_confirmation} autoComplete="new-password" onChange={(event) => form.setData("password_confirmation", event.target.value)} required /></label><button type="submit" disabled={form.processing}><LockKeyhole />Save password and continue</button></form></section></main>;
+    function submit(event) {
+        event.preventDefault();
+        put('/seller/temporary-password');
+    }
+
+    return (
+        <AuthLayout
+            eyebrow="Account security"
+            title="Set your personal password."
+            description="Your CENRO administrator issued a temporary password. Choose a new password before you access your seller dashboard."
+        >
+            <Head title="Set your password" />
+            <form className="space-y-4" onSubmit={submit} noValidate>
+                <PasswordField
+                    id="temporary_password"
+                    label="Temporary password"
+                    autoComplete="current-password"
+                    value={data.temporary_password}
+                    onChange={(event) => setData('temporary_password', event.target.value)}
+                    error={errors.temporary_password}
+                    required
+                    autoFocus
+                />
+                <PasswordField
+                    id="password"
+                    label="New password"
+                    autoComplete="new-password"
+                    hint="Use at least 8 characters, including letters and numbers."
+                    value={data.password}
+                    onChange={(event) => setData('password', event.target.value)}
+                    error={errors.password}
+                    required
+                />
+                <PasswordField
+                    id="password_confirmation"
+                    label="Confirm new password"
+                    autoComplete="new-password"
+                    value={data.password_confirmation}
+                    onChange={(event) => setData('password_confirmation', event.target.value)}
+                    error={errors.password_confirmation}
+                    required
+                />
+                <SubmitButton processing={processing}>
+                    {processing ? 'Saving password...' : 'Save password and continue'}
+                </SubmitButton>
+            </form>
+        </AuthLayout>
+    );
 }

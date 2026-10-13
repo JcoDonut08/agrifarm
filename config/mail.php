@@ -65,6 +65,11 @@ return [
             'transport' => 'resend',
         ],
 
+        'brevo' => [
+            'transport' => 'brevo',
+            'timeout' => (int) env('MAIL_TIMEOUT', 20),
+        ],
+
         'sendmail' => [
             'transport' => 'sendmail',
             'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
@@ -111,6 +116,11 @@ return [
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
+    ],
+
+    'reply_to' => [
+        'address' => env('MAIL_REPLY_TO_ADDRESS'),
+        'name' => env('MAIL_REPLY_TO_NAME', env('MAIL_FROM_NAME', 'AgriFarm')),
     ],
 
 ];

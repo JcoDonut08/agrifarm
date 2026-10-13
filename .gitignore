@@ -10,6 +10,7 @@
 /storage/backups/
 /storage/recovery/
 /vendor
+/tmp/railway-release-*/
 .env
 .env.backup
 .env.production
