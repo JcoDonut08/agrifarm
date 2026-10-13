@@ -10,10 +10,10 @@ class SocialPreview
     public static function head(Request $request): array
     {
         $origin = rtrim(config('app.url'), '/');
-        $title = 'AgriFarm | Fresh produce, grown in Pasig';
-        $description = "Shop fresh produce from Pasig's neighborhood growers. Discover local urban farms and support your community with AgriFarm.";
-        $image = $origin.'/images/agrifarm-homepage-share-v1.jpg';
-        $imageAlt = 'AgriFarm homepage showing a Pasig community garden and the message Fresh produce, grown in Pasig.';
+        $title = 'AgriFarm';
+        $description = 'Fresh harvests. Stronger communities. A greener Pasig.';
+        $image = $origin.'/images/agrifarm-about-share-v2.jpg';
+        $imageAlt = 'AgriFarm About banner showing neighbors planting together, with the tagline Fresh harvests. Stronger communities. A greener Pasig.';
 
         $tags = [
             ['property', 'og:type', 'website'],

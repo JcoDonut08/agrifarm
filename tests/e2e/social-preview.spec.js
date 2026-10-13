@@ -15,7 +15,7 @@ for (const width of [390, 768, 1440]) {
             await expect(page).toHaveURL(new URL(path, 'http://127.0.0.1:8010').href);
             const image = page.locator('head meta[property="og:image"]');
             await expect(image).toHaveCount(1);
-            await expect(image).toHaveAttribute('content', /^http.*\/images\/agrifarm-homepage-share-v1\.jpg$/);
+            await expect(image).toHaveAttribute('content', /^http.*\/images\/agrifarm-about-share-v2\.jpg$/);
             await expect(page.locator('head meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
             await expect(page.locator('head meta[name="twitter:image"]')).toHaveAttribute('content', await image.getAttribute('content'));
             await expect(page.locator('head meta[property="og:url"]')).toHaveAttribute('content', new URL(path, 'http://127.0.0.1:8010').href);

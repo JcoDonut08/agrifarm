@@ -20,7 +20,7 @@
         @viteReactRefresh
         @vite('resources/js/app.jsx')
         <x-inertia::head>
-            <title>AgriFarm | Fresh produce, grown in Pasig</title>
+            <title>AgriFarm | Fresh harvests. Stronger communities. A greener Pasig.</title>
             @foreach ($page['props']['socialHead'] ?? [] as $tag)
                 {!! $tag !!}
             @endforeach

@@ -20,16 +20,17 @@ class SocialPreviewTest extends TestCase
         config(['app.url' => 'https://agrifarm.example']);
     }
 
-    public function test_crawlers_receive_the_homepage_preview_without_running_javascript(): void
+    public function test_crawlers_receive_the_site_preview_without_running_javascript(): void
     {
         foreach (['/', '/about', '/contact'] as $url) {
             $response = $this->withHeader('User-Agent', 'facebookexternalhit/1.1')->get($url)->assertOk();
             $document = new DOMDocument;
             $document->loadHTML($response->getContent(), LIBXML_NOERROR | LIBXML_NOWARNING);
             $head = new DOMXPath($document);
-            $this->assertSame('AgriFarm | Fresh produce, grown in Pasig', $this->meta($head, 'property', 'og:title'));
+            $this->assertSame('AgriFarm', $this->meta($head, 'property', 'og:title'));
+            $this->assertSame('Fresh harvests. Stronger communities. A greener Pasig.', $this->meta($head, 'property', 'og:description'));
             $this->assertSame('https://agrifarm.example'.$url, $this->meta($head, 'property', 'og:url'));
-            $this->assertSame('https://agrifarm.example/images/agrifarm-homepage-share-v1.jpg', $this->meta($head, 'property', 'og:image'));
+            $this->assertSame('https://agrifarm.example/images/agrifarm-about-share-v2.jpg', $this->meta($head, 'property', 'og:image'));
             $this->assertSame('image/jpeg', $this->meta($head, 'property', 'og:image:type'));
             $this->assertSame('1200', $this->meta($head, 'property', 'og:image:width'));
             $this->assertSame('630', $this->meta($head, 'property', 'og:image:height'));
@@ -40,7 +41,7 @@ class SocialPreviewTest extends TestCase
 
     public function test_share_image_is_a_small_landscape_jpeg(): void
     {
-        $file = public_path('images/agrifarm-homepage-share-v1.jpg');
+        $file = public_path('images/agrifarm-about-share-v2.jpg');
         $size = getimagesize($file);
         $this->assertSame(1200, $size[0]);
         $this->assertSame(630, $size[1]);
