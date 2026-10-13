@@ -36,6 +36,7 @@ shadcn/ui components used in AgriFarm are customized through Tailwind CSS and th
   Older accepted orders with an unknown reservation source ask the seller to confirm available stock or future harvest before returning the quantity. New orders use their recorded source automatically.
 
 - Customer registration, email verification, password recovery, and role-aware login for customers, sellers, and CENRO admins
+- Customer Settings includes a Show Kuya Ani switch to hide or restore the floating chatbot. Visibility is saved on the current browser alongside appearance and language; it does not change account email preferences. The mobile launcher is smaller, and the open chat window adapts to short viewports.
 - Password changes keep the current browser signed in and invalidate other tracked sessions on their next request. Password resets invalidate earlier sessions and verified reset grants. See [Account Session Security](docs/Account%20Session%20Security.md) for rollout and verification.
 - CENRO Farmers & Sellers administration: create individual farmer-seller accounts, assign barangays, edit store details, and review account status/history
 - Admin-created sellers begin active with a temporary password that must be replaced before seller-dashboard access; suspended sellers cannot sign in and their public shop/listings are hidden

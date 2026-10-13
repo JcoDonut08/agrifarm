@@ -15,7 +15,7 @@ export default function StorefrontLayout({ children, market }) {
     const pathname = url.split('?')[0];
     const isCustomerAccountPage = ['/customer', '/customer/orders', '/customer/settings'].includes(pathname);
     const currentPage = pathname === '/contact' ? 'contact' : pathname === '/about' ? 'about' : pathname === '/customer' ? 'profile' : new URLSearchParams(url.split('?')[1] || '').get('page') || 'home';
-    const { filipino, count, favorites, panel, setPanel, notice, noticeId, noticeTarget, noticeTone, dismissNotice } = useShop();
+    const { filipino, count, favorites, panel, setPanel, notice, noticeId, noticeTarget, noticeTone, dismissNotice, chatbotEnabled } = useShop();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuDialog = useRef(null);
     const menuTrigger = useRef(null);
@@ -121,7 +121,7 @@ export default function StorefrontLayout({ children, market }) {
                 {notice}
             </FormStatus>
             <ShopDialog />
-            {!isCustomerAccountPage && <HelpWidget />}
+            {!isCustomerAccountPage && chatbotEnabled && <HelpWidget />}
         </div>
     );
 }

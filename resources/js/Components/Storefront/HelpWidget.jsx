@@ -252,7 +252,7 @@ const handleOptionClick = async (option) => {
     return (
         <div className="help-widget-container">
             {isOpen && (
-                <div className="help-widget-window">
+                <div id="kuya-ani-assistant" className="help-widget-window" role="region" aria-label="Kuya Ani assistant">
                     <div className="help-widget-header">
                         <div className="help-widget-avatar-small">
                             <img src="/images/farmer-mascot-final.jpg" alt="Mascot" />
@@ -325,7 +325,7 @@ const handleOptionClick = async (option) => {
                 </div>
             )}
 
-            <button className={`help-widget-fab ${isOpen ? 'active' : ''}`} onClick={() => setIsOpen(!isOpen)} aria-label="Open Help Assistant">
+            <button type="button" className={`help-widget-fab ${isOpen ? 'active' : ''}`} onClick={() => setIsOpen(!isOpen)} aria-label={isOpen ? 'Close Help Assistant' : 'Open Help Assistant'} aria-expanded={isOpen} aria-controls={isOpen ? 'kuya-ani-assistant' : undefined}>
                 <div className="help-widget-avatar">
                     <img src="/images/farmer-mascot-final.jpg" alt="Mascot" />
                 </div>

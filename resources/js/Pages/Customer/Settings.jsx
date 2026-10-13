@@ -14,7 +14,7 @@ export default function Settings() {
 }
 
 function SettingsInner() {
-    const { filipino, changeLanguage } = useShop();
+    const { filipino, changeLanguage, chatbotEnabled, changeChatbotEnabled } = useShop();
     const { orderUpdateEmails, flash } = usePage().props;
     const preference = useForm({ order_update_emails: orderUpdateEmails });
 
@@ -46,7 +46,7 @@ function SettingsInner() {
                         <div className="customer-settings-icon"><Icon name="settings" size={24} /></div>
                         <div>
                             <h1>{filipino ? 'Mga Setting' : 'Settings'}</h1>
-                            <p>{filipino ? 'Piliin ang itsura, wika, at mga email na matatanggap.' : 'Choose your appearance, language, and email preferences.'}</p>
+                            <p>{filipino ? 'Piliin ang itsura, wika, chatbot, at mga email na matatanggap.' : 'Choose your appearance, language, chatbot, and email preferences.'}</p>
                         </div>
                     </header>
 
@@ -79,6 +79,21 @@ function SettingsInner() {
                     </fieldset>
 
                     <fieldset className="customer-settings-group">
+                        <legend>{filipino ? 'Chatbot ni Kuya Ani' : 'Kuya Ani chatbot'}</legend>
+                        <p>{filipino ? 'Piliin kung makikita si Kuya Ani habang namimili.' : 'Choose whether Kuya Ani appears while you browse.'}</p>
+                        <div className="customer-notification-options">
+                            <div className="customer-notification-item">
+                                <span><Icon name="message" size={20} /></span>
+                                <div>
+                                    <strong>{filipino ? 'Ipakita si Kuya Ani' : 'Show Kuya Ani'}</strong>
+                                    <small id="chatbot-preference-description">{filipino ? 'Kapag naka-off, nakatago ang lumulutang na button ng chatbot.' : 'When off, the floating chatbot button stays hidden.'}</small>
+                                </div>
+                                <button type="button" role="switch" aria-checked={chatbotEnabled} aria-describedby="chatbot-preference-description" onClick={() => changeChatbotEnabled(!chatbotEnabled)} aria-label={filipino ? 'Ipakita si Kuya Ani' : 'Show Kuya Ani'}><span /></button>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset className="customer-settings-group">
                         <legend>{filipino ? 'Mga Notipikasyon' : 'Notifications'}</legend>
                         <p>{filipino ? 'Palaging makikita ang mga update sa order sa Mga Notipikasyon at Mga Order.' : 'Order updates always remain available in Notifications and Orders.'}</p>
                         <FormStatus dismissible messageId={flash?.id}>{filipino && flash?.status === 'Notification preference saved.' ? 'Na-save ang kagustuhan sa mga abiso.' : flash?.status}</FormStatus>
@@ -96,7 +111,7 @@ function SettingsInner() {
                         <p>{filipino ? 'Naka-save sa iyong account ang kagustuhan sa email.' : 'Your email preference is saved to your account.'}</p>
                     </fieldset>
 
-                    <p className="customer-settings-note"><Icon name="check" size={16} />{filipino ? 'Naka-save sa device na ito ang tema at wika.' : 'Appearance and language are saved on this device.'}</p>
+                    <p className="customer-settings-note"><Icon name="check" size={16} />{filipino ? 'Naka-save sa device na ito ang tema, wika, at pagpapakita ng chatbot.' : 'Appearance, language, and chatbot visibility are saved on this device.'}</p>
                 </div>
             </div>
         </StorefrontLayout>

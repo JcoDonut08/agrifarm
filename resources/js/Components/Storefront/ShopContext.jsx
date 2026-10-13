@@ -3,6 +3,7 @@ import { products as previewProducts } from './catalog';
 
 const ShopContext = createContext(null);
 const storageKey = 'agrifarm-marketplace-preview-v1';
+const chatbotStorageKey = 'agrifarm-chatbot-enabled';
 
 function readSaved(products, preserveUnknown = false) {
     try {
@@ -31,6 +32,15 @@ export function ShopProvider({ children, products = previewProducts, persist = t
     const [noticeTone, setNoticeTone] = useState('success');
     const [language, setLanguage] = useState(() => { try { return localStorage.getItem('agrifarm-customer-language') || 'english'; } catch { return 'english'; } });
     const changeLanguage = (lang) => { setLanguage(lang); try { localStorage.setItem('agrifarm-customer-language', lang); } catch {} };
+    const [chatbotEnabled, setChatbotEnabled] = useState(() => {
+        try { return localStorage.getItem(chatbotStorageKey) !== 'false'; }
+        catch { return true; }
+    });
+    function changeChatbotEnabled(enabled) {
+        setChatbotEnabled(enabled);
+        try { localStorage.setItem(chatbotStorageKey, String(enabled)); }
+        catch { /* The switch still works when browser storage is unavailable. */ }
+    }
 
     function notify(message, target = null, tone = 'success') {
         setNotice(message);
@@ -110,7 +120,7 @@ export function ShopProvider({ children, products = previewProducts, persist = t
         setSaved((previous) => ({ ...previous, favorites: previous.favorites.includes(id) ? previous.favorites.filter((item) => item !== id) : [...previous.favorites, id] }));
     }
 
-    const value = { ...saved, products, panel, setPanel, notice, noticeId, noticeTarget, noticeTone, notify, dismissNotice: () => setNotice(''), add, addQuantity, saveForLater, changeQuantity, clearPurchased, toggleFavorite, count: Object.values(saved.cart).reduce((total, quantity) => total + quantity, 0), language, filipino: language === 'filipino', changeLanguage };
+    const value = { ...saved, products, panel, setPanel, notice, noticeId, noticeTarget, noticeTone, notify, dismissNotice: () => setNotice(''), add, addQuantity, saveForLater, changeQuantity, clearPurchased, toggleFavorite, count: Object.values(saved.cart).reduce((total, quantity) => total + quantity, 0), language, filipino: language === 'filipino', changeLanguage, chatbotEnabled, changeChatbotEnabled };
     return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
 
