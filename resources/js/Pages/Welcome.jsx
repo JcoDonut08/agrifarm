@@ -36,7 +36,6 @@ export default function Welcome() {
         ? ({ customer: '/customer', seller: '/seller/dashboard', cenro_admin: '/admin/dashboard' }[user.role] || '/')
         : '/register';    const metaTitle = { marketplace: 'Marketplace', cart: 'Your cart', checkout: 'Checkout', 'order-success': 'Order placed', favorites: 'Favorites', notifications: 'Notifications', product: selectedProduct?.name || 'Product not found', seller: props.sellerProfile?.name || 'Seller not found' }[page] || (filipino ? 'Sariwa mula sa iyong komunidad' : 'Fresh from your community');
     const metaDescription = page === 'product' && selectedProduct ? `${selectedProduct.name} - ₱${selectedProduct.price}. ${selectedProduct.description || 'Grown locally in Pasig.'}` : page === 'seller' && props.sellerProfile ? `Shop fresh harvests from ${props.sellerProfile.name} in Barangay ${props.sellerProfile.barangay || 'Pasig'}. Support urban farmers.` : 'Discover fresh produce grown by your neighbors. Support local Pasig City urban farmers directly through the AgriFarm marketplace.';
-    const metaImage = page === 'product' && selectedProduct?.photo_url ? selectedProduct.photo_url : page === 'seller' && props.sellerProfile?.avatarUrl ? props.sellerProfile.avatarUrl : '/images/market-hero-v2.png';
 
     return (
         <ShopProvider products={listings}>
@@ -44,11 +43,6 @@ export default function Welcome() {
                 <Head>
                     <title>{`${metaTitle} - AgriFarm`}</title>
                     <meta name="description" content={metaDescription} />
-                    <meta property="og:title" content={`${metaTitle} - AgriFarm`} />
-                    <meta property="og:description" content={metaDescription} />
-                    <meta property="og:image" content={metaImage} />
-                    <meta property="og:type" content={page === 'product' ? 'product' : 'website'} />
-                    <meta name="twitter:card" content="summary_large_image" />
                 </Head>
                 {page === 'product' ? <ProductDetail productId={productId} products={listings} reviewFeed={props.reviewFeed} user={user} /> : page === 'seller' ? <SellerStorefront profile={props.sellerProfile} /> : page === 'checkout' || page === 'order-success' ? <Checkout order={props.checkoutOrder} successPage={page === 'order-success'} /> : ExtraPage ? <ExtraPage /> : market ? <Marketplace key={url} products={listings} hasSellerProducts={hasSellerProducts} serverResults={props.marketplaceResults} initialBarangay={query.get('barangay') || ''} initialSort={query.get('sort') || ''} /> : <>
                                         <section className="home-hero modern-hero" aria-labelledby="hero-heading">

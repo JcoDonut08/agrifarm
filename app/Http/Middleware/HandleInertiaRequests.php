@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\SocialPreview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Middleware;
@@ -38,6 +39,7 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'socialHead' => fn () => SocialPreview::head($request),
             'auth' => [
                 'user' => fn () => $request->user() ? [
                     'id' => $request->user()->getKey(),

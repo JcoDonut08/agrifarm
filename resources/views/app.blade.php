@@ -19,7 +19,12 @@
 
         @viteReactRefresh
         @vite('resources/js/app.jsx')
-        <x-inertia::head />
+        <x-inertia::head>
+            <title>AgriFarm | Fresh produce, grown in Pasig</title>
+            @foreach ($page['props']['socialHead'] ?? [] as $tag)
+                {!! $tag !!}
+            @endforeach
+        </x-inertia::head>
     </head>
     <body class="antialiased">
         <x-inertia::app />
