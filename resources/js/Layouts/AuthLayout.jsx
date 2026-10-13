@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 
 import GuestLayout from './GuestLayout';
+import PageLoadingBoundary from '../Components/PageLoadingBoundary';
 
 export default function AuthLayout({ eyebrow, title, description, children, wide = false }) {
     return (
@@ -12,7 +13,7 @@ export default function AuthLayout({ eyebrow, title, description, children, wide
                         <h1 className="mt-2 text-[1.8rem] font-semibold leading-[1.12] tracking-[-0.025em] text-forest-950 dark:text-white sm:text-[2.15rem]">{title}</h1>
                         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-600 dark:text-stone-300">{description}</p>
                     </div>
-                    <div className="mt-6">{children}</div>
+                    <div className="mt-6"><PageLoadingBoundary workspace variant="form">{children}</PageLoadingBoundary></div>
                 </div>
 
                 <Link href="/" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-white transition hover:bg-white/15">

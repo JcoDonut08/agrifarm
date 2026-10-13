@@ -83,10 +83,10 @@ test('upload states, generation motion and error recovery stay accessible', asyn
         await form.dispatchEvent('submit');
         await captureUploadStates(page, testInfo, 'preparing');
         expect(requests).toBe(1);
-        expect(await page.locator('.forecast-loading-track > span').evaluate(element => element.getAnimations().length)).toBeGreaterThan(0);
+        expect(await page.locator('.forecast-generation-status .skeleton-block').first().evaluate(element => element.getAnimations().length)).toBeGreaterThan(0);
         await page.emulateMedia({ reducedMotion: 'reduce' });
-        for (const selector of ['.forecast-loading-spinner', '.forecast-loading-track > span']) {
-            expect(await page.locator(selector).evaluate(element => getComputedStyle(element).animationName)).toBe('none');
+        for (const selector of ['.forecast-loading-spinner', '.forecast-generation-status .skeleton-block']) {
+            expect(await page.locator(selector).first().evaluate(element => getComputedStyle(element).animationName)).toBe('none');
         }
         await expect(page.locator('.forecast-generation-status')).toBeVisible();
         await page.emulateMedia({ reducedMotion: 'no-preference' });

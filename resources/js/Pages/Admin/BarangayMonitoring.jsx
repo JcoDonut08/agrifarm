@@ -14,6 +14,7 @@ import {
 import { router } from "@inertiajs/react";
 import ConfirmationDialog from "../../Components/ConfirmationDialog";
 import FormStatus from "../../Components/FormStatus";
+import PageSkeleton from '../../Components/PageSkeleton';
 import Pagination from '../Seller/Pagination';
 import useTablePagination from '../../Components/useTablePagination';
 
@@ -29,7 +30,7 @@ export default function BarangayMonitoring({ monitoringData, filipino }) {
     const [reportSize, setReportSize] = useState(5);
     const [report, setReport] = useState(null);
 
-    if (!monitoringData) return <Message title="Loading Barangay Monitoring" text="Please wait while monitoring records load." />;
+    if (!monitoringData) return <PageSkeleton compact variant="dashboard" label={filipino ? 'Naglo-load ang mga tala ng barangay…' : 'Loading barangay monitoring…'} />;
 
     const all = monitoringData.allBarangaysData || { overview: {}, statusTable: [], comparisonData: {}, reports: [] };
     const selected = barangay === "all";

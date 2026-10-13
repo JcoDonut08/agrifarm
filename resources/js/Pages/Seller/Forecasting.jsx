@@ -1,6 +1,7 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import Icon from '../../Components/Storefront/Icon';
+import PageSkeleton from '../../Components/PageSkeleton';
 import FormStatus from '../../Components/FormStatus';
 import ConfirmationDialog from '../../Components/ConfirmationDialog';
 import { unitLabel } from './SellerLocale';
@@ -421,8 +422,8 @@ export default function Forecasting({ filipino = false }) {
                         {errors.harvest_data || errors.request || errorText(flash.forecastError)}
                     </p>}
                 </form>
-                <div className="forecast-generation-status" role="status" aria-live="polite" aria-atomic="true">
-                    {processing && <><p>{text('Preparing your planting guide…', 'Inihahanda ang gabay sa pagtatanim…')}</p><span className="forecast-loading-track" aria-hidden="true"><span /></span></>}
+                <div className="forecast-generation-status" aria-busy={processing}>
+                    {processing && <PageSkeleton compact variant="forecast" label={text('Preparing your planting guide…', 'Inihahanda ang gabay sa pagtatanim…')} />}
                 </div>
             </section>
 

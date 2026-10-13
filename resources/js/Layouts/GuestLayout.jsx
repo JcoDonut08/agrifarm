@@ -4,6 +4,7 @@ import { useState } from 'react';
 import AppMark from '../Components/AppMark';
 import ThemeToggle from '../Components/ThemeToggle';
 import StorefrontLayout from './StorefrontLayout';
+import PageLoadingBoundary from '../Components/PageLoadingBoundary';
 
 const siteLinks = [
     { label: 'Home', href: '/#home' },
@@ -45,7 +46,7 @@ export default function GuestLayout({ children, authPage = false, storefront = f
                     </Link>
                     <ThemeToggle />
                 </div>
-                <main className="flex-1">{children}</main>
+                <main className="flex-1"><PageLoadingBoundary>{children}</PageLoadingBoundary></main>
             </div>
         );
     }
@@ -106,7 +107,7 @@ export default function GuestLayout({ children, authPage = false, storefront = f
                 )}
             </header>
 
-            <main className="flex-1">{children}</main>
+            <main className="flex-1"><PageLoadingBoundary>{children}</PageLoadingBoundary></main>
 
             <footer id="contact" className="scroll-mt-20 border-t border-forest-950/10 bg-white dark:border-white/10 dark:bg-night-950">
                 <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.3fr_0.7fr_1fr] lg:px-8">

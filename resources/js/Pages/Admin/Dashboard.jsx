@@ -41,6 +41,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import AppMark from "../../Components/AppMark";
+import PageLoadingBoundary from '../../Components/PageLoadingBoundary';
 import ThemeToggle from "../../Components/ThemeToggle";
 import FormStatus from '../../Components/FormStatus';
 import ConfirmationDialog from '../../Components/ConfirmationDialog';
@@ -471,6 +472,7 @@ export default function Dashboard() {
                 </header>
 
                 <main className="admin-main">
+                    <PageLoadingBoundary workspace>
                     <FormStatus dismissible messageId={flash?.id} dismissLabel={filipino ? 'Isara ang mensahe' : 'Dismiss message'}>{filipino ? ({ 'Profile photo updated successfully.': 'Na-update ang larawan sa profile.', 'Profile photo removed.': 'Inalis ang larawan sa profile.', 'Task added.': 'Naidagdag ang gawain.', 'Task completed.': 'Natapos ang gawain.', 'Task reopened.': 'Muling binuksan ang gawain.', 'Task deleted.': 'Nabura ang gawain.', 'Seller details updated.': 'Na-update ang detalye ng seller.' }[flash?.status] || flash?.status) : flash?.status}</FormStatus>
                     {section === "Dashboard" ? (
                         <DashboardOverview
@@ -518,6 +520,7 @@ export default function Dashboard() {
                             filipino={filipino}
                         />
                     )}
+                    </PageLoadingBoundary>
                     <footer className="admin-footer">
                         AgriFarm · Pasig City CENRO Administration
                     </footer>

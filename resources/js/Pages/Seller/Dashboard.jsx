@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from "@inertiajs/react";
 import { useEffect, useRef, useState } from "react";
 import AppMark from "../../Components/AppMark";
+import PageLoadingBoundary from '../../Components/PageLoadingBoundary';
 import Icon from "../../Components/Storefront/Icon";
 import "../../../css/seller.css";
 import ProfileForm from "./ProfileForm";
@@ -428,6 +429,7 @@ export default function Dashboard() {
                     </div>
                 </header>
                 <main className="seller-main">
+                    <PageLoadingBoundary workspace>
                     {section === "Dashboard" ? (
                         <>
                             <h1 className="sr-only">
@@ -668,6 +670,7 @@ export default function Dashboard() {
                             </section>
                         </>
                     )}
+                    </PageLoadingBoundary>
                     <footer className="seller-footer">
                         AgriFarm ·{" "}
                         {filipino ? "Katuwang na barangay" : "Partner barangay"}

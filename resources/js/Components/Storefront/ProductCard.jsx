@@ -3,10 +3,19 @@ import { Link, usePage } from '@inertiajs/react';
 import Icon from './Icon';
 import { money, stockUnit, getProductBadge, productHref } from './catalog';
 import { useShop } from './ShopContext';
+import { SkeletonBlock } from '../PageSkeleton';
 
 export function ProducePhoto({ product, className = '', thumbnail = false, priority = false }) {
     const source = thumbnail ? (product.thumbnailUrl || product.photoUrl) : product.photoUrl;
-    if (source) return <div className={`produce-photo has-upload ${className}`}><img src={source} alt={product.name} loading={priority ? 'eager' : 'lazy'} decoding="async" /></div>;
+    const image = useRef(null);
+    const [readySource, setReadySource] = useState(null);
+    useEffect(() => {
+        if (source && image.current?.complete) setReadySource(source);
+    }, [source]);
+    if (source) return <div className={`produce-photo has-upload ${readySource !== source ? 'is-loading' : ''} ${className}`}>
+        {readySource !== source && <SkeletonBlock className="skeleton-image-fill" />}
+        <img ref={image} src={source} alt={product.name} loading={priority ? 'eager' : 'lazy'} decoding="async" onLoad={() => setReadySource(source)} onError={() => setReadySource(source)} />
+    </div>;
     const extra = product.photo >= 9;
     const index = extra ? product.photo - 9 : product.photo;
     return <div role="img" aria-label={product.name} className={`produce-photo ${extra ? 'produce-photo-extra' : ''} ${className}`} style={{ '--photo-position': `${(index % 3) * 50}% ${extra ? 50 : Math.floor(index / 3) * 50}%` }} />;

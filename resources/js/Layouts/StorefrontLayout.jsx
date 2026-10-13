@@ -7,6 +7,7 @@ import { marketHref } from '../Components/Storefront/catalog';
 import { useShop } from '../Components/Storefront/ShopContext';
 import HelpWidget from '../Components/Storefront/HelpWidget';
 import FormStatus from '../Components/FormStatus';
+import PageLoadingBoundary from '../Components/PageLoadingBoundary';
 import '../../css/storefront.css';
 
 export default function StorefrontLayout({ children, market }) {
@@ -85,7 +86,7 @@ export default function StorefrontLayout({ children, market }) {
                     <Link href={destination} onClick={() => setMenuOpen(false)}><Icon name="user" /><span>{user ? (filipino ? (user.role === 'customer' ? 'Aking profile' : 'Aking workspace') : (user.role === 'customer' ? 'My profile' : 'My workspace')) : (filipino ? 'Mag-log in' : 'Log in')}</span><Icon name="arrow" size={18} /></Link>
                 </div>
             </dialog>
-            <main id="main-content" tabIndex={-1}>{children}</main>
+            <main id="main-content" tabIndex={-1}><PageLoadingBoundary>{children}</PageLoadingBoundary></main>
             <footer className="store-footer">
                 <div className="store-container">
                     <div className="store-footer-grid">
