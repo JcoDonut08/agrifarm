@@ -1,6 +1,7 @@
-import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Home, AlertTriangle, Lock, SearchX, ServerCrash } from 'lucide-react';
+
+import AppMark from '../Components/AppMark';
 
 export default function ErrorPage({ status }) {
     const title = {
@@ -13,7 +14,7 @@ export default function ErrorPage({ status }) {
 
     const description = {
         503: 'Sorry, we are doing some maintenance. Please check back soon.',
-        500: 'Whoops, something went wrong on our servers. Our team has been notified.',
+        500: 'Sorry, something went wrong on our servers. Please try again in a moment.',
         404: 'Sorry, the page you are looking for could not be found. It might have been moved or deleted.',
         403: 'Sorry, you are forbidden from accessing this page. You do not have the necessary permissions.',
         401: 'Sorry, your session has expired or you are unauthorized. Please log in again.',
@@ -34,133 +35,54 @@ export default function ErrorPage({ status }) {
     if (status >= 500) mascotImage = '/images/kuya-ani-500.jpg';
 
     return (
-        <div style={{ 
-            minHeight: '100vh', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            padding: '60px 20px',
-            backgroundColor: '#f9fafb',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            position: 'relative'
-        }}>
+        <div className="flex min-h-dvh flex-col bg-cream-50 px-4 py-5 font-sans text-forest-950 dark:bg-night-950 dark:text-white sm:px-8 sm:py-7 lg:px-10">
             <Head title={title} />
-            
-            {/* Logo in top left */}
-            <div style={{ position: 'absolute', top: '24px', left: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <img src="/images/logo.png" alt="AgriFarm Logo" style={{ height: '40px', width: 'auto' }} />
-                <span style={{ fontSize: '22px', fontWeight: '800', color: '#111827', letterSpacing: '-0.02em' }}>AgriFarm</span>
-            </div>
-            
-            <div style={{ 
-                maxWidth: '600px', 
-                width: '100%', 
-                backgroundColor: 'white', 
-                borderRadius: '24px', 
-                padding: '50px 40px', 
-                textAlign: 'center',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.08)',
-                border: '1px solid rgba(18, 138, 57, 0.1)'
-            }}>
-                
-                {/* Mascot & Icon Header */}
-                <div style={{ position: 'relative', width: '130px', height: '130px', margin: '0 auto 30px' }}>
-                    <div style={{ 
-                        width: '130px', 
-                        height: '130px', 
-                        borderRadius: '50%', 
-                        overflow: 'hidden',
-                        border: '4px solid #f0fdf4',
-                        boxShadow: '0 8px 16px rgba(18, 138, 57, 0.15)',
-                        backgroundColor: '#f0fdf4'
-                    }}>
-                        <img 
-                            src={mascotImage}
-                            alt="Kuya Ani Mascot" 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.2) translateY(5px)' }} 
-                        />
-                    </div>
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '-5px',
-                        right: '-5px',
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        width: '44px',
-                        height: '44px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '3px solid white',
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-                    }}>
-                        <Icon size={22} />
-                    </div>
-                </div>
 
-                <h1 style={{ 
-                    fontSize: '32px', 
-                    fontWeight: '800', 
-                    color: '#1f2937', 
-                    marginBottom: '16px',
-                    letterSpacing: '-0.02em'
-                }}>
-                    {title}
-                </h1>
-                
-                <p style={{ 
-                    fontSize: '16px', 
-                    color: '#4b5563', 
-                    lineHeight: '1.6',
-                    marginBottom: '32px',
-                    maxWidth: '400px',
-                    margin: '0 auto 32px'
-                }}>
-                    {description}
-                </p>
+            <header className="self-start">
+                <AppMark compact />
+            </header>
 
-                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-                    <button 
-                        onClick={() => window.history.back()}
-                        style={{ 
-                            backgroundColor: 'white', 
-                            color: '#4b5563', 
-                            border: '1px solid #d1d5db',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '12px 24px',
-                            borderRadius: '50px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <ArrowLeft size={18} />
-                        Go Back
-                    </button>
-                    
-                    <Link 
-                        href="/" 
-                        style={{ 
-                            backgroundColor: '#128a39',
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '12px 24px',
-                            borderRadius: '50px',
-                            fontWeight: '600',
-                            textDecoration: 'none',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <Home size={18} />
-                        Return Home
-                    </Link>
-                </div>
-            </div>
+            <main className="grid flex-1 place-items-center py-8 sm:py-12">
+                <section aria-labelledby="error-title" className="w-full max-w-xl rounded-2xl border border-forest-950/10 bg-white px-6 py-8 text-center shadow-sm dark:border-white/10 dark:bg-night-900 sm:p-10">
+                    <div className="relative mx-auto mb-6 size-28 sm:size-32">
+                        <div className="size-full overflow-hidden rounded-full border-4 border-forest-50 bg-forest-50 dark:border-forest-900 dark:bg-forest-900">
+                            <img
+                                src={mascotImage}
+                                alt="Kuya Ani mascot"
+                                className="size-full translate-y-1 scale-120 object-cover"
+                            />
+                        </div>
+                        <span aria-hidden="true" className="absolute -bottom-1 -right-1 grid size-10 place-items-center rounded-full border-3 border-white bg-red-600 text-white dark:border-night-900">
+                            <Icon size={20} />
+                        </span>
+                    </div>
+
+                    <h1 id="error-title" className="text-[1.65rem] font-bold leading-tight tracking-tight sm:text-[2rem]">
+                        {title}
+                    </h1>
+                    <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-stone-600 dark:text-stone-300 sm:text-base">
+                        {description}
+                    </p>
+
+                    <div className="mx-auto mt-7 grid w-full max-w-sm grid-cols-1 gap-3 [--ui-control-height:48px] sm:grid-cols-2">
+                        <button
+                            type="button"
+                            onClick={() => window.history.back()}
+                            className="app-secondary-button w-full whitespace-nowrap border border-forest-200 bg-white text-forest-800 hover:bg-forest-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-forest-600/30 dark:border-white/15 dark:bg-night-800 dark:text-white dark:hover:bg-night-700"
+                        >
+                            <ArrowLeft size={18} className="shrink-0" aria-hidden="true" />
+                            <span>Go Back</span>
+                        </button>
+                        <Link
+                            href="/"
+                            className="app-primary-button w-full whitespace-nowrap focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-forest-600/30"
+                        >
+                            <Home size={18} className="shrink-0" aria-hidden="true" />
+                            <span>Return Home</span>
+                        </Link>
+                    </div>
+                </section>
+            </main>
         </div>
     );
 }
