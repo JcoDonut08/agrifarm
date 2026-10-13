@@ -2,6 +2,8 @@
 
 AgriFarm is a Laravel 12 + React 19/Inertia marketplace for Pasig barangay sellers. It includes role-based authentication, seller inventory and order tools, a database-backed customer storefront, public seller shops, customer reviews, and Cash on Delivery orders. Online payments remain deferred.
 
+Live website: [AgriFarm on Railway](https://agrifarm-production-6bdb.up.railway.app). Hosting configuration and verification notes are in the [Railway Deployment Plan](docs/Railway%20Deployment%20Plan.md).
+
 ## Stack
 
 - PHP 8.2+, Laravel 12, Eloquent, PostgreSQL

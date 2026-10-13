@@ -20,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        if (env('PLATFORM_PROJECT') || env('RAILWAY_ENVIRONMENT_ID')) {
+        if (env('RAILWAY_ENVIRONMENT_ID')) {
             // The hosting router terminates HTTPS before forwarding to PHP-FPM.
             $middleware->trustProxies(at: '*');
         }

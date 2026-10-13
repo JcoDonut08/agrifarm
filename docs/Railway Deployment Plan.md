@@ -1,10 +1,12 @@
 # Railway deployment for the AgriFarm trial
 
-Status: deployed on October 13, 2026 with Railway CLI 5.66.0. The project is `alert-playfulness`, environment `production`, application service `Agrifarm`; its `Postgres` database is online. The public site is `https://agrifarm-production-6bdb.up.railway.app`. The volume is verified at `/app/storage`, and the hosted application key is configured privately. All 35 schema migrations ran. The selected starting dataset of 4 accounts, 5 products, and 13 photos was transferred; photo checksums matched at initialization. A live 20-crop forecast passed in 31.7 seconds after restarting the service, with starting records and forecasting references intact. Brevo test-email delivery is confirmed by the provider; Google credentials and the authorized callback are configured. The order-email worker is deployed and passed a queue-processing probe. Complete user-flow checks remain pending. The localhost environment and its full database have not been changed.
+Status: deployed on October 13, 2026 with Railway CLI 5.66.0. The project is `AgriFarm` (renamed from `alert-playfulness`), environment `production`, application service `Agrifarm`; its `Postgres` database is online. The public site is `https://agrifarm-production-6bdb.up.railway.app`. The volume is verified at `/app/storage`, and the hosted application key is configured privately. All 35 schema migrations ran. The selected starting dataset of 4 accounts, 5 products, and 13 photos was transferred; photo checksums matched at initialization. A live 20-crop forecast passed in 31.7 seconds after restarting the service, with starting records and forecasting references intact. Brevo test-email delivery is confirmed by the provider; Google credentials and the authorized callback are configured. The order-email worker is deployed and passed a queue-processing probe. Complete user-flow checks remain pending. The localhost environment and its full database have not been changed.
 
 ## First dashboard steps
 
-1. Open the existing **alert-playfulness** project and **production** environment.
+The repository's public website URL is `https://agrifarm-production-6bdb.up.railway.app`. GitHub can display this CLI-managed deployment under `AgriFarm / production` using a deployment record whose environment URL points to the site and whose log URL points to the verified Railway deployment. Record success only after the web service and worker are running and the website health endpoint responds successfully. This records an existing deployment; it does not enable GitHub autodeployments. The unused `wholesome-encouragement` project's repository source was disconnected after it produced cancelled deployment checks. Its existing GitHub deployment entries are historical.
+
+1. Open the existing **AgriFarm** project and **production** environment.
 2. Keep its existing **Postgres** database service.
 3. Keep the existing **Agrifarm** service and **agrifarm-volume**. Confirm the volume's mount path is **`/app/storage`**. Use one web replica. Below, "web" refers to this application service.
 4. Generate a Railway domain in the web service's networking settings, with target port **8080**. Set `APP_URL` to that domain with `https://`.
@@ -86,7 +88,7 @@ Deploy the worker after the web migrations have succeeded. Keep it running while
 
 ## Upload the code and initialize the hosted records
 
-Install the [official Railway CLI](https://docs.railway.com/cli) if the `railway` command is unavailable. Use its login flow, then link this folder to the **alert-playfulness** project, **production** environment, and **Agrifarm** service. Never paste account passwords, authentication codes, or API keys into chat. Review `railway status` before an upload so it targets the intended project/environment/service.
+Install the [official Railway CLI](https://docs.railway.com/cli) if the `railway` command is unavailable. Use its login flow, then link this folder to the **AgriFarm** project, **production** environment, and **Agrifarm** service. Never paste account passwords, authentication codes, or API keys into chat. Review `railway status` before an upload so it targets the intended project/environment/service.
 
 ```powershell
 railway login
@@ -101,11 +103,11 @@ For the worker, update the separate reviewed release at `tmp/railway-release-wor
 railway up tmp/railway-release-worker-20261013 --path-as-root --project 34716a6b-0981-4d08-a018-6952f127efdc --service order-email-worker --environment production
 ```
 
-The agreed separate thesis dataset was already prepared for the earlier Upsun plan and is independent of that provider. Its bundle is at `D:\AgrifarmBackups\upsun-starting-data-20261012-162115`; the full private localhost backup is at `D:\AgrifarmBackups\20261012-161226`.
+The agreed separate thesis dataset was prepared before Railway was selected. Its existing private bundle remains at `D:\AgrifarmBackups\upsun-starting-data-20261012-162115`; the full private localhost backup remains at `D:\AgrifarmBackups\20261012-161226`. Removing unused hosting configuration does not remove or rename either backup.
 
 After the hosted schema is migrated and verified empty, import **only** the bundle's selected starting records and corresponding photo files: **4 accounts (1 admin, 3 sellers), 5 products, 13 files totaling about 5.11 MiB**. Copy `private` photo paths into `storage/app/private` on the web volume and set their owner to `www-data`. Keep `hosted-environment.json` and `hosted-temporary-credentials.json` private; they are configuration/access records, not application data to upload. Review the prepared SQL against the migrated schema before import. Initialize once, then preserve newly collected participant records.
 
-The complete localhost dataset remains local. Existing orders, reviews, notifications, harvests, saved forecasts, sessions, queue contents, and client-demo photos are excluded from the hosted starting set. Do not run a full local database restore, `migrate:fresh`, or development seeders against the hosted database. [Existing dataset plan](Upsun%20Deployment%20Plan.md)
+The complete localhost dataset remains local. Existing orders, reviews, notifications, harvests, saved forecasts, sessions, queue contents, and client-demo photos are excluded from the hosted starting set. Do not run a full local database restore, `migrate:fresh`, or development seeders against the hosted database. Hosted participant activity and localhost demonstration records remain separate; deploying code does not synchronize them. Preserve selected account/product IDs, relationships, and private photo paths when restoring the starting bundle. Browser-local carts are not part of a database transfer.
 
 Email/password login for existing hosted accounts does not use a login OTP. Only the selected admin/seller accounts exist online initially; localhost customer accounts are not included. Accounts using the published development password received hosted-only temporary passwords during bundle preparation. Use the matching entry in the private `hosted-temporary-credentials.json` bundle file for initial access, rather than assuming the localhost password remains valid. Seller password replacement is required on first sign-in. Registration verification and password recovery still need the email provider.
 

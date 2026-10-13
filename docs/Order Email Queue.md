@@ -68,4 +68,4 @@ php artisan test tests/Feature/OrderStatusQueueTest.php tests/Feature/OrderCance
 
 These tests do not send real customer email. On the live host, use a designated test customer, update a test order, and confirm its in-app notice and delivered email. Verify that a supervised worker starts again after a deployment and service restart before calling hosted email delivery ready.
 
-See [Upsun Deployment Plan](Upsun%20Deployment%20Plan.md) for the hosting setup. Laravel documents queued notification delivery and transaction handling in its [notification guide](https://laravel.com/docs/12.x/notifications).
+See [Railway Deployment Plan](Railway%20Deployment%20Plan.md) for the hosting setup. Laravel documents queued notification delivery and transaction handling in its [notification guide](https://laravel.com/docs/12.x/notifications).

@@ -8,7 +8,7 @@ A verified password-reset code grants permission for 15 minutes. That permission
 
 ## Rollout
 
-No new database migration or environment variable is needed for this security change. Existing authenticated sessions created before the middleware was enabled have no fingerprint; Laravel initializes it on their next authenticated request. Such legacy sessions cannot be compared with the password they originally used until that happens. For a clean deployment, start with fresh sessions and do not copy local session files or session-cache contents to the host, as specified in the Upsun plan. This change does not delete existing local session files.
+No new database migration or environment variable is needed for this security change. Existing authenticated sessions created before the middleware was enabled have no fingerprint; Laravel initializes it on their next authenticated request. Such legacy sessions cannot be compared with the password they originally used until that happens. For a clean deployment, start with fresh sessions and do not copy local session files or session-cache contents to the host, as specified in the [Railway Deployment Plan](Railway%20Deployment%20Plan.md). This change does not delete existing local session files.
 
 Invalidation happens when another browser next contacts the server. It does not remotely close an already displayed page. Protected actions on that page are denied after the password changes; the user must sign in again.
 
