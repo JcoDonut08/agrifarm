@@ -18,7 +18,7 @@ export default function ReviewReactions({ review, user }) {
             notify(filipino ? 'Hindi ma-save ang reaksyon. Subukan muli.' : 'Could not save your reaction. Please try again.', null, 'error');
             return false;
         };
-        router.post(`/product-reviews/${review.id}/react`, { type }, {
+        router.post(`/product-reviews/${review.id}/react`, { type, active: nextReaction !== null }, {
             preserveScroll: true,
             preserveState: true,
             showProgress: false,

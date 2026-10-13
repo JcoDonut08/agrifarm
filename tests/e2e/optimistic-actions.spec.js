@@ -46,6 +46,10 @@ async function delayedActions(page, pattern, ids, outcome = 'success') {
             await entry.gate;
             if (outcome === 'http') return route.fulfill({ status: 503, contentType: 'text/plain', body: 'Temporarily unavailable' });
             if (outcome === 'network') return route.abort('failed');
+            if (outcome === 'lost-response') {
+                await route.fetch();
+                return route.abort('failed');
+            }
             if (outcome === 'validation') return route.continue({ postData: JSON.stringify(route.request().method() === 'PATCH' ? { completed: 'invalid' } : { type: 'invalid' }) });
             return route.continue();
         })();
@@ -136,7 +140,7 @@ for (const width of [390, 768, 1440]) {
     });
 }
 
-for (const outcome of ['http', 'network', 'validation']) {
+for (const outcome of ['http', 'network', 'validation', 'lost-response']) {
     test(`review reactions roll back after ${outcome} failures`, async ({ page }) => {
         const { reviews } = seedActions();
         await login(page, 'customer');
