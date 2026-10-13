@@ -126,7 +126,15 @@ function AboutPage() {
                     <div className="about-cards">
                         <div className="about-card standard-card">
                             <div className="card-image-box">
-                                <img src="/images/market-basket.png" alt="Basket of vegetables" />
+                                <img
+                                    src="/images/about-mission-community.webp"
+                                    alt="Illustration of neighbors growing and sharing fresh produce in an urban garden"
+                                    width="1536"
+                                    height="1024"
+                                    loading="lazy"
+                                    decoding="async"
+                                    style={{ objectPosition: '50% 40%' }}
+                                />
                             </div>
                             <div className="card-text-box">
                                 <h3>Our Mission</h3>
@@ -139,7 +147,14 @@ function AboutPage() {
                         </div>
                         <div className="about-card standard-card">
                             <div className="card-image-box">
-                                <img src="/images/market-pechay-feature.png" alt="Fresh green pechay" />
+                                <img
+                                    src="/images/about-vision-green-city.webp"
+                                    alt="Illustration of a greener city neighborhood with shared vegetable gardens and gathering spaces"
+                                    width="2048"
+                                    height="768"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                             </div>
                             <div className="card-text-box">
                                 <h3>Our Vision</h3>
