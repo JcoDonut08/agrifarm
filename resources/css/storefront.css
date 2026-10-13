@@ -213,6 +213,10 @@ img.review-avatar { object-fit: cover; display: block; }
 .store-footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 72px; padding-block: 44px; }
 .store-footer-brand p { max-width: 340px; color: var(--store-muted); font-size: 13px; line-height: 1.8; margin-top: 12px; }
 .store-footer-brand p:first-of-type { color: var(--store-ink); font-weight: 550; }
+.store-footer-logos { display: flex; align-items: center; gap: 20px; margin-top: 20px; }
+.store-footer-logos img { display: block; flex-shrink: 0; object-fit: contain; }
+.store-footer-cenro-logo { width: 64px; height: 64px; border-radius: 50%; }
+.store-footer-city-logo { width: 144px; height: 72px; background: #fff; border-radius: 4px; }
 .store-footer-grid nav { display: flex; align-items: flex-start; flex-direction: column; }
 .store-footer-grid h2 { font-size: 14px; font-weight: 650; margin-bottom: 14px; }
 .store-footer nav a, .store-footer nav button { display: inline-flex; align-items: center; text-align: left; min-height: 36px; color: var(--store-muted); font-size: 13px; transition: color .18s; }

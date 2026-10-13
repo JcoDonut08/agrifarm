@@ -94,6 +94,10 @@ export default function StorefrontLayout({ children, market }) {
                             <AppMark storefront />
                             <p>Grown locally. Connected through community.</p>
                             <p>Discover fresh produce and the neighborhood growers behind it, right here in Pasig.</p>
+                            <div className="store-footer-logos">
+                                <img className="store-footer-cenro-logo" src="/images/pasig-cenro-seal.jpg" alt="Pasig CENRO seal" width="64" height="64" loading="lazy" decoding="async" />
+                                <img className="store-footer-city-logo" src="/images/pasig-city-wordmark.svg" alt="Pasig City — Umaagos ang Pag-asa" width="144" height="72" loading="lazy" decoding="async" />
+                            </div>
                         </div>
                         <nav aria-label="Footer navigation">
                             <h2>{filipino ? 'Tuklasin ang AgriFarm' : 'Explore AgriFarm'}</h2>
