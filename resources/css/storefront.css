@@ -946,7 +946,8 @@ img.review-avatar { object-fit: cover; display: block; }
 .review-attachment img { max-width: 200px; height: auto; border-radius: 8px; object-fit: cover; }
 .review-attachment video { max-width: 200px; height: auto; border-radius: 8px; }
 .review-reactions { display: flex; gap: 12px; margin-top: 12px; }
-.review-reaction-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--store-muted); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+.review-reaction-btn { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; gap: 6px; font-size: 13px; color: var(--store-muted); background: none; border: none; cursor: pointer; padding: 8px 10px; border-radius: 6px; transition: background 0.2s; }
+.review-reaction-btn:disabled { cursor: default; }
 .review-reaction-btn:hover { background: var(--store-soft); }
 .review-reaction-btn.is-active { color: var(--store-green-dark); font-weight: 600; }
 

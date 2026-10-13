@@ -32,6 +32,7 @@ function SettingsInner() {
         preference.patch('/customer/settings', {
             preserveScroll: true,
             onError: () => preference.setData('order_update_emails', orderUpdateEmails),
+            onCancel: () => preference.setData('order_update_emails', orderUpdateEmails),
             onNetworkError: failed,
             onHttpException: failed,
         });

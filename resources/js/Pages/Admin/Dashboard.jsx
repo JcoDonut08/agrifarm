@@ -978,6 +978,9 @@ function AdminTodoPanel({ tasks, filipino }) {
     const [adding, setAdding] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const pendingTasks = useRef(new Set());
+    const [busyTasks, setBusyTasks] = useState(new Set());
+    const [taskError, setTaskError] = useState('');
     const form = useForm({ title: "", due_date: "" });
     const completedTasks = tasks.filter((task) => task.completed).length;
     const openTasks = tasks.length - completedTasks;
@@ -998,10 +1001,34 @@ function AdminTodoPanel({ tasks, filipino }) {
     };
 
     const toggleTask = (task) => {
+        if (pendingTasks.current.has(task.id)) return;
+        const completed = !task.completed;
+        pendingTasks.current.add(task.id);
+        setBusyTasks(new Set(pendingTasks.current));
+        setTaskError('');
+        const failed = () => {
+            setTaskError(filipino ? 'Hindi ma-save ang gawain. Subukan muli.' : 'Could not save the task. Please try again.');
+            return false;
+        };
         router.patch(
             `/admin/tasks/${task.id}`,
-            { completed: !task.completed },
-            { preserveScroll: true },
+            { completed },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                showProgress: false,
+                optimistic: props => ({ dashboard: {
+                    ...props.dashboard,
+                    todo: (props.dashboard?.todo || []).map(item => item.id === task.id ? { ...item, completed } : item),
+                } }),
+                onError: failed,
+                onNetworkError: failed,
+                onHttpException: failed,
+                onFinish: () => {
+                    pendingTasks.current.delete(task.id);
+                    setBusyTasks(new Set(pendingTasks.current));
+                },
+            },
         );
     };
 
@@ -1041,6 +1068,7 @@ function AdminTodoPanel({ tasks, filipino }) {
                 )}
             </div>
 
+            <FormStatus tone="error">{taskError}</FormStatus>
             {tasks.length > 0 && (
                 <div className="admin-task-progress">
                     <div>
@@ -1152,6 +1180,9 @@ function AdminTodoPanel({ tasks, filipino }) {
                             <button
                                 type="button"
                                 className="admin-task-check"
+                                disabled={busyTasks.has(task.id)}
+                                aria-busy={busyTasks.has(task.id)}
+                                aria-pressed={task.completed}
                                 aria-label={`${task.completed ? (filipino ? "Buksan muli" : "Reopen") : filipino ? "Kumpletuhin" : "Complete"} ${task.title}`}
                                 onClick={() => toggleTask(task)}
                             >
@@ -1177,6 +1208,7 @@ function AdminTodoPanel({ tasks, filipino }) {
                             <button
                                 type="button"
                                 className="admin-task-delete"
+                                disabled={busyTasks.has(task.id)}
                                 aria-label={`Delete ${task.title}`}
                                 onClick={() => setDeleteTarget(task)}
                             >

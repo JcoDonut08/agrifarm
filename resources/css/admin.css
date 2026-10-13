@@ -2067,8 +2067,8 @@
 }
 .admin-task-check {
     display: grid;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     place-items: center;
     border: 1px solid #b8ccbe;
     border-radius: 9px;
