@@ -32,7 +32,7 @@ export default function Contact() {
         });
     }
 
-    return <ShopProvider><GuestLayout storefront><Head title={filipino ? "Makipag-ugnayan sa AgriFarm" : "Contact AgriFarm"} />
+    return <ShopProvider products={[]} persist={false}><GuestLayout storefront><Head title={filipino ? "Makipag-ugnayan sa AgriFarm" : "Contact AgriFarm"} />
         <div className="store-container contact-page">
             <div className="contact-heading"><h1>{filipino ? "Makipag-ugnayan sa AgriFarm" : "Contact AgriFarm"}</h1><p>{filipino ? "Mga tanong, feedback, o reklamo. Makipag-ugnayan sa amin." : "Questions, feedback, or a concern. Get in touch."}</p></div>
             <div className="contact-layout">

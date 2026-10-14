@@ -12,6 +12,7 @@ This is the short source of truth for the customer storefront. Use it to avoid r
 - Seller-created products come from PostgreSQL; fallback preview products remain available for the designed demo catalog.
 - Public product and seller photos use controlled marketplace image routes. Original seller uploads remain private.
 - Favorites and cart quantities are stored in `localStorage`. Stock is reserved only by a successful server-side COD checkout.
+- About, Contact, and customer account pages read the saved cart and favorites without pruning product IDs or overwriting browser storage. Only catalog pages reconcile saved items with available listings and stock.
 - Customer profiles can save a photo, name, username, mobile number, delivery address, and password. Saved contact and address details can prefill checkout.
 
 ## Cash on Delivery checkout
