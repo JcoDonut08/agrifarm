@@ -17,7 +17,7 @@ class ProfileController extends Controller
 {
     public function photo(Request $request): RedirectResponse
     {
-        $request->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:max_width=6000,max_height=6000']]);
+        $request->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240', 'dimensions:max_width=6000,max_height=6000']]);
         $user = $request->user();
         $path = $request->file('photo')->store('seller-avatars/'.$user->id, 'local');
         abort_unless($path, 500, 'The photo could not be saved. Please try again.');

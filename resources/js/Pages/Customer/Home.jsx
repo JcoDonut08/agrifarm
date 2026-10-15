@@ -45,6 +45,7 @@ export default function Home() {
 
     function clearPhoto() {
         photo.reset();
+        photo.clearErrors();
         if (photoInput.current) photoInput.current.value = '';
     }
 
@@ -79,7 +80,7 @@ export default function Home() {
                         <ProfileAvatar user={user} preview={preview} large />
                         <label htmlFor="customer-photo">{filipino ? 'Pumili ng larawan' : 'Choose profile photo'}</label>
                         <input id="customer-photo" ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="customer-photo-help" aria-invalid={Boolean(photo.errors.photo)} onChange={event => { photo.clearErrors(); photo.setData('photo', event.target.files?.[0] || null); }} />
-                        <p id="customer-photo-help" className="customer-field-hint">{filipino ? 'JPG, PNG o WebP. Hanggang 2 MB.' : 'JPG, PNG or WebP. Up to 2 MB.'}</p>
+                        <p id="customer-photo-help" className="customer-field-hint">{filipino ? 'JPG, PNG o WebP. Hanggang 10 MB.' : 'JPG, PNG or WebP. Up to 10 MB.'}</p>
                         {photo.errors.photo && <small role="alert" className="customer-field-error">{photo.errors.photo}</small>}
                         <div className="customer-profile-actions"><button className="store-button" disabled={!photo.data.photo || photo.processing}>{filipino ? (photo.processing ? 'Sine-save…' : 'I-save ang larawan') : (photo.processing ? 'Saving…' : 'Save photo')}</button>{photo.data.photo && <button type="button" className="checkout-outline-button" onClick={clearPhoto} disabled={photo.processing}>{filipino ? 'Kanselahin' : 'Cancel'}</button>}{user.avatar_url && <button type="button" className="seller-danger-button" disabled={photo.processing} onClick={() => setRemovingPhoto(true)}>{filipino ? 'Alisin ang larawan' : 'Remove photo'}</button>}</div>
                     </div>

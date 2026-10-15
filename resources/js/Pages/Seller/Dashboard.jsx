@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from "@inertiajs/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppMark from "../../Components/AppMark";
 import PageLoadingBoundary from '../../Components/PageLoadingBoundary';
 import Icon from "../../Components/Storefront/Icon";
@@ -16,6 +16,7 @@ import Analytics from "./Analytics";
 import Reports from "./Reports";
 import HarvestRecords from "./HarvestRecords";
 import Forecasting from "./Forecasting";
+import SellerGuide from "./SellerGuide";
 import {
     formatMoney,
     getDashboardMetrics,
@@ -214,6 +215,7 @@ export default function Dashboard() {
         harvestRecords = [],
         reviewSummary = { count: 0, average: null },
         weather = null,
+        sellerGuidePending = false,
     } = usePage().props;
     const [section, setSection] = useState(() => {
         const requested = new URLSearchParams(window.location.search).get(
@@ -226,6 +228,8 @@ export default function Dashboard() {
         );
     });
     const [menuOpen, setMenuOpen] = useState(false);
+    const [guideOpen, setGuideOpen] = useState(sellerGuidePending);
+    useEffect(() => { setGuideOpen(sellerGuidePending); }, [auth.user.id, sellerGuidePending]);
     const menuDialog = useRef(null);
     const menuTrigger = useRef(null);
     const menuClose = useRef(null);
@@ -316,7 +320,7 @@ export default function Dashboard() {
             return next;
         });
     };
-    const navigate = (next) => {
+    const navigate = useCallback((next) => {
         const url = new URL(window.location.href);
         if (sectionParams[next])
             url.searchParams.set("section", sectionParams[next]);
@@ -324,7 +328,7 @@ export default function Dashboard() {
         window.history.replaceState({}, "", url);
         setSection(next);
         setMenuOpen(false);
-    };
+    }, []);
     return (
         <div className="seller-app">
             <Head title={`${name} · AgriFarm`} />
@@ -618,6 +622,7 @@ export default function Dashboard() {
                             onLanguageChange={changeLanguage}
                             notifications={notificationPreferences}
                             onNotificationChange={changeNotification}
+                            onReplayGuide={() => setGuideOpen(true)}
                         />
                     ) : (
                         <>
@@ -677,6 +682,7 @@ export default function Dashboard() {
                     </footer>
                 </main>
             </div>
+            {guideOpen && <SellerGuide pending={sellerGuidePending} filipino={filipino} navigate={navigate} onClose={() => setGuideOpen(false)} />}
         </div>
     );
 }

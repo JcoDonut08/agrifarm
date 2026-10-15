@@ -57,7 +57,7 @@ for (const width of [390, 768, 1440]) {
             const assistant = page.locator('.help-widget-window');
             await assistant.getByRole('button', { name: filipino ? 'Suriin ang Order' : 'Check my order', exact: true }).click();
             await expect(assistant).toContainText(filipino ? 'Mag-sign in para makita ang iyong mga order.' : 'Sign in to check your orders.');
-            await expect(assistant.getByRole('textbox')).toHaveCount(0);
+            await expect(assistant.getByRole('textbox')).toHaveCount(1);
             for (const theme of ['light', 'dark']) {
                 await page.evaluate(theme => document.documentElement.classList.toggle('dark', theme === 'dark'), theme);
                 const bounds = await assistant.boundingBox();
@@ -75,6 +75,9 @@ for (const width of [390, 768, 1440]) {
             await assistant.getByRole('button', { name: filipino ? 'Suriin ang Order' : 'Check my order', exact: true }).click();
             await expect(assistant).toContainText(ownReference);
             await expect(assistant).toContainText('Chatbot Pechay');
+            await assistant.getByRole('textbox').fill(`Check ${ownReference.toLowerCase()} please`);
+            await assistant.getByRole('button', { name: 'Send', exact: true }).click();
+            await expect(assistant.locator('.chat-message.bot').last()).toContainText('Chatbot Pechay');
             const another = filipino ? 'Tingnan ang ibang order' : 'Check another order';
             await assistant.getByRole('button', { name: another, exact: true }).last().click();
             await assistant.getByRole('textbox', { name: 'Order ID', exact: true }).fill(ownReference);
@@ -97,11 +100,16 @@ for (const width of [390, 768, 1440]) {
             const forbiddenOrder = await page.request.get(`/api/chatbot/order-status?reference=${otherReference}`, { headers: { Accept: 'application/json' } });
             expect(await forbiddenOrder.json()).toEqual({ status: 'not_found' });
             if (width === 1440 && !filipino) {
-                for (const status of [429, 401]) {
+                for (const status of [500, 429, 401]) {
                     await page.route('**/api/chatbot/latest-order', route => route.fulfill({ status, contentType: 'application/json', body: '{}' }));
-                    await assistant.getByRole('button', { name: 'Check my order', exact: true }).first().click();
-                    await expect(assistant.locator('.chat-message.bot').last()).toContainText(status === 429 ? 'Too many requests.' : 'Sign in to check your orders.');
+                    await assistant.locator('.help-widget-menu').click();
+                    await assistant.getByRole('button', { name: 'Check my order', exact: true }).click();
+                    await expect(assistant.locator('.chat-message.bot').last()).toContainText(status === 500 ? 'There was a problem retrieving your order.' : status === 429 ? 'Too many requests.' : 'Sign in to check your orders.');
                     await page.unroute('**/api/chatbot/latest-order');
+                    if (status === 500) {
+                        await assistant.getByRole('button', { name: 'Try again', exact: true }).click();
+                        await expect(assistant.locator('.chat-message.bot').last()).toContainText('Chatbot Pechay');
+                    }
                 }
             }
             await page.getByRole('button', { name: 'Close assistant', exact: true }).click();

@@ -1,0 +1,40 @@
+.seller-guide-launch { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 8px 12px; color: #15603e; background: #edf6ef; border: 1px solid #c7dece; border-radius: 8px; font-weight: 650; white-space: nowrap; }
+.seller-guide { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; overflow: hidden; color: #16372b; }
+.seller-guide::backdrop { background: transparent; }
+.seller-guide-shade { position: absolute; inset: 0; background: #091e17a8; }
+.seller-guide-shade.has-spotlight { background: transparent; }
+.seller-guide-spotlight { position: fixed; border: 2px solid #b3e8b6; border-radius: 12px; box-shadow: 0 0 0 200vmax #091e17a8; pointer-events: none; }
+.seller-guide-card { position: absolute; right: 24px; bottom: 24px; z-index: 1; display: flex; align-items: flex-end; width: min(640px, calc(100% - 48px)); max-height: calc(100% - 40px); gap: 10px; }
+@media (min-width: 801px) { .seller-guide-card.is-positioned { left: var(--guide-left); top: var(--guide-top); right: auto; bottom: auto; } }
+.seller-guide-character { flex: none; width: 142px; height: 182px; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 4px 8px #0002); }
+.seller-guide-bubble { position: relative; flex: 1; min-width: 0; max-height: calc(100dvh - 48px); overflow-y: auto; padding: 20px; background: #fffdf7; border: 1px solid #cfdfd0; border-radius: 16px; box-shadow: 0 8px 28px #091e1730; font-size: 14px; line-height: 1.65; }
+.seller-guide-card::before { content: ''; position: absolute; z-index: 1; left: 145px; bottom: 52px; width: 16px; height: 16px; transform: rotate(45deg); background: #fffdf7; border-left: 1px solid #cfdfd0; border-bottom: 1px solid #cfdfd0; }
+.seller-guide-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #456052; font-size: 12px; font-weight: 650; }
+.seller-guide-meta button { flex: none; min-height: 44px; margin: -10px -8px -4px 0; padding: 8px; background: transparent; color: #456052; text-decoration: underline; text-underline-offset: 3px; }
+.seller-guide h2 { margin: 8px 0 10px; color: #153e2a; font-size: 21px; font-weight: 750; line-height: 1.3; letter-spacing: -.3px; }
+.seller-guide h2:focus { outline: none; }
+.seller-guide p { margin: 0; }
+.seller-guide-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 20px; }
+.seller-guide-actions button { min-height: 44px; padding: 9px 16px; border-radius: 8px; border: 1px solid #bad2c1; background: #fffdf7; color: #15603e; font-size: 14px; font-weight: 650; }
+.seller-guide-actions .seller-guide-next { background: #12683b; border-color: #12683b; color: white; }
+.seller-guide button:disabled { opacity: .5; cursor: default; }
+.seller-guide button:focus-visible, .seller-guide-launch:focus-visible { outline: 3px solid #23864f; outline-offset: 3px; }
+.seller-guide .seller-guide-error { color: #b12e2e; margin-top: 10px; }
+.dark .seller-guide-launch { background: #243d30; color: #b4e2c1; border-color: #46614c; }
+.dark .seller-guide-bubble { background: #1d3026; color: #e6eee6; border-color: #587461; }
+.dark .seller-guide-card::before { background: #1d3026; border-color: #587461; }
+.dark .seller-guide h2 { color: #ecf5ec; }
+.dark .seller-guide-meta, .dark .seller-guide-meta button { color: #c1d6c6; }
+.dark .seller-guide-actions button { background: #1d3026; color: #c4e4cd; border-color: #587461; }
+.dark .seller-guide-actions .seller-guide-next { background: #12683b; color: white; border-color: #47865f; }
+.dark .seller-guide .seller-guide-error { color: #ffb2a5; }
+@media (max-width: 800px) {
+    .seller-guide-launch { padding-inline: 9px; }
+    .seller-guide-card { right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: calc(100% - 24px); padding-top: 60px; }
+    .seller-guide-character { position: absolute; top: 0; left: 4px; z-index: 2; width: 90px; height: 105px; }
+    .seller-guide-bubble { padding: 16px; max-height: calc(100dvh - 92px); }
+    .seller-guide-card::before { display: none; }
+    .seller-guide-meta { padding-left: 76px; min-height: 28px; }
+    .seller-guide h2 { font-size: 19px; margin-top: 12px; }
+    .seller-guide-actions { margin-top: 16px; }
+}

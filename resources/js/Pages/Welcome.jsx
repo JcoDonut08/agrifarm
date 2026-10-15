@@ -18,7 +18,9 @@ export default function Welcome() {
     const hasSellerProducts = sellerProducts.length > 0;
     const listings = hasSellerProducts ? sellerProducts : products;
     const popularProducts = hasSellerProducts ? listings.slice(0, 4) : [products[0], products[1], products[2], products[6]];
-    const newProducts = hasSellerProducts ? listings.slice(4, 8) : [products[3], products[4], products[5], products[9]];
+    const newProducts = [products[3], products[4], products[5], products[9]];
+    const recommendations = props.productRecommendations;
+    const recommendedProducts = (recommendations?.productIds || []).map((id) => listings.find((product) => product.id === id)).filter(Boolean);
     const bestBarangay = props.bestBarangay;
     const bestSellingProducts = (props.bestSellingProducts || []).map((sale) => listings.find((product) => product.id === sale.id)).filter(Boolean);
     const bestBarangaySale = props.bestBarangayProduct;
@@ -123,7 +125,13 @@ export default function Welcome() {
                             {bestSellingProducts.length > 0 ? <div className="home-product-grid">{bestSellingProducts.map((product, index) => <ProductCard product={product} key={product.id} priority={index < 4} />)}</div> : <div className="top-selling-empty"><Icon name="trophy" size={28} /><div><h3>{filipino ? 'Wala pang pinakamabenta' : 'No best sellers yet'}</h3><p>{filipino ? 'Lilitaw dito ang mga produkto na may naihatid nang order.' : 'Products with delivered orders will appear here.'}</p></div></div>}
                         </section>
                         <ProductSection id="popular-heading" title={hasSellerProducts ? (filipino ? 'Sariwa mula sa mga lokal na nagtitinda' : 'Fresh from local sellers') : (filipino ? 'Mga Sikat na Produkto' : 'Popular Products')} description={hasSellerProducts ? (filipino ? 'Mga totoong ani mula sa mga magsasaka ng AgriFarm.' : 'Real harvests listed by AgriFarm growers.') : (filipino ? 'Mga paborito sa araw-araw mula sa mga nagtitinda sa kapitbahayan.' : 'Everyday favorites from neighborhood growers.')} products={popularProducts} />
-                        {newProducts.length > 0 && <ProductSection id="fresh-heading" title={hasSellerProducts ? (filipino ? 'Marami pang pagpipilian' : 'More to explore') : (filipino ? 'Mga Bagong Produkto' : 'Fresh New Products')} description={hasSellerProducts ? (filipino ? 'Maghanap ng iba pang produkto mula sa mga lokal na nagtitinda.' : 'Find more produce from local sellers.') : (filipino ? 'Mga bagong pagpipilian para sa iyong susunod na lutuin.' : 'A fresh selection for your next meal.')} products={newProducts} />}
+                        {hasSellerProducts ? recommendedProducts.length > 0 && <ProductSection
+                            id="recommended-heading"
+                            title={recommendations.personalized ? (filipino ? 'Mga rekomendasyon para sa iyo' : 'Recommended for you') : (filipino ? 'Mga inirerekomendang produkto' : 'Recommended products')}
+                            description={recommendations.personalized ? (filipino ? 'Mga pagpipiliang batay sa iyong mga nakaraang order na naihatid.' : 'Picks inspired by your completed orders.') : (filipino ? 'Tuklasin ang mga ani mula sa mga lokal na magsasaka.' : 'Discover available produce from local growers.')}
+                            products={recommendedProducts}
+                            linkLabel={filipino ? 'Mamili' : 'Shop all'}
+                        /> : <ProductSection id="fresh-heading" title={filipino ? 'Mga Bagong Produkto' : 'Fresh New Products'} description={filipino ? 'Mga bagong pagpipilian para sa iyong susunod na lutuin.' : 'A fresh selection for your next meal.'} products={newProducts} />}
                         <section className="harvest-cta" aria-labelledby="harvest-heading">
                             <div>
                                 <h2 id="harvest-heading">{filipino ? <>HANDA NANG KUNIN<br />ANG ANI?</> : <>READY TO GRAB<br />THE HARVEST?</>}</h2>
@@ -141,12 +149,12 @@ export default function Welcome() {
     );
 }
 
-function ProductSection({ id, title, description, products }) {
+function ProductSection({ id, title, description, products, linkLabel = 'View all' }) {
     return (
         <section className="home-section" aria-labelledby={id}>
             <div className="section-heading">
                 <div><h2 id={id}>{title}</h2><p>{description}</p></div>
-                <Link className="section-link" href={marketHref()}>View all <Icon name="arrow" size={17} /></Link>
+                <Link className="section-link" href={marketHref()}>{linkLabel} <Icon name="arrow" size={17} /></Link>
             </div>
             <div className="home-product-grid">
                 {products.map((product) => <ProductCard product={product} key={product.id} />)}

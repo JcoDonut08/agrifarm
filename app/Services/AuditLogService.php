@@ -13,7 +13,7 @@ class AuditLogService
     public function logs(): array
     {
         return AuditLog::query()
-            ->with(['seller:id,name,barangay,avatar_url', 'administrator:id,name'])
+            ->with(['seller:id,name,barangay,avatar_url', 'administrator:id,name', 'actor:id,name'])
             ->latest('created_at')
             ->latest('id')
             ->get()
@@ -39,7 +39,9 @@ class AuditLogService
             'details' => $log->details,
             'occurredAt' => $log->created_at->toIso8601String(),
             'timeFormatted' => Carbon::parse($log->created_at)->setTimezone('Asia/Manila')->format('M j, g:i A'),
-            'adminName' => $log->administrator?->name ?? 'Pasig CENRO Administrator',
+            'adminName' => $log->admin_id ? ($log->administrator?->name ?? 'Pasig CENRO Administrator') : null,
+            'actorName' => $log->actor_name ?: ($log->actor?->name ?? $log->administrator?->name ?? 'Unknown user'),
+            'actorRole' => $log->admin_id ? 'cenro_admin' : 'seller',
             'seller' => [
                 'id' => $log->seller_id,
                 'name' => $sellerName,
@@ -55,8 +57,8 @@ class AuditLogService
             return null;
         }
 
-        if ($sellerId && str_starts_with($avatarUrl, '/seller/profile/photo?image=')) {
-            return route('admin.sellers.photo', $sellerId);
+        if (str_starts_with($avatarUrl, '/seller/profile/photo?image=')) {
+            return $sellerId ? route('admin.sellers.photo', $sellerId) : null;
         }
 
         return $avatarUrl;

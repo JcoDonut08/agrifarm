@@ -129,6 +129,9 @@ class StorefrontController extends Controller
                 'orderCount' => (int) ($bestBarangaySale?->order_count ?? 0),
             ] : null,
         ];
+        if ($request->query('page', 'home') === 'home') {
+            $props['productRecommendations'] = $this->productRecommendations($user, $productsById);
+        }
         if ($request->query('page') === 'marketplace' && $productModels->isNotEmpty()) {
             $props['marketplaceResults'] = $this->marketplaceResults($request, collect($sellerProducts)->keyBy('id'));
         }
@@ -212,6 +215,45 @@ class StorefrontController extends Controller
         return Inertia::render('Welcome', $props);
     }
 
+    private function productRecommendations(?User $customer, Collection $productsById): array
+    {
+        $purchaseCounts = [];
+        $categoryCounts = [];
+        if ($customer) {
+            $purchases = WalkInOrder::query()
+                ->where('status', 'delivered')
+                ->whereNotNull('product_id')
+                ->whereHas('checkout', fn ($checkout) => $checkout->where('user_id', $customer->id))
+                ->with('product:id,category')
+                ->select('product_id')
+                ->selectRaw('COUNT(*) as purchase_count')
+                ->groupBy('product_id')
+                ->get();
+
+            foreach ($purchases as $purchase) {
+                $count = (int) $purchase->purchase_count;
+                $purchaseCounts['seller-'.$purchase->product_id] = $count;
+                if ($category = $purchase->product?->category) {
+                    $categoryCounts[$category] = ($categoryCounts[$category] ?? 0) + $count;
+                }
+            }
+        }
+
+        $available = $productsById->filter(fn (array $product) => $product['stock'] > 0 || $product['expected_yield'] > 0);
+        $personalized = $available->contains(fn (array $product) => ($purchaseCounts[$product['id']] ?? 0) > 0
+            || ($categoryCounts[$product['category']] ?? 0) > 0);
+        $ranked = $available->sort(fn (array $a, array $b) => ($purchaseCounts[$b['id']] ?? 0) <=> ($purchaseCounts[$a['id']] ?? 0)
+            ?: ($categoryCounts[$b['category']] ?? 0) <=> ($categoryCounts[$a['category']] ?? 0)
+            ?: $b['salesRankScore'] <=> $a['salesRankScore']
+            ?: strcmp($b['listedAt'], $a['listedAt'])
+            ?: strnatcmp($b['id'], $a['id']));
+
+        return [
+            'productIds' => $ranked->take(4)->pluck('id')->values()->all(),
+            'personalized' => $personalized,
+        ];
+    }
+
     private function marketplaceResults(Request $request, Collection $productsById): array
     {
         $value = fn (string $key) => is_string($request->query($key)) ? trim($request->query($key)) : '';
@@ -267,13 +309,14 @@ class StorefrontController extends Controller
             $query->orderByDesc('products.id');
         }
 
-        $page = $query->paginate(12, ['products.id'], 'market_page')->withQueryString();
+        $page = $query->paginate(16, ['products.id'], 'market_page')->withQueryString();
 
         return [
             'products' => $page->getCollection()->map(fn (Product $product) => $productsById->get('seller-'.$product->id))->filter()->values()->all(),
             'currentPage' => $page->currentPage(),
             'lastPage' => $page->lastPage(),
             'total' => $page->total(),
+            'perPage' => $page->perPage(),
             'filters' => compact('search', 'category', 'barangay', 'price', 'sort'),
         ];
     }

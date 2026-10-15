@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Product;
 use App\Models\WalkInOrder;
 use App\Services\ProductPhotoService;
@@ -27,9 +28,12 @@ class ProductController extends Controller
         $path = $photos->store($request->file('photo'), $request->user()->id);
         unset($data['photo']);
         try {
-            $product = new Product([...$data, 'photo_path' => $path]);
-            $product->user_id = $request->user()->id;
-            $product->save();
+            DB::transaction(function () use ($request, $data, $path): void {
+                $product = new Product([...$data, 'photo_path' => $path]);
+                $product->user_id = $request->user()->id;
+                $product->save();
+                AuditLog::recordSellerActivity($request->user(), 'Created product', 'Product #'.$product->id.': '.$product->name, 'product_create');
+            });
         } catch (\Throwable $exception) {
             $photos->delete($path);
             throw $exception;
@@ -52,7 +56,7 @@ class ProductController extends Controller
         unset($data['photo']);
 
         try {
-            DB::transaction(function () use ($product, $data, &$previousPath): void {
+            DB::transaction(function () use ($request, $product, $data, &$previousPath): void {
                 $currentProduct = Product::whereKey($product->id)->lockForUpdate()->firstOrFail();
                 if ($data['unit'] !== $currentProduct->unit && WalkInOrder::where('product_id', $currentProduct->id)
                     ->whereIn('status', self::ACTIVE_ORDER_STATUSES)->exists()) {
@@ -78,7 +82,14 @@ class ProductController extends Controller
                 }
                 unset($data['original_stock'], $data['original_expected_yield']);
                 $previousPath = $currentProduct->photo_path;
-                $currentProduct->update($data);
+                $currentProduct->fill($data);
+                $changes = array_keys($currentProduct->getDirty());
+                $currentProduct->save();
+                if ($changes !== []) {
+                    $labels = ['name' => 'name', 'category' => 'category', 'description' => 'description', 'price' => 'price', 'unit' => 'selling unit', 'stock' => 'available stock', 'threshold' => 'low-stock threshold', 'expected_yield' => 'expected harvest quantity', 'harvest_date' => 'harvest date', 'photo_path' => 'photo'];
+                    $changedFields = array_map(fn ($field) => $labels[$field], $changes);
+                    AuditLog::recordSellerActivity($request->user(), 'Updated product', 'Product #'.$currentProduct->id.': '.$currentProduct->name.'. Changed: '.implode(', ', $changedFields).'.', 'product_update');
+                }
             });
         } catch (\Throwable $exception) {
             if ($replacementPath) {
@@ -108,6 +119,7 @@ class ProductController extends Controller
                 ]);
             }
             $path = $currentProduct->photo_path;
+            AuditLog::recordSellerActivity($request->user(), 'Deleted product', 'Product #'.$currentProduct->id.': '.$currentProduct->name, 'product_delete');
             $currentProduct->delete();
 
             return $path;
@@ -135,6 +147,9 @@ class ProductController extends Controller
                 throw ValidationException::withMessages([
                     'product_ids' => 'One or more selected products have unfinished orders or reservations. No products were deleted. Finish or cancel those orders, or remove those products from your selection.',
                 ]);
+            }
+            foreach ($products as $product) {
+                AuditLog::recordSellerActivity($request->user(), 'Deleted product', 'Product #'.$product->id.': '.$product->name, 'product_delete');
             }
             Product::where('user_id', $request->user()->id)->whereIn('id', $ids)->delete();
 

@@ -38,5 +38,13 @@ export default function globalSetup() {
         env: testEnvironment,
         stdio: "inherit",
     });
+    // General seller scenarios start after onboarding; guide tests clear this marker.
+    execFileSync('php', ['-r', String.raw`
+        require 'vendor/autoload.php';
+        $app = require 'bootstrap/app.php';
+        $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+        if (config('database.default') !== 'sqlite' || realpath(config('database.connections.sqlite.database')) !== realpath('database/playwright.sqlite')) throw new RuntimeException('Isolated database required');
+        App\Models\User::where('role', 'seller')->update(['seller_guide_dismissed_at' => now()]);
+    `], { cwd: process.cwd(), env: testEnvironment, stdio: 'pipe' });
     fs.copyFileSync(databasePath, path.resolve('database/playwright-baseline.sqlite'));
 }

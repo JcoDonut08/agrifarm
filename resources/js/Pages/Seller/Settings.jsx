@@ -22,7 +22,7 @@ const notificationOptions = [
     },
 ];
 
-export default function Settings({ language, onLanguageChange, notifications, onNotificationChange }) {
+export default function Settings({ language, onLanguageChange, notifications, onNotificationChange, onReplayGuide }) {
     const filipino = language === 'filipino';
 
     return <section className="seller-panel seller-preferences">
@@ -78,6 +78,7 @@ export default function Settings({ language, onLanguageChange, notifications, on
             </div>
         </fieldset>
 
+        <div className="seller-preference-group"><h2>{filipino ? 'Gabay ni Kuya Ani' : 'Kuya Ani’s seller guide'}</h2><p>{filipino ? 'Balikan ang mga produkto, order, pagtataya ng ani, at paggawa ng ulat.' : 'Revisit products, orders, harvest forecasting, and report generation.'}</p><button type="button" className="seller-guide-launch" onClick={onReplayGuide}>{filipino ? 'Ulitin ang gabay' : 'Replay seller guide'}</button></div>
         <p className="seller-preferences-note"><Icon name="check" size={16} />{filipino ? 'Awtomatikong nase-save ang mga pagbabago sa device na ito.' : 'Changes are saved automatically on this device.'}</p>
     </section>;
 }

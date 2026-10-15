@@ -32,6 +32,7 @@ class SellerController extends Controller
                 'account_status' => AccountStatus::Active,
                 'password' => $data['temporary_password'],
                 'password_must_be_changed' => true,
+                'seller_guide_pending' => true,
                 'email_verified_at' => now(),
             ])->save();
 

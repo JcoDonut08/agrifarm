@@ -25,6 +25,7 @@ for (const width of [390, 768, 1440]) {
         await expect(page.getByRole('region', { name: 'Kuya Ani assistant', exact: true })).toBeVisible();
         if (width === 390) {
             await page.setViewportSize({ width, height: 500 });
+            await expect.poll(async () => (await page.locator('.help-widget-window').boundingBox()).y).toBeGreaterThanOrEqual(0);
             const bounds = await page.locator('.help-widget-window').boundingBox();
             expect(bounds.y).toBeGreaterThanOrEqual(0);
             expect(bounds.y + bounds.height).toBeLessThanOrEqual(500);
@@ -64,7 +65,7 @@ for (const width of [390, 768, 1440]) {
         await page.goto('/?page=marketplace');
         await expect(launcher).toBeVisible();
         await launcher.click();
-        await expect(page.getByRole('region', { name: 'Kuya Ani assistant', exact: true })).toContainText('Ako ang Kuya Ani.');
+        await expect(page.getByRole('region', { name: 'Kuya Ani assistant', exact: true })).toContainText('Ako si Kuya Ani.');
         await page.getByRole('button', { name: 'Close assistant', exact: true }).click();
         expect(accountUpdates).toEqual([]);
         expect(errors).toEqual([]);

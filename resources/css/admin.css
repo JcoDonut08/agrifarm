@@ -4424,6 +4424,7 @@
 }
 
 /* Time column */
+.admin-audit-actor { display: block; font-size: 11px; line-height: 1.5; margin-top: 4px; white-space: normal; overflow-wrap: anywhere; }
 .admin-audit-time-col {
     font-size: 12px;
     color: #4b6356;

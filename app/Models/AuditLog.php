@@ -12,6 +12,8 @@ class AuditLog extends Model
 
     protected $fillable = [
         'admin_id',
+        'actor_id',
+        'actor_name',
         'seller_id',
         'seller_name',
         'seller_barangay',
@@ -33,6 +35,28 @@ class AuditLog extends Model
         return $this->belongsTo(User::class, 'seller_id');
     }
 
+    /** @return BelongsTo<User, $this> */
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'actor_id');
+    }
+
+    public static function recordSellerActivity(User $seller, string $action, string $details, string $actionType): self
+    {
+        return self::create([
+            'admin_id' => null,
+            'actor_id' => $seller->id,
+            'actor_name' => $seller->name,
+            'seller_id' => $seller->id,
+            'seller_name' => $seller->name,
+            'seller_barangay' => $seller->barangay,
+            'seller_avatar_url' => $seller->avatar_url,
+            'action' => $action,
+            'action_type' => $actionType,
+            'details' => $details,
+        ]);
+    }
+
     public static function record(
         User $admin,
         string $action,
@@ -45,6 +69,8 @@ class AuditLog extends Model
     ): self {
         return self::create([
             'admin_id' => $admin->id,
+            'actor_id' => $admin->id,
+            'actor_name' => $admin->name,
             'seller_id' => $seller?->id,
             'seller_name' => $sellerName ?? $seller?->name ?? 'Unknown Seller',
             'seller_barangay' => $sellerBarangay ?? $seller?->barangay,

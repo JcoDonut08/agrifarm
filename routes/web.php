@@ -20,6 +20,7 @@ use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ReviewReactionController;
 use App\Http\Controllers\Seller\DashboardController as SellerDashboardController;
 use App\Http\Controllers\Seller\ForecastController;
+use App\Http\Controllers\Seller\GuideController;
 use App\Http\Controllers\Seller\HarvestRecordController;
 use App\Http\Controllers\Seller\PlantingPlanController;
 use App\Http\Controllers\Seller\ProductController;
@@ -99,6 +100,7 @@ Route::middleware(['auth', 'verified', 'seller.active'])->group(function () {
         ->name('seller.dashboard');
 
     Route::middleware(['role:seller', 'seller.password-change'])->group(function () {
+        Route::post('/seller/guide/dismiss', [GuideController::class, 'dismiss'])->name('seller.guide.dismiss');
         Route::post('/seller/crop-yields', [HarvestRecordController::class, 'store'])->middleware('throttle:30,1,seller-harvest:')->name('seller.harvest-records.store');
         Route::patch('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'update'])->middleware('throttle:30,1,seller-harvest:')->name('seller.harvest-records.update');
         Route::delete('/seller/crop-yields/{harvestRecord}', [HarvestRecordController::class, 'destroy'])->middleware('throttle:30,1,seller-harvest:')->name('seller.harvest-records.destroy');

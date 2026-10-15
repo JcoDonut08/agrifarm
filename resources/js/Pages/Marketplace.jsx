@@ -6,25 +6,28 @@ import { ProductGridSkeleton } from '../Components/PageSkeleton';
 import usePageLoading from '../Components/usePageLoading';
 import { communities, products as previewProducts, compareProducts } from '../Components/Storefront/catalog';
 
+const productsPerPage = 16;
+
 export default function Marketplace({ initialBarangay = '', initialSort = '', products = previewProducts, hasSellerProducts = false, serverResults = null }) {
     const { url, props } = usePage();
     const serverMode = Boolean(serverResults);
     const loading = usePageLoading(visit => visit.url.pathname === '/' && visit.url.searchParams.get('page') === 'marketplace');
     const hasBarangayListings = hasSellerProducts || products.some((product) => Boolean(product.barangay));
     const [resetMessage, setResetMessage] = useState('');
+    const [previewPage, setPreviewPage] = useState(1);
     const [search, setSearch] = useState(serverResults?.filters.search || '');
     const [category, setCategory] = useState(serverResults?.filters.category || 'All');
     const [barangay, setBarangay] = useState(serverResults?.filters.barangay || (communities.some((item) => item.name === initialBarangay) ? initialBarangay : ''));
     const [price, setPrice] = useState(serverResults?.filters.price || '');
     const [sort, setSort] = useState(serverResults?.filters.sort || (initialSort === 'best-selling' ? 'best-selling' : 'recommended'));
 
-    function navigate(filters, page = 1) {
+    function navigate(filters, page = 1, pagination = false) {
         const query = new URLSearchParams({ page: 'marketplace' });
         for (const [key, value] of Object.entries(filters)) {
             if (value && value !== 'All' && value !== 'recommended') query.set(key === 'search' ? 'q' : key, value);
         }
         if (page > 1) query.set('market_page', String(page));
-        router.get(`/?${query}`, {}, { replace: true, preserveScroll: true });
+        router.get(`/?${query}`, {}, { replace: !pagination, preserveScroll: !pagination });
     }
 
     useEffect(() => {
@@ -33,12 +36,12 @@ export default function Marketplace({ initialBarangay = '', initialSort = '', pr
         return () => window.clearTimeout(timeout);
     }, [search, serverMode, serverResults?.filters.search]);
 
-    function update(setter, value) { setter(value); setResetMessage(''); }
+    function update(setter, value) { setter(value); setPreviewPage(1); setResetMessage(''); }
     function change(key, setter, value) {
         update(setter, value);
         if (serverMode) navigate({ search, category, barangay, price, sort, [key]: value });
     }
-    function clearFilters() { setSearch(''); setCategory('All'); setBarangay(''); setPrice(''); setSort('recommended'); setResetMessage('Filters reset. Showing all products.'); const query = new URLSearchParams(url.split('?')[1] || ''); if (serverMode || query.has('barangay') || query.has('sort')) router.get('/?page=marketplace', {}, { replace: true, preserveScroll: true }); }
+    function clearFilters() { setSearch(''); setCategory('All'); setBarangay(''); setPrice(''); setSort('recommended'); setPreviewPage(1); setResetMessage('Filters reset. Showing all products.'); const query = new URLSearchParams(url.split('?')[1] || ''); if (serverMode || query.has('barangay') || query.has('sort')) router.get('/?page=marketplace', {}, { replace: true, preserveScroll: true }); }
 
     const filtered = serverMode ? serverResults.products : products.filter((product) =>
         `${product.name} ${product.barangay || product.sellerName || ''} ${product.category}`.toLowerCase().includes(search.trim().toLowerCase())
@@ -46,7 +49,19 @@ export default function Marketplace({ initialBarangay = '', initialSort = '', pr
         && (!barangay || product.barangay === barangay)
         && (!price || (price === 'under50' ? product.price < 50 : price === '50to70' ? product.price >= 50 && product.price <= 70 : product.price > 70))
     ).sort((a, b) => compareProducts(a, b, sort, props.reviewStats));
+    const perPage = serverResults?.perPage || productsPerPage;
+    const total = serverMode ? serverResults.total : filtered.length;
+    const lastPage = serverMode ? serverResults.lastPage : Math.max(1, Math.ceil(total / perPage));
+    const currentPage = serverMode ? serverResults.currentPage : Math.min(previewPage, lastPage);
+    const visibleProducts = serverMode ? filtered : filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+    const firstResult = (currentPage - 1) * perPage + 1;
+    const lastResult = firstResult + visibleProducts.length - 1;
     const hasFilters = search || category !== 'All' || barangay || price || sort !== 'recommended';
+
+    function changePage(page) {
+        if (serverMode) navigate({ search, category, barangay, price, sort }, page, true);
+        else { setPreviewPage(page); window.scrollTo(0, 0); }
+    }
 
     return (
         <div className="store-container marketplace-page">
@@ -62,10 +77,15 @@ export default function Marketplace({ initialBarangay = '', initialSort = '', pr
             <div aria-busy={Boolean(loading)}>
                 {loading && <div role="status"><span className="sr-only">Loading products…</span><ProductGridSkeleton /></div>}
                 <div className="page-loading-content" hidden={Boolean(loading)}>
-                    {filtered.length ? <div className="market-product-grid">{filtered.map((product, index) => <ProductCard key={product.id} product={product} priority={index < 4} />)}</div> : <div className="market-empty"><Icon name="search" size={38} /><h2>No produce found</h2><p>Try another search or give your filters a fresh start.</p><button className="store-button" onClick={clearFilters}>Clear filters</button></div>}
+                    {visibleProducts.length ? <div className="market-product-grid">{visibleProducts.map((product, index) => <ProductCard key={product.id} product={product} priority={index < 4} />)}</div> : <div className="market-empty"><Icon name="search" size={38} /><h2>No produce found</h2><p>Try another search or give your filters a fresh start.</p><button className="store-button" onClick={clearFilters}>Clear filters</button></div>}
                 </div>
             </div>
-            {serverMode && serverResults.lastPage > 1 && <nav className="market-pagination" aria-label="Product pages"><button type="button" disabled={serverResults.currentPage === 1} onClick={() => navigate({ search, category, barangay, price, sort }, serverResults.currentPage - 1)}>Previous</button><span>Page {serverResults.currentPage} of {serverResults.lastPage}</span><button type="button" disabled={serverResults.currentPage === serverResults.lastPage} onClick={() => navigate({ search, category, barangay, price, sort }, serverResults.currentPage + 1)}>Next</button></nav>}
+            {lastPage > 1 && <nav className="market-pagination" aria-label="Product pages">
+                {visibleProducts.length > 0 && <p className="market-pagination-count">Showing {firstResult}–{lastResult} of {total} products</p>}
+                <button type="button" disabled={Boolean(loading) || currentPage <= 1} onClick={() => changePage(currentPage - 1)}>Previous</button>
+                <span aria-live="polite">Page {currentPage} of {lastPage}</span>
+                <button type="button" disabled={Boolean(loading) || currentPage >= lastPage} onClick={() => changePage(currentPage + 1)}>Next</button>
+            </nav>}
             {!hasSellerProducts && <p className="market-preview-note">Marketplace preview · Sample products and prices</p>}
         </div>
     );

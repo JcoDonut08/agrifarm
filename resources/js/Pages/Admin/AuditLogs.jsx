@@ -12,6 +12,8 @@ import {
     Search,
     ShieldAlert,
     ShieldCheck,
+    Sprout,
+    Trash2,
     UserPlus,
     X,
 } from "lucide-react";
@@ -41,6 +43,9 @@ const ACTION_CONFIG = {
         Icon: FilePenLine,
         cls: "update",
     },
+    product_create: { label: "Created product", Icon: Sprout, cls: "create" },
+    product_update: { label: "Updated product", Icon: FilePenLine, cls: "update" },
+    product_delete: { label: "Deleted product", Icon: Trash2, cls: "suspend" },
 };
 
 function ActionBadge({ actionType }) {
@@ -125,6 +130,9 @@ const FILTER_OPTIONS = [
     { key: "reinstate", label: "Reinstatements" },
     { key: "create", label: "Created accounts" },
     { key: "update", label: "Updated details" },
+    { key: "product_create", label: "Created products" },
+    { key: "product_update", label: "Updated products" },
+    { key: "product_delete", label: "Deleted products" },
 ];
 
 export default function AuditLogs({ logs = [], filipino }) {
@@ -220,9 +228,7 @@ export default function AuditLogs({ logs = [], filipino }) {
                     </span>
                     <strong>No audit activity recorded yet</strong>
                     <p>
-                        Real administrative actions will appear here as seller
-                        accounts are created, updated, suspended, or
-                        reinstated.
+                        {filipino ? "Makikita rito ang mga aksyon sa seller account at ang pagdagdag, pag-edit, o pagbura ng mga produkto." : "Seller account actions and product additions, edits, and deletions will appear here."}
                     </p>
                 </section>
             </>
@@ -235,9 +241,7 @@ export default function AuditLogs({ logs = [], filipino }) {
                 <div>
                     <h1 className="admin-page-title">{filipino ? "Mga Audit Log" : filipino ? "Mga Audit Log" : "Audit Logs"}</h1>
                     <p className="admin-page-subtitle">
-                        Administrative activity, seller account status changes,
-                        and profile management history. Updates refresh every
-                        30 seconds.
+                        {filipino ? "Kasaysayan ng mga aksyon sa seller account at mga produkto. Nire-refresh bawat 30 segundo." : "Seller account management and product activity. Updates refresh every 30 seconds."}
                     </p>
                 </div>
             </div>
@@ -378,7 +382,7 @@ export default function AuditLogs({ logs = [], filipino }) {
                                 Seller
                             </span>
                             <span className="admin-audit-col-action">
-                                Admin action
+                                {filipino ? "Aksyon" : "Action"}
                             </span>
                             <span className="admin-audit-col-details">
                                 Details
@@ -440,6 +444,7 @@ export default function AuditLogs({ logs = [], filipino }) {
                                         <time dateTime={log.occurredAt}>
                                             {log.timeFormatted}
                                         </time>
+                                        <span className="admin-audit-actor">{filipino ? "Ginawa ni" : "By"} {log.actorName || log.adminName} · {log.actorRole === 'seller' ? (filipino ? "Nagbebenta" : "Seller") : (filipino ? "Administrador" : "Administrator")}</span>
                                     </div>
                                 </article>
                             ))}

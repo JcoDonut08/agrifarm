@@ -30,6 +30,7 @@ class AdminSellerManagementTest extends TestCase
         $this->assertSame('Rosario', $seller->barangay);
         $this->assertSame(AccountStatus::Active, $seller->account_status);
         $this->assertTrue($seller->password_must_be_changed);
+        $this->assertTrue($seller->seller_guide_pending);
         $this->assertNotNull($seller->email_verified_at);
     }
 

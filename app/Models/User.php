@@ -118,6 +118,8 @@ class User extends Authenticatable implements MustVerifyEmailContract
             'role' => UserRole::class,
             'account_status' => AccountStatus::class,
             'password_must_be_changed' => 'boolean',
+            'seller_guide_pending' => 'boolean',
+            'seller_guide_dismissed_at' => 'immutable_datetime',
             'terms_accepted_at' => 'immutable_datetime',
             'privacy_accepted_at' => 'immutable_datetime',
             'password' => 'hashed',

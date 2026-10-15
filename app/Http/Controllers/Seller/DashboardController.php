@@ -38,6 +38,7 @@ class DashboardController extends Controller
             : null;
 
         return Inertia::render('Seller/Dashboard', [
+            'sellerGuidePending' => $request->user()->seller_guide_dismissed_at === null,
             'products' => $products,
             'harvestRecords' => $harvestRecords,
             'orders' => $orders,

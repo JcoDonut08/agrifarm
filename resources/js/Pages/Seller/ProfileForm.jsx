@@ -23,7 +23,7 @@ export default function ProfileForm({ filipino = false }) {
         setPreview(url);
         return () => URL.revokeObjectURL(url);
     }, [photo.data.photo]);
-    const clearPhoto = () => { photo.reset(); if (fileInput.current) fileInput.current.value = ''; };
+    const clearPhoto = () => { photo.reset(); photo.clearErrors(); if (fileInput.current) fileInput.current.value = ''; };
     function savePhoto(event) {
         event.preventDefault();
         photo.post('/seller/profile/photo', { preserveScroll: true, forceFormData: true, onSuccess: clearPhoto });
@@ -50,7 +50,7 @@ export default function ProfileForm({ filipino = false }) {
                 <Avatar user={{ ...auth.user, avatar_url: preview || auth.user.avatar_url }} className="seller-profile-photo" filipino={filipino} />
                 <label htmlFor="profile-photo">{filipino ? 'Pumili ng larawan sa profile' : 'Choose profile photo'}</label>
                 <input ref={fileInput} id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-error" aria-invalid={Boolean(photo.errors.photo)} onChange={event => { photo.clearErrors(); photo.setData('photo', event.target.files?.[0] || null); }} />
-                <p id="photo-help">{filipino ? 'JPG, PNG o WebP. Hanggang 2 MB.' : 'JPG, PNG or WebP. Up to 2 MB.'}</p>
+                <p id="photo-help">{filipino ? 'JPG, PNG o WebP. Hanggang 10 MB.' : 'JPG, PNG or WebP. Up to 10 MB.'}</p>
                 {photo.errors.photo && <p id="photo-error" role="alert" className="seller-photo-error">{localizeMessage(photo.errors.photo, filipino)}</p>}
                 <div className="seller-photo-actions"><button className="seller-save-button" disabled={!photo.data.photo || photo.processing}>{filipino ? (photo.processing ? 'Sine-save…' : 'I-save ang larawan') : (photo.processing ? 'Saving…' : 'Save photo')}</button>{photo.data.photo && <button type="button" className="seller-outline-button" onClick={clearPhoto} disabled={photo.processing}>{filipino ? 'Kanselahin' : 'Cancel'}</button>}{auth.user.avatar_url && <button type="button" className="seller-danger-button" disabled={photo.processing} onClick={() => setRemovingPhoto(true)}>{filipino ? 'Alisin ang larawan' : 'Remove photo'}</button>}</div>
             </div>

@@ -21,7 +21,7 @@ class SellerProfileTest extends TestCase
         Storage::fake('local');
         $seller = User::factory()->create(['role' => UserRole::Seller]);
         $this->actingAs($seller)->post('/seller/profile/photo', ['photo' => UploadedFile::fake()->create('bad.txt', 1, 'text/plain')])->assertSessionHasErrors('photo');
-        $this->post('/seller/profile/photo', ['photo' => UploadedFile::fake()->createWithContent('photo.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII='))->size(2049)])->assertSessionHasErrors('photo');
+        $this->post('/seller/profile/photo', ['photo' => UploadedFile::fake()->createWithContent('photo.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII='))->size(10241)])->assertSessionHasErrors('photo');
         $this->post('/seller/profile/photo', ['photo' => UploadedFile::fake()->createWithContent('photo.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXioAAAAASUVORK5CYII='))])->assertSessionHasNoErrors();
         $url = $seller->fresh()->avatar_url;
         $this->get($url)->assertOk()->assertHeader('Content-Type', 'image/png');
