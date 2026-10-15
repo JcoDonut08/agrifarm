@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\HarvestForecastExportController;
@@ -39,7 +40,7 @@ Route::get('/marketplace/sellers/{user}/photo', StorefrontSellerPhotoController:
 Route::get('/marketplace/customers/{user}/photo', StorefrontCustomerPhotoController::class)->name('marketplace.customers.photo');
 
 Route::get('/terms', [LegalPageController::class, 'terms'])->name('terms');
-Route::inertia('/about', 'About')->name('about');
+Route::get('/about', AboutController::class)->name('about');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 Route::get('/privacy', [LegalPageController::class, 'privacy'])->name('privacy');

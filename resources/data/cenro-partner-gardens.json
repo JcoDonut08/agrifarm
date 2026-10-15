@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "name": "Stella Maris Street garden",
+    "address": "Stella Maris St., Brgy. Maybunga, Pasig City, Philippines",
+    "barangay": "Maybunga",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #4, page 1"
+  },
+  {
+    "id": 2,
+    "name": "Jenny’s Avenue–F. Legaspi garden",
+    "address": "Jenny’s Ave. corner F. Legaspi St., Brgy. Maybunga, Pasig City, Philippines",
+    "barangay": "Maybunga",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #21, page 2"
+  },
+  {
+    "id": 3,
+    "name": "Maybunga Rainforest Park garden",
+    "address": "Maybunga Rainforest Park, Brgy. Maybunga, Pasig City, Philippines",
+    "barangay": "Maybunga",
+    "category": "Government facility garden",
+    "sourceReference": "Government facilities #1, page 3"
+  },
+  {
+    "id": 4,
+    "name": "Maybunga Elementary School garden",
+    "address": "Maybunga Elementary School, Brgy. Maybunga, Pasig City, Philippines",
+    "barangay": "Maybunga",
+    "category": "School garden",
+    "sourceReference": "DepEd schools #11, page 4"
+  },
+  {
+    "id": 5,
+    "name": "Greenland Village creekside garden",
+    "address": "Circle St. (beside creek), Greenland Village, Brgy. Rosario, Pasig City, Philippines",
+    "barangay": "Rosario",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #8, page 1"
+  },
+  {
+    "id": 6,
+    "name": "38 Charisma Street garden",
+    "address": "No. 38 Charisma St., Doña Andrea Subd., Brgy. Rosario, Pasig City, Philippines",
+    "barangay": "Rosario",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #9, page 1"
+  },
+  {
+    "id": 7,
+    "name": "40 Charisma Street garden",
+    "address": "No. 40 Charisma St., Doña Andrea Subd., Brgy. Rosario, Pasig City, Philippines",
+    "barangay": "Rosario",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #10, page 1"
+  },
+  {
+    "id": 8,
+    "name": "Rosario Pavilion garden",
+    "address": "F. Andres St., Rosario Pavilion, Brgy. Rosario, Pasig City, Philippines",
+    "barangay": "Rosario",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #11, page 1"
+  },
+  {
+    "id": 9,
+    "name": "Greenland Circle–Jenny’s Avenue garden",
+    "address": "Greenland Circle St., Jenny’s Ave., Brgy. Rosario, Pasig City, Philippines",
+    "barangay": "Rosario",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #24, page 2"
+  },
+  {
+    "id": 10,
+    "name": "Doña Juana Covered Court garden",
+    "address": "C. Raymundo Ave., Doña Juana Covered Court, Brgy. Rosario, Pasig City, Philippines",
+    "barangay": "Rosario",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #43, page 3"
+  },
+  {
+    "id": 11,
+    "name": "Villa Lucia HOA garden",
+    "address": "F. Manalo St., Villa Lucia HOA, Brgy. Sto. Tomas, Pasig City, Philippines",
+    "barangay": "Sto. Tomas",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #51, page 3"
+  },
+  {
+    "id": 12,
+    "name": "Villa Lucia Luzada garden",
+    "address": "Villa Lucia Luzada, F. Manalo St., Brgy. Sto. Tomas, Pasig City, Philippines",
+    "barangay": "Sto. Tomas",
+    "category": "Community garden",
+    "sourceReference": "Clean and Green #52, page 3"
+  }
+]

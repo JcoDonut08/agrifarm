@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import GuestLayout from '../Layouts/GuestLayout';
 import { ShopProvider, useShop } from '../Components/Storefront/ShopContext';
 import Icon from '../Components/Storefront/Icon';
+import UrbanGardens from '../Components/Storefront/UrbanGardens';
 import { marketHref } from '../Components/Storefront/catalog';
 import { useState } from 'react';
 
@@ -109,13 +110,7 @@ function AboutPage() {
                     </div>
                 </section>
 
-                {/* Visual Break Banner */}
-                <div className="about-banner-break">
-                    <img src="/images/agrifarm-market-hero.png" alt="Fresh harvest background" className="banner-bg" />
-                    <div className="banner-content">
-                        <h2>{filipino ? 'Sariwang Ani Mula Sa Kapwa Mo Pasigueño' : 'Fresh Harvests From Your Neighbors'}</h2>
-                    </div>
-                </div>
+                <UrbanGardens />
 
                                 {/* Mission and Vision Section */}
                 <section className="store-container about-mission-vision">
