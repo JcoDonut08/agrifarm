@@ -25,6 +25,37 @@
 .seller-forecast .seller-section-header p { color: var(--text-muted); font-size: .9rem; line-height: 1.6; }
 .forecast-panel { padding: clamp(1rem, 3vw, 2rem); min-width: 0; }
 .forecast-panel > h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: .75rem; }
+.forecast-monthly-heading { display: flex; justify-content: space-between; align-items: start; gap: 1rem; flex-wrap: wrap; }
+.forecast-monthly-heading h3 { font-size: 1.2rem; font-weight: 600; }
+.forecast-monthly-heading p, .forecast-monthly-selector label { font-size: .8rem; color: var(--text-muted); line-height: 1.6; }
+.forecast-monthly-selector { display: grid; gap: .3rem; }
+.forecast-monthly-selector select { min-height: 44px; padding: .5rem 2rem .5rem .75rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text-base); font-size: .875rem; max-width: 100%; }
+.forecast-monthly-selector select:focus-visible, .forecast-monthly-validation summary:focus-visible { outline: 2px solid var(--store-green); outline-offset: 3px; }
+.forecast-monthly-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem 2rem; margin: 1.25rem 0 .75rem; }
+.forecast-monthly-summary dt, .forecast-monthly-figures dt { color: var(--text-muted); font-size: .85rem; }
+.forecast-monthly-summary dd { color: var(--text-base); font-size: clamp(1.1rem, 2.5vw, 1.35rem); font-weight: 600; margin-top: .35rem; line-height: 1.4; }
+.forecast-monthly-summary p { color: var(--text-muted); font-size: .8rem; line-height: 1.6; margin-top: .35rem; }
+.forecast-monthly-figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: .75rem 0; }
+.forecast-monthly-figures dd { color: var(--text-base); font-size: 1rem; font-weight: 600; margin-top: .25rem; }
+.forecast-monthly-reference, .forecast-monthly-note { color: var(--text-muted); font-size: .85rem; line-height: 1.7; margin-top: .65rem; }
+.forecast-monthly-validation { margin-top: 1rem; padding-top: .5rem; border-top: 1px solid var(--border); font-size: .8rem; line-height: 1.7; }
+.forecast-monthly-validation summary { cursor: pointer; color: var(--store-green); font-weight: 600; min-height: 44px; align-content: center; }
+.forecast-monthly-validation p { margin: .65rem 0; color: var(--text-muted); }
+.forecast-monthly-validation a, .forecast-monthly-advice a { color: var(--store-green); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.forecast-monthly-error-table { max-width: 100%; overflow-x: auto; margin: .75rem 0; }
+.forecast-monthly-error-table table { width: 100%; border-collapse: collapse; text-align: left; font-size: .8rem; }
+.forecast-monthly-error-table th, .forecast-monthly-error-table td { padding: .5rem; border-bottom: 1px solid var(--border); }
+.forecast-monthly-error-table tbody th { font-weight: 400; min-width: 170px; }
+.forecast-monthly-error-table td { white-space: nowrap; }
+.forecast-monthly-advice { border-top: 1px solid var(--border); padding-top: .75rem; margin: .25rem 0 .9rem; font-size: .8rem; line-height: 1.7; overflow-wrap: anywhere; }
+.forecast-monthly-advice p { margin: 0 0 .45rem; }
+.forecast-monthly-advice .forecast-monthly-advice-title { font-weight: 600; color: var(--text-base); }
+.forecast-monthly-guide { color: var(--text-muted); }
+@media (max-width: 600px) {
+    .forecast-monthly-selector { width: 100%; }
+    .forecast-monthly-summary, .forecast-monthly-figures { grid-template-columns: minmax(0, 1fr); }
+    .forecast-monthly-error-table th, .forecast-monthly-error-table td { padding: .5rem .3rem; }
+}
 .forecast-help { color: var(--text-muted); font-size: .875rem; line-height: 1.6; margin-bottom: 1rem; }
 .forecast-upload-zone {
     border: 2px dashed var(--border); border-radius: 10px;
@@ -57,7 +88,7 @@
 .forecast-saved { overflow-wrap: anywhere; margin-bottom: 0; }
 .forecast-error { padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--border); color: var(--forecast-low-text); background: var(--forecast-low-bg); border-radius: 8px; }
 .forecast-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem 1rem; margin: 1rem 0; }
-.forecast-rec-card { display: grid; grid-template-rows: subgrid; grid-row: span 8; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; min-width: 0; }
+.forecast-rec-card { display: grid; grid-template-rows: subgrid; grid-row: span 9; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; min-width: 0; }
 .forecast-rec-header { display: flex; justify-content: space-between; align-items: flex-start; margin: .5rem 0; gap: .5rem; }
 .forecast-rec-header h4 { font-size: 1.3rem; font-weight: 700; color: var(--text-base); margin: 0; overflow-wrap: anywhere; }
 .forecast-new-crop { font-size: .8rem; color: var(--store-green); }
@@ -93,11 +124,25 @@
 .forecast-plan-list li + li { border-top: 1px solid var(--border); }
 .forecast-plan-crop { display: flex; align-items: center; gap: .65rem; min-width: 0; font-size: .95rem; }
 .forecast-plan-crop strong { overflow-wrap: anywhere; }
-.forecast-plan-list dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; font-size: .875rem; }
+.forecast-plan-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; font-size: .875rem; }
 .forecast-plan-list dt { color: var(--text-muted); }
 .forecast-plan-list dd { margin-top: .15rem; font-weight: 600; }
 .forecast-plan-remove { min-height: 44px; padding: .5rem .75rem; border: 1px solid var(--border); border-radius: 8px; font-size: .875rem; cursor: pointer; }
 .forecast-plan-remove:disabled { opacity: .6; cursor: wait; }
+.forecast-plan-requirements { grid-column: 1 / -1; min-width: 0; border-top: 1px solid var(--border); font-size: .875rem; }
+.forecast-plan-requirements summary { display: flex; align-items: center; gap: .5rem; min-height: 44px; padding: .5rem 0; color: var(--store-green); font-weight: 600; cursor: pointer; list-style: none; }
+.forecast-plan-requirements summary::-webkit-details-marker { display: none; }
+.forecast-plan-requirements summary > svg { flex: 0 0 auto; width: 18px; height: 18px; }
+.forecast-requirements-chevron { margin-left: auto; }
+.forecast-plan-requirements[open] .forecast-requirements-chevron { transform: rotate(180deg); }
+.forecast-plan-requirements summary:focus-visible { outline: 2px solid var(--store-green); outline-offset: 3px; border-radius: 4px; }
+.forecast-requirements-scope, .forecast-requirements-unavailable { color: var(--text-muted); line-height: 1.6; margin: .25rem 0 1rem; }
+.forecast-requirements-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem 1.5rem; }
+.forecast-requirements-grid dt { font-size: .75rem; margin-bottom: .3rem; }
+.forecast-requirements-grid dd { font-weight: 400; line-height: 1.6; overflow-wrap: anywhere; }
+.forecast-requirements-source { margin-top: 1.25rem; padding-top: .75rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: .75rem; line-height: 1.7; overflow-wrap: anywhere; }
+.forecast-requirements-source a { color: var(--store-green); text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 900px) { .forecast-requirements-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .forecast-updated { margin-top: .5rem; }
 .forecast-card-details { margin-top: 1rem; font-size: .875rem; line-height: 1.65; border-top: 1px solid var(--border); padding-top: .75rem; }
 .forecast-card-details summary { font-size: .8rem; }
@@ -156,7 +201,8 @@
     .forecast-card-grid { grid-template-columns: minmax(0, 1fr); row-gap: 1rem; }
     .forecast-rec-card { grid-template-rows: none; grid-row: auto; row-gap: .75rem; }
     .forecast-plan-list li { grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
-    .forecast-plan-list dl { grid-column: 1 / -1; grid-row: 2; }
+    .forecast-plan-dates { grid-column: 1 / -1; grid-row: 2; }
+    .forecast-requirements-grid { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
     .forecast-file-picker { padding: 1.25rem 2.75rem; }
 }
 @media (prefers-reduced-motion: reduce) {

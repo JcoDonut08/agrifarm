@@ -4,3 +4,6 @@
 !seasonal_profiles.json
 !crop_weather_tolerance.json
 !online_crop_references.json
+!crop_growing_requirements.json
+!crop_monthly_weather_rules.json
+!monthly_weather_outlook.json

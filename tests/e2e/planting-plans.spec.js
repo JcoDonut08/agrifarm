@@ -65,13 +65,13 @@ test('seller saves and removes planting choices with dated cards in both languag
     await expect(page.locator('.forecast-plan-list li')).toHaveCount(1);
     await expect(page.getByRole('heading', { name: 'Your planting plan', exact: true })).toBeFocused();
     await expect(page.locator('.forecast-plan-list li').first()).toContainText(firstCrop);
-    await expect(page.locator('.forecast-plan-list dd')).toHaveText([plantingMonth, harvestMonth]);
+    await expect(page.locator('.forecast-plan-dates dd')).toHaveText([plantingMonth, harvestMonth]);
     await expect(firstCard.locator('.forecast-plan-button')).toHaveText('Saved to planting plan');
     await expect(firstCard.locator('.forecast-plan-button')).toBeDisabled();
     await page.reload();
     await expect(page.locator('.forecast-plan-list li')).toHaveCount(1);
     await expect(firstCard.locator('.forecast-plan-button')).toBeDisabled();
-    await expect(page.locator('.forecast-plan-list dd')).toHaveText([plantingMonth, harvestMonth]);
+    await expect(page.locator('.forecast-plan-dates dd')).toHaveText([plantingMonth, harvestMonth]);
 
     await page.locator('.forecast-rec-card').nth(1).locator('.forecast-plan-button').click();
     await expect(page.locator('.forecast-plan-list li')).toHaveCount(2);

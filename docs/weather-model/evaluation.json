@@ -1,0 +1,478 @@
+{
+  "schema_version": 1,
+  "source": {
+    "provider": "Open-Meteo / ECMWF ERA5",
+    "type": "historical_reanalysis",
+    "source_url": "https://archive-api.open-meteo.com/v1/archive?latitude=14.5764&longitude=121.0851&start_date=2000-01-01&end_date=2026-09-30&daily=temperature_2m_mean%2Crain_sum&timezone=Asia%2FManila&models=era5",
+    "documentation_url": "https://open-meteo.com/en/docs/historical-weather-api",
+    "requested_location": "Pasig City",
+    "requested_latitude": 14.5764,
+    "requested_longitude": 121.0851,
+    "grid_latitude": 14.5,
+    "grid_longitude": 121.0,
+    "resolution_degrees": 0.25,
+    "timezone": "Asia/Manila",
+    "history_start": "2000-01",
+    "history_end": "2026-09",
+    "daily_records": 9770,
+    "complete_months": 321,
+    "raw_sha256": "16cc1a8709cecb4d8ac3594cd24f59c27e2d66f5699884a1ac178def24f6b6bb",
+    "monthly_csv_sha256": "79cb23c7dc7f05057ea46228cf484d5ed6f65c15d00356bf2c5b038d88a00d4e",
+    "as_of": "2026-10-16",
+    "created_at_utc": "2026-10-16T03:17:09.793610+00:00",
+    "software": {
+      "numpy": "2.5.3",
+      "pandas": "3.0.6",
+      "statsmodels": "0.15.0"
+    },
+    "attribution": [
+      "https://doi.org/10.5281/zenodo.7970649",
+      "https://doi.org/10.24381/cds.adbb2d47"
+    ],
+    "limitations": "Grid estimates, not independent Pasig station observations. Monthly values do not predict daily extremes or individual garden conditions."
+  },
+  "protocol": {
+    "initial_training": "2000-01 to 2021-12",
+    "validation": "2022-01 to 2023-12",
+    "test": "2024-01 to 2025-12",
+    "origins": "Quarterly, expanding past-only training window",
+    "horizons": [
+      1,
+      2,
+      3
+    ],
+    "selection": "Lowest validation RMSE among fully converged SARIMA candidates",
+    "rainfall": "Raw mm; negative point forecasts and interval bounds clipped at zero before scoring",
+    "mape": "Temperature MAPE omitted; rainfall MAPE includes actual totals >=1 mm, with count reported",
+    "intervals": "Conditional Gaussian 80% SARIMA intervals; empirical test coverage is reported. No calibrated range is published in the UI."
+  },
+  "targets": {
+    "temperature_mean_c": {
+      "candidates": [
+        {
+          "order": [
+            1,
+            0,
+            0
+          ],
+          "seasonal_order": [
+            1,
+            1,
+            0,
+            12
+          ],
+          "error": "SARIMA did not converge"
+        },
+        {
+          "order": [
+            1,
+            0,
+            0
+          ],
+          "seasonal_order": [
+            0,
+            1,
+            1,
+            12
+          ],
+          "validation_rmse": 0.5242216711154263
+        },
+        {
+          "order": [
+            1,
+            0,
+            1
+          ],
+          "seasonal_order": [
+            1,
+            1,
+            0,
+            12
+          ],
+          "validation_rmse": 0.5828015419043057
+        },
+        {
+          "order": [
+            1,
+            0,
+            1
+          ],
+          "seasonal_order": [
+            0,
+            1,
+            1,
+            12
+          ],
+          "validation_rmse": 0.5440578545895286
+        }
+      ],
+      "selected": {
+        "order": [
+          1,
+          0,
+          0
+        ],
+        "seasonal_order": [
+          0,
+          1,
+          1,
+          12
+        ],
+        "validation_rmse": 0.5242216711154263
+      },
+      "test": {
+        "sarima": {
+          "n": 24,
+          "mae": 0.36940505213384683,
+          "rmse": 0.5028546876255294,
+          "bias": -0.17738881796729253,
+          "mape": null,
+          "mape_n": 0,
+          "interval_80_coverage": 0.75
+        },
+        "seasonal_naive": {
+          "n": 24,
+          "mae": 0.5839286486748954,
+          "rmse": 0.732020055812102,
+          "bias": 0.030866935483871316,
+          "mape": null,
+          "mape_n": 0,
+          "interval_80_coverage": null
+        },
+        "monthly_average": {
+          "n": 24,
+          "mae": 0.5500243509653578,
+          "rmse": 0.6439176282585881,
+          "bias": -0.4454974692449274,
+          "mape": null,
+          "mape_n": 0,
+          "interval_80_coverage": null
+        }
+      },
+      "test_by_horizon": {
+        "1": {
+          "sarima": {
+            "n": 8,
+            "mae": 0.42238873181546177,
+            "rmse": 0.5809813836662221,
+            "bias": -0.32822617334720805,
+            "mape": null,
+            "mape_n": 0,
+            "interval_80_coverage": 0.75
+          },
+          "seasonal_naive": {
+            "n": 8,
+            "mae": 0.5475806451612901,
+            "rmse": 0.7656337127366138,
+            "bias": -0.1286559139784944,
+            "mape": null,
+            "mape_n": 0,
+            "interval_80_coverage": null
+          },
+          "monthly_average": {
+            "n": 8,
+            "mae": 0.603245654121864,
+            "rmse": 0.7040237361889089,
+            "bias": -0.5246650089605738,
+            "mape": null,
+            "mape_n": 0,
+            "interval_80_coverage": null
+          }
+        },
+        "2": {
+          "sarima": {
+            "n": 8,
+            "mae": 0.3912510642507634,
+            "rmse": 0.4945059947682756,
+            "bias": -0.3099905948635593,
+            "mape": null,
+            "mape_n": 0,
+            "interval_80_coverage": 0.75
+          },
+          "seasonal_naive": {
+            "n": 8,
+            "mae": 0.631423042798879,
+            "rmse": 0.7397513940564429,
+            "bias": 0.018581989247311803,
+            "mape": null,
+            "mape_n": 0,
+            "interval_80_coverage": null
+          },
+          "monthly_average": {
+            "n": 8,
+            "mae": 0.6190650779856797,
+            "rmse": 0.7412227456493634,
+            "bias": -0.6190650779856797,
+            "mape": null,
+            "mape_n": 0,
+            "interval_80_coverage": null
+          }
+        },
+        "3": {
+          "sarima": {
+            "n": 8,
+            "mae": 0.2945753603353154,
+            "rmse": 0.42013445892050627,
+            "bias": 0.10605031430888978,
+            "mape": null,
+            "mape_n": 0,
+            "interval_80_coverage": 0.75
+          },
+          "seasonal_naive": {
+            "n": 8,
+            "mae": 0.572782258064517,
+            "rmse": 0.6885731473461311,
+            "bias": 0.20267473118279655,
+            "mape": null,
+            "mape_n": 0,
+            "interval_80_coverage": null
+          },
+          "monthly_average": {
+            "n": 8,
+            "mae": 0.42776232078852994,
+            "rmse": 0.4459026308075842,
+            "bias": -0.19276232078852873,
+            "mape": null,
+            "mape_n": 0,
+            "interval_80_coverage": null
+          }
+        }
+      },
+      "final_fit": {
+        "through": "2026-09",
+        "order": [
+          1,
+          0,
+          0
+        ],
+        "seasonal_order": [
+          0,
+          1,
+          1,
+          12
+        ],
+        "trend": "n",
+        "converged": true,
+        "params": {
+          "ar.L1": 0.33544285078253383,
+          "ma.S.L12": -0.8235855672851854,
+          "sigma2": 0.2568531568717126
+        }
+      }
+    },
+    "rainfall_total_mm": {
+      "candidates": [
+        {
+          "order": [
+            1,
+            0,
+            0
+          ],
+          "seasonal_order": [
+            1,
+            1,
+            0,
+            12
+          ],
+          "validation_rmse": 71.58041712734082
+        },
+        {
+          "order": [
+            1,
+            0,
+            0
+          ],
+          "seasonal_order": [
+            0,
+            1,
+            1,
+            12
+          ],
+          "validation_rmse": 59.25235148203512
+        },
+        {
+          "order": [
+            1,
+            0,
+            1
+          ],
+          "seasonal_order": [
+            1,
+            1,
+            0,
+            12
+          ],
+          "validation_rmse": 70.28857017671639
+        },
+        {
+          "order": [
+            1,
+            0,
+            1
+          ],
+          "seasonal_order": [
+            0,
+            1,
+            1,
+            12
+          ],
+          "validation_rmse": 58.876499727201754
+        }
+      ],
+      "selected": {
+        "order": [
+          1,
+          0,
+          1
+        ],
+        "seasonal_order": [
+          0,
+          1,
+          1,
+          12
+        ],
+        "validation_rmse": 58.876499727201754
+      },
+      "test": {
+        "sarima": {
+          "n": 24,
+          "mae": 51.88294842177655,
+          "rmse": 64.83878181388454,
+          "bias": -31.783019897944797,
+          "mape": 215.77886489962174,
+          "mape_n": 24,
+          "interval_80_coverage": 0.8333333333333334
+        },
+        "seasonal_naive": {
+          "n": 24,
+          "mae": 63.51666666666667,
+          "rmse": 84.63312491769008,
+          "bias": -18.583333333333332,
+          "mape": 619.4852127351027,
+          "mape_n": 24,
+          "interval_80_coverage": null
+        },
+        "monthly_average": {
+          "n": 24,
+          "mae": 54.997611111111105,
+          "rmse": 68.8002121571947,
+          "bias": -36.76718055555556,
+          "mape": 216.65945059249395,
+          "mape_n": 24,
+          "interval_80_coverage": null
+        }
+      },
+      "test_by_horizon": {
+        "1": {
+          "sarima": {
+            "n": 8,
+            "mae": 50.18323781207021,
+            "rmse": 61.228223182509005,
+            "bias": -31.563608356701916,
+            "mape": 234.40539792847747,
+            "mape_n": 8,
+            "interval_80_coverage": 0.875
+          },
+          "seasonal_naive": {
+            "n": 8,
+            "mae": 68.8625,
+            "rmse": 87.06664832184595,
+            "bias": 13.2125,
+            "mape": 983.2399389972844,
+            "mape_n": 8,
+            "interval_80_coverage": null
+          },
+          "monthly_average": {
+            "n": 8,
+            "mae": 55.900916666666674,
+            "rmse": 66.73774440398736,
+            "bias": -39.21300000000001,
+            "mape": 227.586286501319,
+            "mape_n": 8,
+            "interval_80_coverage": null
+          }
+        },
+        "2": {
+          "sarima": {
+            "n": 8,
+            "mae": 44.82376239663102,
+            "rmse": 56.43175079538297,
+            "bias": -9.812594975131788,
+            "mape": 353.0296276703562,
+            "mape_n": 8,
+            "interval_80_coverage": 0.875
+          },
+          "seasonal_naive": {
+            "n": 8,
+            "mae": 58.425,
+            "rmse": 75.13793981737854,
+            "bias": -19.749999999999996,
+            "mape": 835.9990167791525,
+            "mape_n": 8,
+            "interval_80_coverage": null
+          },
+          "monthly_average": {
+            "n": 8,
+            "mae": 45.26908333333333,
+            "rmse": 59.14936083762867,
+            "bias": -13.047749999999999,
+            "mape": 362.6710225583229,
+            "mape_n": 8,
+            "interval_80_coverage": null
+          }
+        },
+        "3": {
+          "sarima": {
+            "n": 8,
+            "mae": 60.64184505662843,
+            "rmse": 75.35758136648384,
+            "bias": -53.972856362000684,
+            "mape": 59.901569100031416,
+            "mape_n": 8,
+            "interval_80_coverage": 0.75
+          },
+          "seasonal_naive": {
+            "n": 8,
+            "mae": 63.2625,
+            "rmse": 90.8954688089566,
+            "bias": -49.212500000000006,
+            "mape": 39.21668242887103,
+            "mape_n": 8,
+            "interval_80_coverage": null
+          },
+          "monthly_average": {
+            "n": 8,
+            "mae": 63.822833333333335,
+            "rmse": 79.04324236133697,
+            "bias": -58.04079166666667,
+            "mape": 59.72104271784004,
+            "mape_n": 8,
+            "interval_80_coverage": null
+          }
+        }
+      },
+      "final_fit": {
+        "through": "2026-09",
+        "order": [
+          1,
+          0,
+          1
+        ],
+        "seasonal_order": [
+          0,
+          1,
+          1,
+          12
+        ],
+        "trend": "n",
+        "converged": true,
+        "params": {
+          "ar.L1": 0.7003234644642911,
+          "ma.L1": -0.6285037373753625,
+          "ma.S.L12": -0.9353283532000075,
+          "sigma2": 6022.181773838598
+        }
+      }
+    }
+  }
+}

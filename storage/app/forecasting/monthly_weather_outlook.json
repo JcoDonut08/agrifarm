@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "source": {
+    "provider": "Open-Meteo / ECMWF ERA5",
+    "type": "historical_reanalysis",
+    "source_url": "https://archive-api.open-meteo.com/v1/archive?latitude=14.5764&longitude=121.0851&start_date=2000-01-01&end_date=2026-09-30&daily=temperature_2m_mean%2Crain_sum&timezone=Asia%2FManila&models=era5",
+    "documentation_url": "https://open-meteo.com/en/docs/historical-weather-api",
+    "requested_location": "Pasig City",
+    "requested_latitude": 14.5764,
+    "requested_longitude": 121.0851,
+    "grid_latitude": 14.5,
+    "grid_longitude": 121.0,
+    "resolution_degrees": 0.25,
+    "timezone": "Asia/Manila",
+    "history_start": "2000-01",
+    "history_end": "2026-09",
+    "daily_records": 9770,
+    "complete_months": 321,
+    "raw_sha256": "16cc1a8709cecb4d8ac3594cd24f59c27e2d66f5699884a1ac178def24f6b6bb",
+    "monthly_csv_sha256": "79cb23c7dc7f05057ea46228cf484d5ed6f65c15d00356bf2c5b038d88a00d4e",
+    "as_of": "2026-10-16",
+    "created_at_utc": "2026-10-16T03:17:09.793610+00:00",
+    "software": {
+      "numpy": "2.5.3",
+      "pandas": "3.0.6",
+      "statsmodels": "0.15.0"
+    },
+    "attribution": [
+      "https://doi.org/10.5281/zenodo.7970649",
+      "https://doi.org/10.24381/cds.adbb2d47"
+    ],
+    "limitations": "Grid estimates, not independent Pasig station observations. Monthly values do not predict daily extremes or individual garden conditions."
+  },
+  "forecast_origin": "2026-09",
+  "reference_period": "2000\u20132021",
+  "method": "SARIMA",
+  "forecast": [
+    {
+      "month": "2026-10",
+      "temperature_mean_c": 28.28,
+      "rainfall_total_mm": 184.28,
+      "reference_rainfall_mm": 156.15
+    },
+    {
+      "month": "2026-11",
+      "temperature_mean_c": 28.24,
+      "rainfall_total_mm": 89.31,
+      "reference_rainfall_mm": 73.65
+    },
+    {
+      "month": "2026-12",
+      "temperature_mean_c": 27.34,
+      "rainfall_total_mm": 133.51,
+      "reference_rainfall_mm": 115.68
+    }
+  ],
+  "evaluation": {
+    "temperature_mean_c": {
+      "order": [
+        1,
+        0,
+        0
+      ],
+      "seasonal_order": [
+        0,
+        1,
+        1,
+        12
+      ],
+      "test": {
+        "sarima": {
+          "n": 24,
+          "mae": 0.36940505213384683,
+          "rmse": 0.5028546876255294,
+          "bias": -0.17738881796729253,
+          "mape": null,
+          "mape_n": 0,
+          "interval_80_coverage": 0.75
+        },
+        "seasonal_naive": {
+          "n": 24,
+          "mae": 0.5839286486748954,
+          "rmse": 0.732020055812102,
+          "bias": 0.030866935483871316,
+          "mape": null,
+          "mape_n": 0,
+          "interval_80_coverage": null
+        },
+        "monthly_average": {
+          "n": 24,
+          "mae": 0.5500243509653578,
+          "rmse": 0.6439176282585881,
+          "bias": -0.4454974692449274,
+          "mape": null,
+          "mape_n": 0,
+          "interval_80_coverage": null
+        }
+      }
+    },
+    "rainfall_total_mm": {
+      "order": [
+        1,
+        0,
+        1
+      ],
+      "seasonal_order": [
+        0,
+        1,
+        1,
+        12
+      ],
+      "test": {
+        "sarima": {
+          "n": 24,
+          "mae": 51.88294842177655,
+          "rmse": 64.83878181388454,
+          "bias": -31.783019897944797,
+          "mape": 215.77886489962174,
+          "mape_n": 24,
+          "interval_80_coverage": 0.8333333333333334
+        },
+        "seasonal_naive": {
+          "n": 24,
+          "mae": 63.51666666666667,
+          "rmse": 84.63312491769008,
+          "bias": -18.583333333333332,
+          "mape": 619.4852127351027,
+          "mape_n": 24,
+          "interval_80_coverage": null
+        },
+        "monthly_average": {
+          "n": 24,
+          "mae": 54.997611111111105,
+          "rmse": 68.8002121571947,
+          "bias": -36.76718055555556,
+          "mape": 216.65945059249395,
+          "mape_n": 24,
+          "interval_80_coverage": null
+        }
+      }
+    }
+  },
+  "test_period": "2024\u20132025",
+  "intervals": null
+}

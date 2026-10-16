@@ -4,6 +4,7 @@ import Icon from '../../Components/Storefront/Icon';
 import PageSkeleton from '../../Components/PageSkeleton';
 import FormStatus from '../../Components/FormStatus';
 import ConfirmationDialog from '../../Components/ConfirmationDialog';
+import MonthlyWeatherOutlook, { MonthlyWeatherAdvice } from './MonthlyWeatherOutlook';
 import { unitLabel } from './SellerLocale';
 import '../../../css/seller-forecast.css';
 
@@ -30,6 +31,43 @@ function CropPicture({ crop, text, large = false }) {
         : <span role="img" aria-label={`${crop} — ${text('crop reference image', 'halimbawang larawan ng pananim')}`}
             className={`forecast-crop-picture ${large ? 'is-large' : ''}`}
             style={{ backgroundPosition: `${(index % 4) / 3 * 100}% ${Math.floor(index / 4) / 4 * 100}%` }} />;
+}
+
+function GrowingRequirements({ plan, filipino, text }) {
+    const guide = plan.growing_requirements;
+    const labels = [
+        ['sunlight', 'Sunlight', 'Sikat ng araw'],
+        ['soil', 'Soil / growing medium', 'Lupa / tanimang halo'],
+        ['water', 'Water and drainage', 'Tubig at daluyan'],
+        ['spacing', 'Plant spacing / support', 'Agwat / suporta'],
+        ['containers', 'Container growing', 'Pagtatanim sa lalagyan'],
+        ['climate', 'Climate', 'Klima'],
+    ];
+    const language = filipino ? 'fil' : 'en';
+    const reviewedDate = guide && new Intl.DateTimeFormat(filipino ? 'fil-PH' : 'en-PH', {
+        day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Manila',
+    }).format(new Date(`${guide.source.reviewed_on}T00:00:00+08:00`));
+
+    return <details className="forecast-plan-requirements">
+        <summary>
+            <Icon name="sprout" size={18} />
+            <span>{text('Growing requirements', 'Mga pangangailangan sa pagtatanim')}<span className="sr-only"> — {plan.crop}</span></span>
+            <Icon name="chevron" size={16} className="forecast-requirements-chevron" />
+        </summary>
+        {guide ? <div className="forecast-requirements-content">
+            <p className="forecast-requirements-scope">{guide.scope[language]}</p>
+            <dl className="forecast-requirements-grid">
+                {labels.map(([key, english, translated]) => <div key={key}>
+                    <dt>{text(english, translated)}</dt>
+                    <dd>{guide.requirements[key]?.[language] || text('Not specified in this reference.', 'Hindi tinukoy sa sangguniang ito.')}</dd>
+                </div>)}
+            </dl>
+            <div className="forecast-requirements-source">
+                <p>{text('Source', 'Sanggunian')}: <a href={guide.source.url} target="_blank" rel="noopener noreferrer">{guide.source.title}<span className="sr-only"> {text('(opens in a new tab)', '(magbubukas sa bagong tab)')}</span></a></p>
+                <p>{guide.source.publisher}{guide.source.pages && <> · {text('Pages', 'Mga pahina')} {guide.source.pages}</>} · {text('Reference checked', 'Sinuri ang sanggunian')} <time dateTime={guide.source.reviewed_on}>{reviewedDate}</time></p>
+            </div>
+        </div> : <p className="forecast-requirements-unavailable">{text('Reviewed growing guidance is not available for this crop yet. Ask CENRO about its requirements before planting.', 'Wala pang nasuring gabay para sa pananim na ito. Magtanong sa CENRO tungkol sa mga pangangailangan nito bago magtanim.')}</p>}
+    </details>;
 }
 
 function HarvestCalendar({ rows, months, filipino, text, strengthOf, headingRef, dataset }) {
@@ -85,7 +123,7 @@ function HarvestCalendar({ rows, months, filipino, text, strengthOf, headingRef,
 
 export default function Forecasting({ filipino = false }) {
     const { data, setData, post, transform, processing, errors, clearErrors } = useForm({ harvest_data: null });
-    const { flash, forecastData, forecastRun, plantingPlans = [] } = usePage().props;
+    const { flash, forecastData, forecastRun, monthlyWeather, plantingPlans = [] } = usePage().props;
     const planForm = useForm({ crop: '', planting_month: '' });
     const [planAction, setPlanAction] = useState(null);
     const [planNotice, setPlanNotice] = useState('');
@@ -271,8 +309,10 @@ export default function Forecasting({ filipino = false }) {
                 <p>{text('See what to plant next.', 'Tingnan kung ano ang maaaring itanim.')}</p>
             </header>
 
+            {!hasForecast && <MonthlyWeatherOutlook outlook={monthlyWeather} filipino={filipino} monthLabel={monthLabel} />}
             {hasForecast && <div key={resultReveal} className={`forecast-results ${resultReveal ? 'forecast-results-reveal' : ''}`}>
                 <HarvestCalendar key={`${forecastRun?.created_at}-${forecastRun?.source_filename}`} rows={rows} months={months} filipino={filipino} text={text} strengthOf={strengthOf} headingRef={resultsHeadingRef} dataset={forecastData.dataset} />
+                <MonthlyWeatherOutlook outlook={monthlyWeather} filipino={filipino} monthLabel={monthLabel} plantingMonth={forecastData.planting_month} />
                 <section className="seller-panel forecast-panel forecast-recommendations">
                     <div className="forecast-results-heading">
                         <h3>{text('Recommended crops to plant', 'Mga mungkahing pananim')}</h3>
@@ -297,6 +337,7 @@ export default function Forecasting({ filipino = false }) {
                                 : rec.source === 'online_reference' ? text('Based on an agricultural guide', 'Batay sa gabay sa pagsasaka')
                                 : rec.new_crop ? text('Based on seasonal references', 'Batay sa mga sanggunian ng panahon')
                                 : text('Seasonal planting guide', 'Gabay batay sa panahon')}</p>
+                            <MonthlyWeatherAdvice advice={rec.monthly_weather_advice} filipino={filipino} monthLabel={monthLabel} />
                             <button type="button" className="forecast-plan-button"
                                 disabled={planForm.processing || savedCrops.has(rec.crop)}
                                 aria-label={savedCrops.has(rec.crop)
@@ -373,7 +414,7 @@ export default function Forecasting({ filipino = false }) {
                 <ul className="forecast-plan-list">
                     {plantingPlans.map(plan => <li key={plan.id}>
                         <div className="forecast-plan-crop"><CropPicture crop={plan.crop} text={text} /><strong>{plan.crop}</strong></div>
-                        <dl>
+                        <dl className="forecast-plan-dates">
                             <div><dt>{text('Plant in', 'Itanim sa')}</dt><dd>{monthLabel(plan.planting_month, filipino)}</dd></div>
                             <div><dt>{text('Harvest around', 'Ani bandang')}</dt><dd>{monthLabel(plan.harvest_month, filipino)}</dd></div>
                         </dl>
@@ -382,6 +423,7 @@ export default function Forecasting({ filipino = false }) {
                             onClick={() => setPlanToRemove(plan)}>
                             {planAction?.type === 'remove' && planAction.id === plan.id ? text('Removing…', 'Inaalis…') : text('Remove', 'Alisin')}
                         </button>
+                        <GrowingRequirements plan={plan} filipino={filipino} text={text} />
                     </li>)}
                 </ul>
             </section>}

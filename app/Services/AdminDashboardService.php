@@ -35,6 +35,7 @@ class AdminDashboardService
             ->sortByDesc(fn (User $seller) => [(float) $seller->delivered_sales, $seller->walk_in_orders_count])
             ->values();
         $sellerIds = $sellers->pluck('id');
+        $bestProducts = $this->bestProducts($sellerIds);
         $leadingSeller = $sellerPerformance->first(fn (User $seller) => (float) $seller->delivered_sales > 0);
 
         return [
@@ -59,6 +60,7 @@ class AdminDashboardService
                 'name' => $this->barangayName($seller),
                 'sellerName' => $seller->name,
                 'avatarUrl' => $this->sellerAvatarUrl($seller),
+                'bestProduct' => $bestProducts->get($seller->id),
                 'sales' => (float) ($seller->delivered_sales ?? 0),
                 'orders' => $seller->walk_in_orders_count,
                 'completedOrders' => $seller->delivered_orders_count,
@@ -79,6 +81,28 @@ class AdminDashboardService
             ],
             'recentActivity' => $this->recentActivity($sellerIds),
         ];
+    }
+
+    /** @return Collection<int, array{id: int, name: string, image: ?string}> */
+    private function bestProducts(Collection $sellerIds): Collection
+    {
+        return Product::query()
+            ->whereIn('user_id', $sellerIds)
+            ->whereHas('walkInOrders', fn (Builder $query) => $query->where('status', 'delivered'))
+            ->withCount(['walkInOrders as completed_orders' => fn (Builder $query) => $query->where('status', 'delivered')])
+            ->withSum(['walkInOrders as completed_sales' => fn (Builder $query) => $query->where('status', 'delivered')], 'total')
+            ->orderByDesc('completed_orders')
+            ->orderByDesc('completed_sales')
+            ->orderBy('id')
+            ->get()
+            ->unique('user_id')
+            ->mapWithKeys(fn (Product $product) => [$product->user_id => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'image' => $product->photo_path
+                    ? '/marketplace/products/'.$product->id.'/photo?v='.$product->photoVersion().'&size=card'
+                    : null,
+            ]]);
     }
 
     /** @return array{months: array<int, array{key: string, label: string}>, series: array<int, array{name: string, sales: array<int, float>}>, undatedOrders: int} */

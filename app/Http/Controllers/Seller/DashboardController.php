@@ -9,7 +9,9 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\User;
 use App\Models\WalkInOrder;
+use App\Services\CropGrowingRequirementsService;
 use App\Services\ForecastRecommendationService;
+use App\Services\MonthlyWeatherService;
 use App\Services\WeatherService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,7 +19,7 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request, WeatherService $weatherService): Response
+    public function __invoke(Request $request, WeatherService $weatherService, CropGrowingRequirementsService $growingRequirements, MonthlyWeatherService $monthlyWeather): Response
     {
         $partialData = array_filter(explode(',', (string) $request->header('X-Inertia-Partial-Data')));
         $isPartialDashboardRequest = $request->header('X-Inertia-Partial-Component') === 'Seller/Dashboard';
@@ -36,6 +38,14 @@ class DashboardController extends Controller
         $forecastRun = $shouldLoad('forecastData') || $shouldLoad('forecastRun')
             ? $request->user()->forecastRuns()->latest('id')->first()
             : null;
+        $outlook = $shouldLoad('monthlyWeather') || $forecastRun ? $monthlyWeather->outlook() : null;
+        $forecastData = $forecastRun ? app(ForecastRecommendationService::class)->recommend($forecastRun->result, seller: $request->user()) : null;
+        if ($forecastData !== null) {
+            foreach ($forecastData['recommendations'] as &$recommendation) {
+                $recommendation['monthly_weather_advice'] = $monthlyWeather->advice($recommendation['crop'], $forecastData['planting_month'], $outlook);
+            }
+            unset($recommendation);
+        }
 
         return Inertia::render('Seller/Dashboard', [
             'sellerGuidePending' => $request->user()->seller_guide_dismissed_at === null,
@@ -47,7 +57,8 @@ class DashboardController extends Controller
                 'average' => $rating?->average_rating !== null ? round((float) $rating->average_rating, 1) : null,
             ],
             'weather' => $shouldLoad('weather') ? $weatherService->current() : null,
-            'forecastData' => $forecastRun ? app(ForecastRecommendationService::class)->recommend($forecastRun->result, seller: $request->user()) : null,
+            'forecastData' => $forecastData,
+            'monthlyWeather' => $outlook,
             'forecastRun' => $forecastRun ? [
                 'source_filename' => $forecastRun->source_filename,
                 'created_at' => $forecastRun->created_at->toIso8601String(),
@@ -60,6 +71,7 @@ class DashboardController extends Controller
                         'planting_month' => $plan->planting_month->format('Y-m'),
                         'harvest_month' => $plan->harvest_month->format('Y-m'),
                         'days_to_harvest' => $plan->days_to_harvest,
+                        'growing_requirements' => $growingRequirements->forCrop($plan->crop),
                     ])
                 : [],
         ]);

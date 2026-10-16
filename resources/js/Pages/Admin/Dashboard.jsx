@@ -789,6 +789,9 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
                                     {filipino ? "Barangay" : "Barangay"}
                                 </span>
                                 <span>
+                                    {filipino ? "Nangungunang produkto" : "Best product"}
+                                </span>
+                                <span>
                                     {filipino
                                         ? "Kabuuang benta"
                                         : "Total sales"}
@@ -817,7 +820,20 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
                                                 </small>
                                             </div>
                                         </div>
+                                        <div className="admin-performance-product">
+                                            <small className="admin-performance-mobile-label">
+                                                {filipino ? "Nangungunang produkto" : "Best product"}
+                                            </small>
+                                            <BestProduct
+                                                key={`${barangay.bestProduct?.id}-${barangay.bestProduct?.image}`}
+                                                product={barangay.bestProduct}
+                                                filipino={filipino}
+                                            />
+                                        </div>
                                         <div className="admin-performance-sales">
+                                            <small className="admin-performance-mobile-label">
+                                                {filipino ? "Kabuuang benta" : "Total sales"}
+                                            </small>
                                             <strong>
                                                 {formatCurrency(barangay.sales)}
                                             </strong>
@@ -830,6 +846,9 @@ function DashboardOverview({ dashboard = {}, weather, preferences, filipino }) {
                                             </span>
                                         </div>
                                         <div className="admin-performance-orders">
+                                            <small className="admin-performance-mobile-label">
+                                                {filipino ? "Mga order" : "Orders"}
+                                            </small>
                                             <strong>
                                                 {formatNumber(barangay.orders)}
                                             </strong>
@@ -1567,6 +1586,25 @@ function getActivityIconConfig(activity) {
     }
 
     return { IconComponent: Sprout, iconClass: "admin-activity-icon--product" };
+}
+
+function BestProduct({ product, filipino }) {
+    const [imageError, setImageError] = useState(false);
+
+    if (!product) {
+        return <span className="admin-performance-product-empty">
+            {filipino ? "Wala pang nakumpletong benta" : "No completed sales yet"}
+        </span>;
+    }
+
+    return <div className="admin-performance-product-detail">
+        <span className="admin-performance-product-image">
+            {product.image && !imageError ? (
+                <img src={product.image} alt="" loading="lazy" onError={() => setImageError(true)} />
+            ) : <Sprout aria-hidden="true" />}
+        </span>
+        <strong>{product.name}</strong>
+    </div>;
 }
 
 function ActivityThumbnail({ activity }) {

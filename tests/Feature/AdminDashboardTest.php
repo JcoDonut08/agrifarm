@@ -6,6 +6,7 @@ use App\Models\AdminTask;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\WalkInOrder;
+use App\Services\AdminDashboardService;
 use App\Services\WeatherService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -90,6 +91,39 @@ class AdminDashboardTest extends TestCase
                 ->where('dashboard.attention.pendingOrders', 0)
                 ->where('dashboard.attention.lowStockProducts', 0)
                 ->has('dashboard.recentActivity', 0));
+    }
+
+    public function test_best_product_uses_completed_order_count_then_sales_and_excludes_unsold_products(): void
+    {
+        $admin = User::factory()->cenroAdmin()->create();
+        $seller = User::factory()->seller()->create(['barangay' => 'Rosario']);
+        $unsoldSeller = User::factory()->seller()->create(['barangay' => 'Maybunga']);
+        $popular = $this->product($seller, 'Pechay', 20, 3);
+        $expensive = $this->product($seller, 'Tomato', 20, 3);
+        $pending = $this->product($seller, 'Basil', 20, 3);
+        $unsold = $this->product($unsoldSeller, 'Lettuce', 20, 3);
+
+        $this->order($seller, $popular, '25.00', 'delivered', now());
+        $this->order($seller, $popular, '25.00', 'delivered', now());
+        $this->order($seller, $expensive, '100.00', 'delivered', now());
+        foreach (range(1, 3) as $index) {
+            $this->order($seller, $pending, '1000.00', 'pending', now());
+            $this->order($seller, $pending, '1000.00', 'cancelled', now());
+        }
+        $this->order($unsoldSeller, $unsold, '25.00', 'pending', now());
+
+        $data = app(AdminDashboardService::class)->data($admin);
+        $barangays = collect($data['barangays'])->keyBy('name');
+        $this->assertSame($popular->id, $barangays['Rosario']['bestProduct']['id']);
+        $this->assertSame('Pechay', $barangays['Rosario']['bestProduct']['name']);
+        $this->assertSame('/marketplace/products/'.$popular->id.'/photo?v='.$popular->photoVersion().'&size=card', $barangays['Rosario']['bestProduct']['image']);
+        $this->assertNull($barangays['Maybunga']['bestProduct']);
+
+        $this->order($seller, $expensive, '100.00', 'delivered', now());
+        $expensive->update(['photo_path' => '']);
+        $barangays = collect(app(AdminDashboardService::class)->data($admin)['barangays'])->keyBy('name');
+        $this->assertSame($expensive->id, $barangays['Rosario']['bestProduct']['id']);
+        $this->assertNull($barangays['Rosario']['bestProduct']['image']);
     }
 
     public function test_monthly_sales_includes_the_whole_twelve_month_window_and_only_delivered_orders(): void

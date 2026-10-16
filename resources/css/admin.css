@@ -1834,9 +1834,9 @@
 .admin-performance-header,
 .admin-performance-item {
     display: grid;
-    grid-template-columns: minmax(180px, 1.35fr) minmax(130px, 0.8fr) 64px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(80px, 0.7fr) 44px;
     align-items: center;
-    gap: 18px;
+    gap: 14px;
 }
 .admin-performance-header {
     padding: 9px 14px;
@@ -1904,6 +1904,46 @@
     margin-bottom: 7px;
     font-size: 12px;
     font-variant-numeric: tabular-nums;
+}
+.admin-performance-product {
+    min-width: 0;
+}
+.admin-performance-product-detail {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+.admin-performance-product-detail strong {
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+.admin-performance-product-image {
+    display: grid;
+    place-items: center;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #edf5e9;
+    color: #28794a;
+}
+.admin-performance-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.admin-performance-product-image svg {
+    width: 20px;
+    height: 20px;
+}
+.admin-performance-product-empty {
+    color: #73827a;
+    font-size: 11px;
+}
+.admin-performance-mobile-label {
+    display: none;
 }
 .admin-performance-sales > span {
     display: block;
@@ -2959,14 +2999,23 @@
     }
     .admin-performance-header,
     .admin-performance-item {
-        grid-template-columns: minmax(120px, 1fr) 92px 42px;
+        grid-template-columns: minmax(0, 1fr) minmax(80px, 0.85fr) 42px;
         gap: 8px;
     }
     .admin-performance-header {
-        padding-inline: 10px;
+        display: none;
     }
     .admin-performance-item {
         padding-inline: 10px;
+    }
+    .admin-performance-title {
+        grid-column: 1 / -1;
+    }
+    .admin-performance-mobile-label {
+        display: block;
+        margin-bottom: 6px;
+        color: #73827a;
+        font-size: 10px;
     }
     .admin-seller-avatar {
         width: 36px;
@@ -3272,12 +3321,15 @@
 .dark .admin-todo-list article:hover {
     background: #252e28;
 }
-.dark .admin-seller-avatar {
+.dark .admin-seller-avatar,
+.dark .admin-performance-product-image {
     border-color: #415548;
     background: #2b4030;
     color: #b3d7a1;
 }
 .dark .admin-performance-title small,
+.dark .admin-performance-product-empty,
+.dark .admin-performance-mobile-label,
 .dark .admin-todo-list small,
 .dark .admin-activity-list small,
 .dark .admin-activity-list time {

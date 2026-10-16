@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\AccountStatus;
 use App\Models\User;
+use App\Services\CropGrowingRequirementsService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -92,6 +93,61 @@ class SellerPlantingPlanTest extends TestCase
         $this->actingAs($seller)->get('/seller/dashboard?section=forecasting')
             ->assertInertia(fn (Assert $page) => $page->has('plantingPlans', 1)
                 ->missing('plantingPlans.0.user_id')->missing('plantingPlans.0.created_at'));
+    }
+
+    public function test_saved_plans_receive_reviewed_guidance_without_a_forecast_and_keep_their_original_dates(): void
+    {
+        $seller = $this->sellerWithForecast();
+        $this->savePlan($seller);
+        $seller->forecastRuns()->delete();
+
+        $this->get('/seller/dashboard?section=forecasting')->assertInertia(fn (Assert $page) => $page
+            ->where('forecastData', null)
+            ->where('plantingPlans.0.planting_month', '2026-10')
+            ->where('plantingPlans.0.harvest_month', '2026-11')
+            ->where('plantingPlans.0.growing_requirements.crop', 'Pechay')
+            ->where('plantingPlans.0.growing_requirements.source.publisher', 'DA–ATI Cordillera')
+            ->where('plantingPlans.0.growing_requirements.source.reviewed_on', '2026-10-16')
+            ->has('plantingPlans.0.growing_requirements.requirements.soil.en')
+            ->has('plantingPlans.0.growing_requirements.requirements.soil.fil')
+            ->missing('plantingPlans.0.growing_requirements.requirements.sunlight'));
+    }
+
+    public function test_crop_guides_match_explicit_aliases_and_leave_unknown_crops_without_guessed_requirements(): void
+    {
+        $guides = app(CropGrowingRequirementsService::class);
+        $this->assertSame('Pipino', $guides->forCrop(' cucumber ')['crop']);
+        $this->assertSame('Alugbati', $guides->forCrop('Malabar spinach')['crop']);
+        $this->assertNull($guides->forCrop('Spinach'));
+        $this->assertNull($guides->forCrop('Unknown crop'));
+
+        $seller = User::factory()->seller()->create();
+        $seller->plantingPlans()->create(['crop' => 'Unknown crop', 'planting_month' => '2026-10-01', 'harvest_month' => '2026-11-01', 'days_to_harvest' => 30]);
+        $this->actingAs($seller)->get('/seller/dashboard?section=forecasting')->assertInertia(fn (Assert $page) => $page
+            ->where('plantingPlans.0.crop', 'Unknown crop')
+            ->where('plantingPlans.0.growing_requirements', null));
+    }
+
+    public function test_every_catalog_guide_has_a_dated_official_reference_and_bilingual_requirements(): void
+    {
+        $catalog = json_decode(file_get_contents(storage_path('app/forecasting/crop_growing_requirements.json')), true, 512, JSON_THROW_ON_ERROR);
+        $guides = app(CropGrowingRequirementsService::class);
+        $names = [];
+        foreach ($catalog['crops'] as $crop => $entry) {
+            $guide = $guides->forCrop($crop);
+            $this->assertMatchesRegularExpression('~^https://[^/]+\.(da|dost)\.gov\.ph/~', $guide['source']['url']);
+            $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $guide['source']['reviewed_on']);
+            $this->assertNotEmpty($guide['requirements']);
+            foreach ([$guide['scope'], ...array_values($guide['requirements'])] as $translation) {
+                $this->assertNotEmpty($translation['en']);
+                $this->assertNotEmpty($translation['fil']);
+            }
+            foreach ([$crop, ...$entry['aliases']] as $name) {
+                $key = mb_strtolower(trim($name));
+                $this->assertArrayNotHasKey($key, $names, 'Crop aliases must be unambiguous.');
+                $names[$key] = $crop;
+            }
+        }
     }
 
     public function test_a_new_planting_month_can_have_a_separate_plan_for_the_same_crop(): void

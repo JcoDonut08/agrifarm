@@ -16,7 +16,7 @@ RUN apt-get update \
         libfreetype6-dev libjpeg62-turbo-dev libpng-dev libwebp-dev \
         libicu-dev libpq-dev libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j2 bcmath gd intl opcache pcntl pdo_pgsql zip \
+    && docker-php-ext-install -j4 bcmath gd intl opcache pcntl pdo_pgsql zip \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
@@ -28,18 +28,9 @@ RUN python3 -m venv /opt/venv \
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --prefer-dist --no-interaction --no-scripts --no-autoloader
 
-COPY composer.json composer.lock artisan ./
-COPY app ./app
-COPY bootstrap ./bootstrap
-COPY config ./config
-COPY database ./database
-COPY routes ./routes
-COPY resources ./resources
-COPY public ./public
-COPY python ./python
-COPY docs/sample-data ./docs/sample-data
+# .dockerignore limits this copy to release source and synthetic fixtures.
+COPY . ./
 COPY storage/app/forecasting/*.json /opt/agrifarm/forecasting/
-COPY deploy/railway ./deploy/railway
 
 ENV APP_ENV=production \
     APP_DEBUG=false \

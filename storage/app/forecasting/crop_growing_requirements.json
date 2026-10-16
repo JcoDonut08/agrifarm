@@ -1,0 +1,558 @@
+{
+  "sources": {
+    "ati-lowland": {
+      "title": "Mga Gulay sa Kapatagan",
+      "publisher": "DA–ATI MIMAROPA",
+      "url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2022-12/lowland_vegetables.pdf",
+      "reviewed_on": "2026-10-16"
+    },
+    "ati-urban": {
+      "title": "A Guide to Urban / Home Gardening",
+      "publisher": "DA–ATI Cordillera",
+      "url": "https://ati2.da.gov.ph/ati-car/content/sites/default/files/2022-12/urban_agriculture_for_upland.pdf",
+      "reviewed_on": "2026-10-16"
+    },
+    "ati-pechay": {
+      "title": "Pechay Production for Urban and Home Gardening",
+      "publisher": "DA–ATI Cordillera",
+      "url": "https://ati2.da.gov.ph/ati-car/content/sites/default/files/2022-12/pechay_production_for_urban_gardening_leaflet.pdf",
+      "reviewed_on": "2026-10-16"
+    },
+    "da-indigenous": {
+      "title": "Mga Katutubong Gulay",
+      "publisher": "Department of Agriculture · HVCDP",
+      "url": "https://hvcdp.da.gov.ph/wp-content/uploads/2022/05/Indigenous-Vegetables-Guide.pdf",
+      "reviewed_on": "2026-10-16"
+    },
+    "ati-radish": {
+      "title": "Labanos Production Guide",
+      "publisher": "DA–ATI Bicol",
+      "url": "https://ati2.da.gov.ph/ati-5/content/sites/default/files/users/user17/labanos%20short.jpg",
+      "reviewed_on": "2026-10-16"
+    },
+    "bpi-taro": {
+        "title": "Plant Industry Production Guide (15) – Gabi",
+        "publisher": "Bureau of Plant Industry Library · Gloria C. Papas",
+        "url": "https://library.buplant.da.gov.ph/books/42",
+      "reviewed_on": "2026-10-16"
+    },
+    "ati-ginger": {
+      "title": "Weedibles and Weedicinals Plus Edible Flowers and More",
+      "publisher": "DA–ATI CALABARZON",
+      "url": "https://ati2.da.gov.ph/ati-4a/content/sites/default/files/2022-09/WEEDIBLES%20AND%20WEEDICINALS%20Plus%20Edible%20Flowers%20and%20More.pdf",
+      "reviewed_on": "2026-10-16"
+    },
+    "ati-cucumber": {
+      "title": "Gabay sa Produksyon ng Pipino",
+      "publisher": "DA–ATI MIMAROPA",
+      "url": "https://ati2.da.gov.ph/ati-4b/content/sites/default/files/2024-12/GABAY%20SA%20PRODUKSYON%20NG%20PIPINO.pdf",
+      "reviewed_on": "2026-10-16"
+    }
+  },
+  "crops": {
+    "Kamatis": {
+      "aliases": [
+        "Tomato"
+      ],
+      "source": "ati-lowland",
+      "pages": "7–9",
+      "scope": {
+        "en": "Field-growing guidance. Adjust to the crop variety and your growing setup.",
+        "fil": "Gabay para sa taniman sa lupa. Iangkop sa barayti at paraan ng pagtatanim."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Sandy or clay loam; avoid flood-prone ground.",
+          "fil": "Sandy loam o clay loam; iwasan ang lugar na binabaha."
+        },
+        "water": {
+          "en": "Moisten roots; avoid flooding, especially during flowering and harvest.",
+          "fil": "Basain ang ugat; iwasan ang pagbaha lalo sa pamumulaklak at pag-aani."
+        },
+        "spacing": {
+          "en": "Guide uses 0.5 m in dry weather and 0.75 m in wet weather; support varieties that need staking.",
+          "fil": "Agwat sa gabay: 0.5 m sa tag-init, 0.75 m sa tag-ulan; suportahan ang barayting nangangailangan ng balag."
+        },
+        "climate": {
+          "en": "Cooler, dry conditions favor fruit quality.",
+          "fil": "Mas malamig at tuyong kondisyon ang mainam sa kalidad ng bunga."
+        }
+      }
+    },
+    "Talong": {
+      "aliases": [
+        "Eggplant"
+      ],
+      "source": "ati-lowland",
+      "pages": "22–24",
+      "scope": {
+        "en": "Field-growing guidance. Adjust to the crop variety and your growing setup.",
+        "fil": "Gabay para sa taniman sa lupa. Iangkop sa barayti at paraan ng pagtatanim."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Sandy or clay loam; pH 6.0–6.5.",
+          "fil": "Sandy loam o clay loam; pH 6.0–6.5."
+        },
+        "water": {
+          "en": "Choose a site with a reliable water supply.",
+          "fil": "Pumili ng lugar na may sapat na mapagkukunan ng tubig."
+        },
+        "sunlight": {
+          "en": "Protect young seedlings from excessive sun and rain before hardening.",
+          "fil": "Protektahan ang batang punla sa sobrang araw at ulan bago patibayin."
+        }
+      }
+    },
+    "Okra": {
+      "aliases": [],
+      "source": "ati-lowland",
+      "pages": "12–13",
+      "scope": {
+        "en": "Field-growing guidance. Adjust to the crop variety and your growing setup.",
+        "fil": "Gabay para sa taniman sa lupa. Iangkop sa barayti at paraan ng pagtatanim."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Loose sandy loam; pH 5.5–7.0.",
+          "fil": "Buhaghag na sandy loam; pH 5.5–7.0."
+        },
+        "water": {
+          "en": "Adjust watering to soil moisture and weather.",
+          "fil": "Iangkop ang pagdidilig sa halumigmig ng lupa at panahon."
+        },
+        "climate": {
+          "en": "Warm growing conditions with sufficient irrigation.",
+          "fil": "Mainit na panahon na may sapat na patubig."
+        }
+      }
+    },
+    "Kangkong": {
+      "aliases": [
+        "Upland kangkong"
+      ],
+      "source": "ati-urban",
+      "pages": "18–20",
+      "scope": {
+        "en": "This guide covers upland kangkong in moist soil. Aquatic kangkong uses a different growing method.",
+        "fil": "Para ito sa upland kangkong sa mamasa-masang lupa. Iba ang paraan para sa aquatic kangkong."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Organic-rich sandy to clay loam; pH 5.5–6.5.",
+          "fil": "Sandy loam hanggang clay loam na mayaman sa organikong bagay; pH 5.5–6.5."
+        },
+        "water": {
+          "en": "Water after sowing or transplanting, then daily or as needed.",
+          "fil": "Diligan matapos maghasik o maglipat-tanim, at araw-araw o kung kailangan."
+        },
+        "spacing": {
+          "en": "Line-sow 5 cm apart in rows 15–20 cm apart. Thin container seedlings to 10–15 cm apart.",
+          "fil": "Ihasik nang 5 cm ang pagitan sa hanay na 15–20 cm ang agwat. Sa lalagyan, mag-iwan ng 10–15 cm sa pagitan ng punla."
+        },
+        "containers": {
+          "en": "Garden plots, pots, and containers are supported by the guide.",
+          "fil": "Maaaring itanim sa lupa, paso, o lalagyan ayon sa gabay."
+        },
+        "climate": {
+          "en": "Guide gives 25–30°C as an ideal temperature range.",
+          "fil": "25–30°C ang mainam na temperatura sa gabay."
+        }
+      }
+    },
+    "Pechay": {
+      "aliases": [
+        "Bok choy"
+      ],
+      "source": "ati-pechay",
+      "pages": "1–2",
+      "scope": {
+        "en": "Urban and home-garden guidance. Growing time depends on variety and planting method.",
+        "fil": "Gabay para sa urban at pantahanang hardin. Nag-iiba ang tagal ayon sa barayti at paraan."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Loamy soil enriched with compost and rice hull.",
+          "fil": "Loam na lupa na may kompos at ipa."
+        },
+        "water": {
+          "en": "Water regularly, about 2–3 times weekly or as needed.",
+          "fil": "Regular na diligan, mga 2–3 beses bawat linggo o kung kailangan."
+        },
+        "spacing": {
+          "en": "For transplanted plots: 10 cm between plants and 20 cm between rows.",
+          "fil": "Sa inilipat-tanim na punla: 10 cm sa pagitan ng halaman, 20 cm sa pagitan ng hanay."
+        },
+        "containers": {
+          "en": "The guide supports growing in recycled bottles or larger containers.",
+          "fil": "Maaaring gumamit ng niresiklong bote o mas malaking lalagyan."
+        },
+        "climate": {
+          "en": "Guide describes 18–22°C conditions; check local variety suitability.",
+          "fil": "18–22°C ang kondisyon sa gabay; tiyaking angkop ang barayti sa lokal na lugar."
+        }
+      }
+    },
+    "Mustasa": {
+      "aliases": [
+        "Mustard greens"
+      ],
+      "source": "ati-lowland",
+      "pages": "10–11",
+      "scope": {
+        "en": "Field-growing guidance. Adjust to the crop variety and your growing setup.",
+        "fil": "Gabay para sa taniman sa lupa. Iangkop sa barayti at paraan ng pagtatanim."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Loose soil rich in organic matter.",
+          "fil": "Buhaghag na lupa na mayaman sa organikong bagay."
+        },
+        "water": {
+          "en": "Water 2–3 times weekly or as needed.",
+          "fil": "Diligan nang 2–3 beses bawat linggo o kung kailangan."
+        },
+        "spacing": {
+          "en": "Allow 15–20 cm between transplanted seedlings.",
+          "fil": "Mag-iwan ng 15–20 cm sa pagitan ng inilipat-tanim na punla."
+        }
+      }
+    },
+    "Kalabasa": {
+      "aliases": [
+        "Squash"
+      ],
+      "source": "ati-lowland",
+      "pages": "4–6",
+      "scope": {
+        "en": "Field-growing guidance. Adjust to the crop variety and your growing setup.",
+        "fil": "Gabay para sa taniman sa lupa. Iangkop sa barayti at paraan ng pagtatanim."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Well-drained sandy loam; pH 5.5–6.5.",
+          "fil": "Sandy loam na maayos ang daluyan ng tubig; pH 5.5–6.5."
+        },
+        "water": {
+          "en": "Guide describes weekly irrigation; water after fertilizing.",
+          "fil": "Lingguhang patubig ang nasa gabay; diligan matapos magpataba."
+        }
+      }
+    },
+    "Ampalaya": {
+      "aliases": [
+        "Bitter gourd"
+      ],
+      "source": "ati-lowland",
+      "pages": "1–3",
+      "scope": {
+        "en": "Field-growing guidance. Adjust to the crop variety and your growing setup.",
+        "fil": "Gabay para sa taniman sa lupa. Iangkop sa barayti at paraan ng pagtatanim."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Fertile, loose soil with good drainage.",
+          "fil": "Mataba at buhaghag na lupa na maayos ang daluyan ng tubig."
+        },
+        "water": {
+          "en": "Provide sufficient irrigation, especially in dry weather.",
+          "fil": "Maglaan ng sapat na patubig lalo sa tuyong panahon."
+        },
+        "spacing": {
+          "en": "Provide a trellis for climbing vines.",
+          "fil": "Maghanda ng balag na gagapangan ng baging."
+        }
+      }
+    },
+    "Sitaw": {
+      "aliases": [
+        "Yardlong bean",
+        "Pole sitaw"
+      ],
+      "source": "ati-lowland",
+      "pages": "19–21",
+      "scope": {
+        "en": "Spacing depends on pole or bush type; match the variety before planting.",
+        "fil": "Nakadepende ang agwat sa pole o bush type; tiyakin ang barayti bago magtanim."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Well-drained soil; pH 5.5–6.8.",
+          "fil": "Lupang maayos ang daluyan ng tubig; pH 5.5–6.8."
+        },
+        "water": {
+          "en": "Water after sowing; prevent drying, especially in sandy soil.",
+          "fil": "Diligan matapos maghasik; iwasang matuyo lalo sa mabuhanging lupa."
+        },
+        "spacing": {
+          "en": "Hill planting: 50 cm between hills and 1 m between rows.",
+          "fil": "Pagtatanim sa tundos: 50 cm sa pagitan ng tundos at 1 m sa pagitan ng hanay."
+        },
+        "climate": {
+          "en": "Guide gives a growing range of 20–35°C.",
+          "fil": "20–35°C ang temperatura ng paglaki sa gabay."
+        }
+      }
+    },
+    "Sili": {
+      "aliases": [
+        "Chili",
+        "Chilli",
+        "Hot pepper"
+      ],
+      "source": "ati-lowland",
+      "pages": "17–18",
+      "scope": {
+        "en": "Hot-pepper guidance; check the variety and growing setup.",
+        "fil": "Gabay para sa sili; tiyakin ang barayti at paraan ng pagtatanim."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Sandy loam enriched with organic matter; avoid flooding.",
+          "fil": "Sandy loam na may organikong bagay; iwasan ang pagbaha."
+        },
+        "water": {
+          "en": "Water after transplanting and adjust subsequent watering to need.",
+          "fil": "Diligan matapos maglipat-tanim at iangkop ang susunod na pagdidilig sa pangangailangan."
+        },
+        "spacing": {
+          "en": "Guide uses 45 cm between planting positions in the row.",
+          "fil": "45 cm ang agwat sa mga pagtataniman sa hanay ayon sa gabay."
+        },
+        "sunlight": {
+          "en": "Gradually expose seedlings to sun before transplanting.",
+          "fil": "Unti-unting paarawan ang punla bago ilipat-tanim."
+        }
+      }
+    },
+    "Alugbati": {
+      "aliases": [
+        "Malabar spinach"
+      ],
+      "source": "da-indigenous",
+      "pages": "3–5",
+      "scope": {
+        "en": "Leafy-vine guidance for alugbati. This is a different crop from true spinach.",
+        "fil": "Gabay para sa baging na alugbati. Ibang pananim ito sa true spinach."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Sandy loam is preferred; compost supports production.",
+          "fil": "Mas mainam ang sandy loam; nakatutulong ang kompos."
+        },
+        "water": {
+          "en": "Provide ample water.",
+          "fil": "Maglaan ng sapat na tubig."
+        },
+        "spacing": {
+          "en": "Use a trellis; guide uses 20–30 cm between hills and 50–70 cm between rows.",
+          "fil": "Gumamit ng balag; 20–30 cm sa pagitan ng tundos at 50–70 cm sa pagitan ng hanay."
+        }
+      }
+    },
+    "Lettuce": {
+      "aliases": [],
+      "source": "ati-urban",
+      "pages": "23–24",
+      "scope": {
+        "en": "Cool-condition lettuce guidance. Choose a variety suited to local heat.",
+        "fil": "Gabay para sa lettuce sa malamig na kondisyon. Pumili ng barayting angkop sa lokal na init."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Loamy soil rich in organic matter; ensure aeration and drainage.",
+          "fil": "Loam na lupang mayaman sa organikong bagay; tiyaking may hangin at maayos ang daluyan ng tubig."
+        },
+        "water": {
+          "en": "Guide advises daily morning watering; avoid excess standing moisture.",
+          "fil": "Araw-araw sa umaga ang pagdidilig sa gabay; iwasang maipon ang sobrang tubig."
+        },
+        "containers": {
+          "en": "Seedlings can be transplanted into plots, pots, or recycled containers.",
+          "fil": "Maaaring ilipat ang punla sa lupa, paso, o niresiklong lalagyan."
+        },
+        "climate": {
+          "en": "Guide describes 18–22°C growing conditions.",
+          "fil": "18–22°C ang kondisyon ng paglaki sa gabay."
+        }
+      }
+    },
+    "Labanos": {
+      "aliases": [
+        "Radish"
+      ],
+      "source": "ati-radish",
+      "pages": "1–2",
+      "scope": {
+        "en": "Radish guidance; allow room for the root and check variety suitability.",
+        "fil": "Gabay para sa labanos; maglaan ng lugar sa ugat at tiyaking angkop ang barayti."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Organic-rich silty loam; pH 6.0–6.8.",
+          "fil": "Silty loam na mayaman sa organikong bagay; pH 6.0–6.8."
+        },
+        "water": {
+          "en": "Water frequently and maintain drainage.",
+          "fil": "Madalas na diligan at tiyaking maayos ang daluyan ng tubig."
+        },
+        "spacing": {
+          "en": "Guide places seeds 3 inches apart in prepared rows.",
+          "fil": "3 pulgada ang pagitan ng buto sa inihandang hanay ayon sa gabay."
+        }
+      }
+    },
+    "Patola": {
+      "aliases": [
+        "Ridge gourd",
+        "Luffa"
+      ],
+      "source": "ati-lowland",
+      "pages": "14–16",
+      "scope": {
+        "en": "Field-growing guidance. Adjust to the crop variety and your growing setup.",
+        "fil": "Gabay para sa taniman sa lupa. Iangkop sa barayti at paraan ng pagtatanim."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Prepare loose soil with organic matter.",
+          "fil": "Maghanda ng buhaghag na lupang may organikong bagay."
+        },
+        "water": {
+          "en": "Provide sufficient irrigation during dry growing periods.",
+          "fil": "Maglaan ng sapat na patubig sa tuyong panahon."
+        },
+        "spacing": {
+          "en": "Allow 2.5 × 2.5 m in the dry-season guide; provide a trellis.",
+          "fil": "2.5 × 2.5 m ang agwat sa gabay sa tag-init; maghanda ng balag."
+        }
+      }
+    },
+    "Gabi": {
+      "aliases": [
+        "Taro"
+      ],
+      "source": "bpi-taro",
+        "pages": "4–7",
+      "scope": {
+          "en": "This archived BPI guide distinguishes upland and lowland taro. Confirm the variety and cultivation method with CENRO.",
+          "fil": "Magkaiba ang upland at lowland gabi sa lumang gabay ng BPI. Tiyakin ang barayti at paraan ng pagtatanim sa CENRO."
+      },
+      "requirements": {
+        "soil": {
+            "en": "Deep, loose, well-drained alluvial loam; pH 5.5–6.5. Lowland and upland sites need different water management.",
+            "fil": "Malalim, buhaghag na alluvial loam na maayos ang daluyan ng tubig; pH 5.5–6.5. Magkaiba ang pamamahala sa tubig sa lowland at upland."
+        },
+        "water": {
+            "en": "Keep moisture available. The guide describes flooded lowland culture and upland planting timed to rain or supported by irrigation.",
+            "fil": "Panatilihing may sapat na halumigmig. Nasa gabay ang binabahang lowland at upland na itinatanim kasabay ng ulan o may patubig."
+        },
+        "spacing": {
+            "en": "Lowland: rows 75 cm apart, plants 50 cm apart. Upland: rows 50 cm apart, plants 75 cm apart; backyard spacing varies.",
+            "fil": "Lowland: 75 cm ang pagitan ng hanay, 50 cm ng halaman. Upland: 50 cm ang pagitan ng hanay, 75 cm ng halaman; maaaring iba sa bakuran."
+        },
+        "climate": {
+            "en": "Warm, humid conditions; the guide gives a daily average temperature around 21–27°C.",
+            "fil": "Mainit at mahalumigmig; mga 21–27°C ang karaniwang temperatura sa isang araw ayon sa gabay."
+        }
+      }
+    },
+    "Saluyot": {
+      "aliases": [
+        "Jute leaves"
+      ],
+      "source": "da-indigenous",
+      "pages": "22–24",
+      "scope": {
+        "en": "Leaf-production guidance for saluyot; growing method and variety affect spacing.",
+        "fil": "Gabay sa produksyon ng dahon ng saluyot; nakaaapekto ang paraan at barayti sa agwat."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Loose or silty loam rich in organic matter.",
+          "fil": "Buhaghag o silty loam na mayaman sa organikong bagay."
+        },
+        "water": {
+          "en": "Irrigate after sowing or transplanting; provide drainage after heavy rain.",
+          "fil": "Patubigan matapos maghasik o maglipat-tanim; maglaan ng daluyan matapos ang malakas na ulan."
+        },
+        "climate": {
+          "en": "Warm, humid conditions; drought and cold can damage plants.",
+          "fil": "Mainit at mahalumigmig na kondisyon; maaaring makapinsala ang tagtuyot at lamig."
+        }
+      }
+    },
+    "Luya": {
+      "aliases": [
+        "Ginger"
+      ],
+      "source": "ati-ginger",
+      "pages": "83",
+      "scope": {
+        "en": "This reference gives basic ginger propagation, soil, and light guidance.",
+        "fil": "Pangunahing gabay ito sa pagpaparami, lupa, at liwanag para sa luya."
+      },
+      "requirements": {
+        "sunlight": {
+          "en": "Partial shade or morning sun.",
+          "fil": "Bahagyang lilim o araw sa umaga."
+        },
+        "soil": {
+          "en": "Loose, sandy soil; propagate using divided rhizomes.",
+          "fil": "Buhaghag at mabuhanging lupa; paramihin gamit ang hinating rhizome."
+        }
+      }
+    },
+    "Malunggay": {
+      "aliases": [
+        "Moringa"
+      ],
+      "source": "da-indigenous",
+      "pages": "6–8",
+      "scope": {
+        "en": "Guidance for establishing a tree; spacing differs for hedges and full tree growth.",
+        "fil": "Gabay sa pagpapatubo ng puno; magkaiba ang agwat para sa bakod at malayang paglaki ng puno."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Fertile, well-drained soil, especially sandy loam.",
+          "fil": "Matabang lupang maayos ang daluyan ng tubig, lalo ang sandy loam."
+        },
+        "water": {
+          "en": "Water during establishment; supplement irrigation in prolonged dry weather.",
+          "fil": "Diligan habang nagpapaugat; dagdagan ang patubig sa mahabang tag-init."
+        },
+        "spacing": {
+          "en": "Guide uses 5 m between trees for canopy space; hedge planting differs.",
+          "fil": "5 m sa pagitan ng puno para sa malayang paglaki ayon sa gabay; iba ang agwat para sa bakod."
+        }
+      }
+    },
+    "Pipino": {
+      "aliases": [
+        "Cucumber",
+        "Cucumis sativus"
+      ],
+      "source": "ati-cucumber",
+      "pages": "2",
+      "scope": {
+        "en": "Field cucumber guidance. Match the variety and provide climbing support.",
+        "fil": "Gabay sa pipino sa taniman. Tiyaking angkop ang barayti at maglaan ng suporta sa paggapang."
+      },
+      "requirements": {
+        "soil": {
+          "en": "Prepare cultivated beds with compost.",
+          "fil": "Maghanda ng nabungkal na kamang taniman na may kompos."
+        },
+        "water": {
+          "en": "Needs ample water throughout growth, with drainage to avoid waterlogging.",
+          "fil": "Kailangan ng sapat na tubig habang lumalaki at maayos na daluyan upang hindi mababad."
+        },
+        "spacing": {
+          "en": "Plant 0.5 m apart and provide a trellis.",
+          "fil": "Magtanim nang 0.5 m ang pagitan at maghanda ng balag."
+        }
+      }
+    }
+  }
+}

@@ -1949,258 +1949,120 @@
 }
 
 .agrifarm-weather-scene {
-    position: relative;
+    display: flex;
     min-width: 0;
-    min-height: 154px;
+    flex-direction: column;
+    align-self: start;
+    margin: 0;
     overflow: hidden;
     border: 1px solid #dce5d8;
-    border-radius: 11px;
-    background: #dcebdc;
-    isolation: isolate;
+    border-radius: 10px;
+    background: #f4f7ee;
 }
-.agrifarm-weather-scene svg {
+.agrifarm-weather-scene > svg {
     display: block;
     width: 100%;
-    height: 100%;
-    min-height: 154px;
+    height: auto;
+    aspect-ratio: 18 / 7;
 }
-.agrifarm-weather-scene .farm-sky-top {
-    stop-color: #a9d8e2;
-}
-.agrifarm-weather-scene .farm-sky-bottom {
-    stop-color: #ecf2d5;
-}
+.agrifarm-weather-scene .farm-sky-top { stop-color: #c4e5ec; }
+.agrifarm-weather-scene .farm-sky-bottom { stop-color: #eff4dc; }
 .agrifarm-weather-scene.is-rain .farm-sky-top,
-.agrifarm-weather-scene.is-storm .farm-sky-top {
-    stop-color: #687b83;
-}
+.agrifarm-weather-scene.is-storm .farm-sky-top { stop-color: #8fa8b5; }
 .agrifarm-weather-scene.is-rain .farm-sky-bottom,
-.agrifarm-weather-scene.is-storm .farm-sky-bottom {
-    stop-color: #a9bbb1;
-}
+.agrifarm-weather-scene.is-storm .farm-sky-bottom { stop-color: #dae3da; }
 .agrifarm-weather-scene.is-cloudy .farm-sky-top,
-.agrifarm-weather-scene.is-fog .farm-sky-top {
-    stop-color: #aebfc0;
-}
+.agrifarm-weather-scene.is-fog .farm-sky-top { stop-color: #bfced3; }
 .agrifarm-weather-scene.is-cloudy .farm-sky-bottom,
-.agrifarm-weather-scene.is-fog .farm-sky-bottom {
-    stop-color: #dde4d7;
-}
-.farm-sun circle:first-child {
-    fill: #f6c64c;
-}
-.farm-sun circle:last-child {
-    fill: #f6c64c33;
+.agrifarm-weather-scene.is-fog .farm-sky-bottom { stop-color: #edf0df; }
+.farm-sun-disc { fill: #f7c54a; }
+.farm-sun-halo {
+    fill: #fff1ad;
+    opacity: 0.55;
+    transform-box: fill-box;
     transform-origin: center;
-    animation: farmSun 4s ease-in-out infinite;
+    animation: farmSun 5s ease-in-out infinite;
 }
 .farm-clouds {
-    fill: #f0f3ee;
-    opacity: 0.92;
+    fill: #f7faf5;
     animation: farmClouds 13s ease-in-out infinite alternate;
 }
 .is-rain .farm-clouds,
-.is-storm .farm-clouds {
-    fill: #59696e;
-    opacity: 0.96;
-}
-.farm-clouds .farm-cloud-shadow {
-    fill: #607177;
-    opacity: 0.2;
-    transform: translateY(5px);
-}
-.is-rain .farm-clouds .farm-cloud-shadow,
-.is-storm .farm-clouds .farm-cloud-shadow {
-    fill: #36484d;
-    opacity: 0.45;
-}
-.farm-sky-haze {
-    fill: #eef3df;
-    opacity: 0.24;
-}
-.farm-skyline {
-    fill: #708c82;
-    opacity: 0.45;
-}
-.farm-skyline > path:nth-child(2) {
-    fill: none;
-    stroke: #708c82;
-    stroke-width: 3;
-}
-.farm-skyline-windows {
-    fill: none;
-    stroke: #dce9d9;
-    stroke-width: 2;
-    opacity: 0.55;
-}
-.farm-distant-hills {
-    fill: #719477;
-    opacity: 0.68;
-}
+.is-storm .farm-clouds { fill: #d0dbdf; }
+.farm-clouds .farm-cloud-shadow { fill: #a6bac3; }
+.farm-skyline { fill: #91b5b3; opacity: 0.6; }
+.farm-skyline > path:nth-child(2) { fill: none; stroke: #91b5b3; stroke-width: 2; }
+.farm-skyline-windows { fill: none; stroke: #e4efdf; stroke-width: 3; }
+.farm-distant-hills { fill: #acc59c; }
+.farm-near-hills { fill: #7fa776; }
 .is-rain .farm-distant-hills,
-.is-storm .farm-distant-hills {
-    fill: #506c5d;
-}
-.farm-tree-line {
-    fill: #315c42;
-    opacity: 0.75;
-}
-.farm-tree-line path {
-    fill: none;
-    stroke: #3a6047;
-    stroke-width: 3;
-}
-.farm-shed-shadow {
-    fill: #172e23;
-    opacity: 0.35;
-}
-.farm-shed-wall {
-    stroke: #78593d;
-    stroke-width: 1;
-}
-.farm-shed-roof {
-    stroke: #593629;
-    stroke-linejoin: round;
-    stroke-width: 1.4;
-}
-.farm-shed-door {
-    fill: #684433;
-}
-.farm-shed-window {
-    fill: #9cc4bb;
-    stroke: #4f756b;
-    stroke-width: 1.5;
-}
-.farm-window-frame {
-    fill: none;
-    stroke: #e7e0bc;
-    stroke-width: 1;
-}
-.farm-shed-trim {
-    fill: none;
-    stroke: #7f5a3d;
-    stroke-width: 1.4;
-    opacity: 0.8;
-}
-.farm-door-handle {
-    fill: #dccb8d;
-}
-.farm-bed {
-    fill: #67432f;
-    stroke: #3d3327;
-    stroke-width: 1;
-    opacity: 0.94;
-}
-.farm-furrow {
-    fill: none;
-    stroke: #a2734b;
-    stroke-linecap: round;
-    stroke-width: 2.2;
-    opacity: 0.9;
-}
-.farm-puddles {
-    opacity: 0.78;
-}
+.is-storm .farm-distant-hills { fill: #9bb49e; }
+.is-rain .farm-near-hills,
+.is-storm .farm-near-hills { fill: #789782; }
+.farm-tree-line { fill: #4c805c; }
+.farm-tree-line g > path:first-child { fill: none; stroke: #59724d; stroke-width: 3; }
+.farm-ground { fill: #a4bd83; }
+.is-rain .farm-ground,
+.is-storm .farm-ground { fill: #8da98b; }
+.farm-fence { fill: none; stroke: #dbe2bd; stroke-width: 3; stroke-linecap: round; }
+.farm-path { fill: #d9c29b; }
+.farm-shed-shadow { fill: #3c5c3f; opacity: 0.15; }
+.farm-shed-wall { fill: #f1dfb7; stroke: #c5a779; stroke-width: 1.5; }
+.farm-shed-cladding { fill: none; stroke: #d9c294; stroke-width: 1; }
+.farm-shed-roof { fill: #b87350; stroke: #85563b; stroke-linejoin: round; stroke-width: 2; }
+.farm-shed-roof-seam { fill: none; stroke: #d69a70; stroke-linecap: round; stroke-width: 2; }
+.farm-shed-door { fill: #6e8060; stroke: #4f684d; stroke-width: 1.5; }
+.farm-shed-window { fill: #accfd3; stroke: #769b94; stroke-width: 2; }
+.farm-window-frame { fill: none; stroke: #f8f0d4; stroke-width: 2; }
+.farm-door-handle { fill: #e6ce8c; }
+.farm-bed-side { fill: #9b704b; stroke: #835f43; stroke-linejoin: round; stroke-width: 1.5; }
+.farm-bed { fill: #6e523d; stroke: #d3ae79; stroke-linejoin: round; stroke-width: 5; }
+.farm-furrow { fill: none; stroke: #94714d; stroke-linecap: round; stroke-width: 2; }
 .farm-plant {
     transform-box: fill-box;
     transform-origin: bottom center;
-    animation: farmPlants 3s ease-in-out infinite alternate;
+    animation: farmPlants 4s ease-in-out infinite alternate;
 }
-.farm-plants > g:nth-child(2n) .farm-plant {
-    animation-delay: -1.4s;
-}
-.farm-plant path:first-child {
+.farm-plants > g:nth-child(2n) .farm-plant { animation-delay: -1.4s; }
+.farm-plant > path:first-child { fill: none; stroke: #aecf6b; stroke-width: 3; }
+.farm-plant > path:nth-child(2) { fill: #528f47; stroke: #39743d; stroke-linejoin: round; stroke-width: 1; }
+.farm-plants > g:nth-child(2n) .farm-plant > path:nth-child(2) { fill: #77aa4d; }
+.farm-leaf-vein { fill: none; stroke: #b1ce78; stroke-linecap: round; stroke-width: 1; }
+.farm-sign > path:first-child { fill: none; stroke: #9c7a53; stroke-width: 4; }
+.farm-sign rect { fill: #f6efd5; stroke: #7a9864; stroke-width: 2; }
+.farm-sign > path:last-child { fill: none; stroke: #4b854c; stroke-linecap: round; stroke-width: 2.5; }
+.farm-foreground-grass { fill: none; stroke: #6b9557; stroke-linecap: round; stroke-width: 3; }
+.farm-puddles { fill: #a9cbd1; stroke: #cee3de; stroke-width: 1.5; }
+.farm-rain { fill: none; stroke: #edf7ff; stroke-linecap: round; stroke-width: 2; opacity: 0.8; }
+.farm-rain > g:first-child { animation: farmRain 1.1s linear infinite; }
+.farm-rain > g:last-child { animation: farmRain 1.35s linear infinite -0.55s; }
+.farm-lightning { fill: #ffe589; opacity: 0; animation: farmLightning 7s ease-in-out infinite; }
+.farm-fog { fill: none; stroke: #f3f5ed; stroke-linecap: round; stroke-width: 11; opacity: 0.6; animation: farmFog 8s ease-in-out infinite alternate; }
+.kuya-ani-pants { fill: #3d5451; }
+.kuya-ani-boots { fill: #34443c; }
+.kuya-ani-shirt { fill: #3c7752; stroke: #2a5e3e; stroke-width: 0.8; }
+.kuya-ani-arm { fill: none; stroke: #bc845c; stroke-linecap: round; stroke-width: 4; }
+.kuya-ani-head, .kuya-ani-hand { fill: #c99068; }
+.kuya-ani-eye { fill: #493e32; }
+.kuya-ani-smile { fill: none; stroke: #78513b; stroke-linecap: round; stroke-width: 0.8; }
+.kuya-ani-hat { fill: #e3be70; stroke: #b89350; stroke-width: 0.8; }
+.kuya-ani-umbrella-pole { fill: none; stroke: #52636a; stroke-width: 1.5; }
+.kuya-ani-umbrella { fill: #e7b84f; stroke: #b48b35; stroke-width: 1; }
+.kuya-ani-can { fill: #91b9b2; stroke: #527f7b; stroke-width: 1; stroke-linejoin: round; }
+.kuya-ani-water {
     fill: none;
-    stroke: #d1e985;
-    stroke-width: 3;
-}
-.farm-plant path:last-child {
-    fill: #7eb950;
-    stroke: #477c3e;
-    stroke-width: 1;
-}
-.farm-sign > path:first-child {
-    fill: none;
-    stroke: #704930;
-    stroke-width: 5;
-}
-.farm-sign rect {
-    fill: #f2edc8;
-    stroke: #6e8f56;
-    stroke-width: 2;
-}
-.farm-sign > path:last-child {
-    fill: none;
-    stroke: #418544;
+    stroke: #82adb8;
+    stroke-width: 1.5;
     stroke-linecap: round;
-    stroke-width: 2.5;
+    animation: farmWatering 1.8s ease-in infinite;
 }
-.farm-foreground-grass {
-    fill: none;
-    stroke: #173e2c;
-    stroke-linecap: round;
-    stroke-width: 3;
-    opacity: 0.9;
+.kuya-ani-wave {
+    transform-origin: 0 0;
+    animation: farmWave 6s ease-in-out infinite;
 }
-.farm-rain {
-    fill: none;
-    stroke: #d8efff;
-    stroke-linecap: round;
-    stroke-width: 2;
-    opacity: 0.72;
-}
-.farm-rain > g:first-child {
-    animation: farmRain 1.1s linear infinite;
-}
-.farm-rain > g:last-child {
-    animation: farmRain 1.35s linear infinite -0.55s;
-}
-.farm-lightning {
-    fill: #ffe456;
-    filter: drop-shadow(0 0 6px #fff7a5);
-    opacity: 0;
-    animation: farmLightning 7s ease-in-out infinite;
-}
-.farm-fog {
-    fill: none;
-    stroke: #f3f5ed;
-    stroke-linecap: round;
-    stroke-width: 11;
-    opacity: 0.45;
-    animation: farmFog 8s ease-in-out infinite alternate;
-}
-.agrifarm-weather-scene::after {
-    position: absolute;
-    inset: auto 0 0;
-    height: 54%;
-    background: linear-gradient(to top, #173d2dcc, transparent);
-    content: "";
-    pointer-events: none;
-}
-.agrifarm-weather-scene-caption {
-    position: absolute;
-    z-index: 1;
-    right: 12px;
-    bottom: 9px;
-    left: 12px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
-    color: #fff;
-}
-.agrifarm-weather-scene-caption strong {
-    font-size: 10px;
-    white-space: nowrap;
-}
-.agrifarm-weather-scene-caption small {
-    max-width: 190px;
-    color: #e5f0e8;
-    font-size: 8px;
-    line-height: 1.35;
-    text-align: right;
-}
-
+.kuya-ani-lantern { fill: #e1b765; stroke: #8d7449; stroke-width: 1; }
+.kuya-ani-lantern-glow { fill: #f9e9a7; }
+.kuya-ani-lantern-handle { fill: none; stroke: #8d7449; stroke-width: 1; }
 .seller-weather-detail-heading {
     display: flex;
     align-items: baseline;
@@ -2279,9 +2141,18 @@
     }
 }
 @keyframes farmPlants {
-    to {
-        transform: rotate(2.5deg);
-    }
+    from { transform: rotate(-2deg); }
+    to { transform: rotate(3.5deg); }
+}
+@keyframes farmWave {
+    0%, 55%, 100% { transform: rotate(0deg); }
+    63%, 79% { transform: rotate(-16deg); }
+    71%, 87% { transform: rotate(9deg); }
+}
+@keyframes farmWatering {
+    from { transform: translate(0, 0); opacity: 0; }
+    25% { opacity: 1; }
+    to { transform: translate(2px, 7px); opacity: 0; }
 }
 @keyframes farmRain {
     to {
@@ -2338,6 +2209,7 @@
 }
 .dark .agrifarm-weather-scene {
     border-color: #46534a;
+    background: #26392e;
 }
 .dark .seller-weather-days article > button {
     color: #dde7e0;
@@ -2376,12 +2248,6 @@
     .seller-weather-summary dl {
         align-self: stretch;
     }
-    .agrifarm-weather-scene {
-        min-height: 168px;
-    }
-    .agrifarm-weather-scene svg {
-        min-height: 168px;
-    }
 }
 
 @media (max-width: 450px) {
@@ -2408,9 +2274,6 @@
     .seller-weather-summary dl {
         gap: 3px 10px;
     }
-    .agrifarm-weather-scene-caption small {
-        max-width: 150px;
-    }
 }
 
 /* Kuya Ani mascot image overlay in weather scene */
@@ -2432,12 +2295,14 @@
     100% { transform: translateY(-3px); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .farm-sun circle:last-child,
+    .farm-sun-halo,
     .farm-clouds,
     .farm-plant,
     .farm-rain > g,
     .farm-lightning,
     .farm-fog,
+    .kuya-ani-wave,
+    .kuya-ani-water,
     .kuya-ani-overlay {
         animation: none;
     }

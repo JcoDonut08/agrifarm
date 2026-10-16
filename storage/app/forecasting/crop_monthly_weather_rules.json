@@ -1,0 +1,25 @@
+{
+  "reviewed_on": "2026-10-16",
+  "rainfall_basis": "Compare forecast monthly total with the same calendar month's 2000–2021 ERA5 mean. This is a planning trigger, not a crop damage threshold or an official above/below-normal category.",
+  "crops": {
+    "Kamatis": {"drainage_field": "soil", "preparation": {"en": "Choose ground that does not flood and make sure excess water can drain away.", "fil": "Pumili ng lupang hindi binabaha at tiyaking may daluyan ang sobrang tubig."}},
+    "Talong": {"water_field": "water", "preparation": {"en": "Prepare a reliable water supply for your planting area.", "fil": "Maghanda ng sapat at maaasahang suplay ng tubig para sa taniman."}},
+    "Okra": {"water_field": "water", "preparation": {"en": "Use loose soil and adjust watering to the soil moisture and weather.", "fil": "Gumamit ng buhaghag na lupa at iayon ang pagdidilig sa halumigmig ng lupa at panahon."}},
+    "Kangkong": {"water_field": "water", "preparation": {"en": "For upland Kangkong, keep the soil moist. Water after planting, then daily or as needed.", "fil": "Para sa upland na Kangkong, panatilihing mamasa-masa ang lupa. Diligan pagkatapos magtanim, at araw-araw o kung kailangan."}},
+    "Pechay": {"water_field": "water", "preparation": {"en": "Prepare soil mixed with compost and water regularly as needed.", "fil": "Maghanda ng lupang may halong compost at regular na diligan kung kailangan."}},
+    "Mustasa": {"water_field": "water", "preparation": {"en": "Use loose soil rich in organic matter and water as needed.", "fil": "Gumamit ng buhaghag na lupang mayaman sa organikong bagay at diligan kung kailangan."}},
+    "Kalabasa": {"drainage_field": "soil", "water_field": "water", "preparation": {"en": "Use soil that drains well and prepare a water supply for irrigation.", "fil": "Gumamit ng lupang maayos ang daluyan ng tubig at maghanda ng patubig."}},
+    "Ampalaya": {"drainage_field": "soil", "water_field": "water", "preparation": {"en": "Prepare fertile soil with good drainage and enough irrigation, especially during dry weather.", "fil": "Maghanda ng matabang lupang maayos ang daluyan ng tubig at sapat na patubig, lalo na sa tuyong panahon."}},
+    "Sitaw": {"drainage_field": "soil", "water_field": "water", "preparation": {"en": "Use soil that drains well. Water after sowing and keep the soil from drying out.", "fil": "Gumamit ng lupang maayos ang daluyan ng tubig. Diligan pagkatapos maghasik at iwasang matuyo ang lupa."}},
+    "Sili": {"drainage_field": "soil", "preparation": {"en": "Choose a planting area that does not flood. Water after transplanting and then as needed.", "fil": "Pumili ng tanimang hindi binabaha. Diligan pagkatapos maglipat-tanim at kung kailangan."}},
+    "Alugbati": {"water_field": "water", "preparation": {"en": "Prepare enough water for the crop and add compost to the soil.", "fil": "Maghanda ng sapat na tubig para sa pananim at lagyan ng compost ang lupa."}},
+    "Lettuce": {"drainage_field": "water", "water_field": "water", "preparation": {"en": "Water in the morning and make sure water does not collect around the plants.", "fil": "Diligan sa umaga at tiyaking hindi naiipon ang tubig sa paligid ng mga halaman."}},
+    "Labanos": {"drainage_field": "water", "water_field": "water", "preparation": {"en": "Water frequently and keep excess water draining away.", "fil": "Regular na diligan at panatilihing umaagos palabas ang sobrang tubig."}},
+    "Patola": {"water_field": "water", "preparation": {"en": "Prepare loose soil with organic matter and enough irrigation for dry growing periods.", "fil": "Maghanda ng buhaghag na lupang may organikong bagay at sapat na patubig para sa tuyong panahon."}},
+    "Gabi": {"daily_mean_temperature_range_c": [21, 27], "temperature_field": "climate", "preparation": {"en": "Confirm whether your variety is for upland or lowland planting; the water needs differ. Ask CENRO about your growing setup.", "fil": "Tiyakin kung para sa upland o lowland ang barayti; magkaiba ang pangangailangan sa tubig. Magtanong sa CENRO tungkol sa iyong taniman."}},
+    "Saluyot": {"water_field": "water", "preparation": {"en": "Water after planting and prepare drainage for heavy rain.", "fil": "Diligan pagkatapos magtanim at maghanda ng daluyan ng tubig para sa malakas na ulan."}},
+    "Luya": {"preparation": {"en": "Prepare loose, sandy soil and use divided rhizomes as planting material.", "fil": "Maghanda ng buhaghag at mabuhanging lupa at gumamit ng hinating rhizome bilang pantanim."}},
+    "Malunggay": {"drainage_field": "soil", "water_field": "water", "preparation": {"en": "Use fertile soil that drains well. Water while the plant is getting established.", "fil": "Gumamit ng matabang lupang maayos ang daluyan ng tubig. Diligan habang nagsisimula pa lamang lumaki ang halaman."}},
+    "Pipino": {"drainage_field": "water", "water_field": "water", "preparation": {"en": "Provide enough water and make sure excess water can drain away. Prepare a trellis for the vines.", "fil": "Maghanda ng sapat na tubig at tiyaking may daluyan ang sobrang tubig. Maghanda ng balag para sa mga baging."}}
+  }
+}
